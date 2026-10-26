@@ -1,191 +1,154 @@
-// services/auth.js
-import axios from 'axios';
-import getApiBaseUrl from '../utils/getApiBaseUrl';
-// API base URL
-const API_BASE_URL = getApiBaseUrl();
+import { apiClient, toApiError } from "./apiClient";
+import { awsUploadService } from "./awsService";
 
-axios.defaults.withCredentials = true;
-
-
-export const loginUser = async (email, password) => {
-  try {
-    const response = await axios.post(`${API_BASE_URL}/auth/login`, { email, password }, { withCredentials: true });
-    return response.data;
-  } catch (error) {
-    if (error.response && error.response.data && error.response.data.error) {
-      throw new Error(error.response.data.error); // Throw error with backend message
-    } else {
-      throw new Error('An unexpected error occurred. Please try again.'); // Generic error message
-    }
-  }
+export const ProfileUploadStates = {
+  PREPARING: "PREPARING",
+  UPLOADING: "UPLOADING",
+  PROCESSING: "PROCESSING",
+  COMPLETED: "COMPLETED",
+  FAILED: "FAILED",
 };
 
-export const logoutUser = async () => {
+const PROFILE_STATUS_ATTEMPTS = 60;
+const PROFILE_STATUS_INTERVAL_MS = 1_000;
+
+function encodePathSegment(value) {
+  return encodeURIComponent(String(value));
+}
+
+function delay(duration) {
+  return new Promise((resolve) => setTimeout(resolve, duration));
+}
+
+export async function loginUser(email, password) {
   try {
-    const response = await axios.post(`${API_BASE_URL}/auth/logout`, { withCredentials: true });
+    const response = await apiClient.post("/auth/login", { email, password });
+    return response.data;
+  } catch (error) {
+    throw toApiError(error, "An unexpected error occurred. Please try again.");
+  }
+}
+
+export async function logoutUser() {
+  try {
+    await apiClient.post("/auth/logout");
     return true;
   } catch (error) {
-    if (error.response && error.response.data && error.response.data.error) {
-      throw new Error(error.response.data.error); // Throw error with backend message
-    } else {
-      throw new Error('Failed to log out. Please try again.'); // Generic error message
-    }
-  }
-};
-
-export const getSessionStatus = async () => {
-  try {
-    const response = await axios.get(`${API_BASE_URL}/auth/session`, { withCredentials: true });
-
-    return response.data;
-  } catch (error) {
-    if (error.response) {
-      if (error.response.status === 401) {
-        // Handle expected "no session" scenario without throwing an error
-        return null; // Or any value indicating no active session
-      } else if (error.response.data && error.response.data.error) {
-        throw new Error(error.response.data.error); // Throw error with backend message
-      }
-    }
-    throw new Error('Failed to check session. Please try again.'); // Generic error message
-  }
-};
-
-export const forgotPassword = async (email) => {
-  try {
-    const response = await axios.post(`${API_BASE_URL}/auth/forgot-password`, { email }, { withCredentials: true });
-
-    return response.data;
-  } catch (error) {
-    if (error.response && error.response.data && error.response.data.error) {
-      throw new Error(error.response.data.error); // Throw error with backend message
-    } else {
-      throw new Error('Failed to reset password. Please try again.'); // Generic error message
-    }
+    throw toApiError(error, "Failed to log out. Please try again.");
   }
 }
 
-export const resetPassword = async (token, password) => {
+export async function getSessionStatus() {
   try {
-    const response = await axios.post(`${API_BASE_URL}/auth/reset-password/${token}`, { password }, { withCredentials: true });
-
+    const response = await apiClient.get("/auth/session");
     return response.data;
   } catch (error) {
-    if (error.response && error.response.data && error.response.data.error) {
-      throw new Error(error.response.data.error); // Throw error with backend message
-    } else {
-      throw new Error('Failed to reset password. Please try again.'); // Generic error message
-    }
+    if (error.response?.status === 401) return { user: null };
+
+    throw toApiError(error, "Failed to check session. Please try again.");
   }
 }
 
-export const verifyResetToken = async (token) => {
+export async function forgotPassword(email) {
   try {
-    const response = await axios.get(`${API_BASE_URL}/auth/verify-reset-token/${token}`);
+    const response = await apiClient.post("/auth/forgot-password", { email });
     return response.data;
   } catch (error) {
-    throw new Error(error.response.data.error || 'Failed to verify token.');
+    throw toApiError(error, "Failed to reset password. Please try again.");
   }
-};
+}
 
-export const updatePassword = async (currentPassword, newPassword) => {
+export async function resetPassword(token, password) {
   try {
-    const response = await axios.put(`${API_BASE_URL}/auth/password`, { currentPassword, newPassword }, { withCredentials: true });
-
-    return response.data;
-  } catch (error) {
-    if (error.response && error.response.data && error.response.data.error) {
-      throw new Error(error.response.data.error); // Throw error with backend message
-    } else {
-      throw new Error('Failed to update password. Please try again.'); // Generic error message
-    }
-  }
-};
-
-
-
-// Profile pictures
-export const ProfileUploadStates = {
-  PREPARING: 'PREPARING',
-  UPLOADING: 'UPLOADING',
-  PROCESSING: 'PROCESSING',
-  COMPLETED: 'COMPLETED',
-  FAILED: 'FAILED'
-};
-
-
-export const updateProfilePicture = async (file, onProgressChange = () => {}) => {
-  const uploadToStorage = async (presignedUrl, file) => {
-    await axios.put(presignedUrl, file, {
-      headers: {
-        'Content-Type': file.type
-      }
-    });
-  };
-
-  try {
-    // 1. Prepare and validate file
-    onProgressChange?.(ProfileUploadStates.PREPARING);
-    
-    if (!file) {
-      throw new Error('No file provided');
-    }
-
-    const fileInfo = {
-      fileName: file.name,
-      contentType: file.type
-    };
-
-    // 2. Get presigned URL
-    const { data: fileUrl } = await axios.post(`${API_BASE_URL}/aws/presigned-url`, {
-      fileName: fileInfo.fileName,
-      contentType: fileInfo.contentType
-    });
-
-    // 3. Upload to storage
-    onProgressChange?.(ProfileUploadStates.UPLOADING);
-    await uploadToStorage(fileUrl.uploadUrl, file);
-
-    // 4. Trigger processing
-    onProgressChange?.(ProfileUploadStates.PROCESSING);
-    const { data: { jobId } } = await axios.post(`${API_BASE_URL}/upload/profile-picture`, {
-      imageUrl: fileUrl
-    });
-
-    // 5. Poll for completion
-    const result = await checkProfilePictureProcessingStatus(jobId, onProgressChange);
-    onProgressChange?.(ProfileUploadStates.COMPLETED);
-
-    return result;
-  } catch (error) {
-    onProgressChange?.(ProfileUploadStates.FAILED);
-    throw new Error(
-      error.response?.data?.error || error.message || 'Failed to upload profile picture'
+    const response = await apiClient.post(
+      `/auth/reset-password/${encodePathSegment(token)}`,
+      { password },
     );
+    return response.data;
+  } catch (error) {
+    throw toApiError(error, "Failed to reset password. Please try again.");
   }
-};
+}
 
-const checkProfilePictureProcessingStatus = async (jobId, onProgressChange) => {
-  const maxAttempts = 30;
-  const delayMs = 1000;
+export async function verifyResetToken(token) {
+  try {
+    const response = await apiClient.get(
+      `/auth/verify-reset-token/${encodePathSegment(token)}`,
+    );
+    return response.data;
+  } catch (error) {
+    throw toApiError(error, "Failed to verify the reset link.");
+  }
+}
 
-  for (let attempt = 0; attempt < maxAttempts; attempt++) {
-    const { data: status } = await axios.get(`${API_BASE_URL}/upload/profile-picture-status/${jobId}`);
+export async function updatePassword(currentPassword, newPassword) {
+  try {
+    const response = await apiClient.put("/auth/password", {
+      currentPassword,
+      newPassword,
+    });
+    return response.data;
+  } catch (error) {
+    throw toApiError(error, "Failed to update password. Please try again.");
+  }
+}
 
-    if (status.state === 'completed') {
-      return status.result;
-    }
+async function checkProfilePictureProcessingStatus(jobId, onProgressChange) {
+  const encodedJobId = encodePathSegment(jobId);
 
-    if (status.state === 'failed') {
-      throw new Error(status.error || 'Profile picture processing failed');
+  for (let attempt = 0; attempt < PROFILE_STATUS_ATTEMPTS; attempt += 1) {
+    const { data: status } = await apiClient.get(
+      `/upload/profile-picture-status/${encodedJobId}`,
+    );
+
+    if (status.state === "completed") return status.result;
+
+    if (status.state === "failed") {
+      throw new Error(status.error || "Profile picture processing failed");
     }
 
     if (status.progress) {
       onProgressChange?.(ProfileUploadStates.PROCESSING, status.progress);
     }
 
-    await new Promise(resolve => setTimeout(resolve, delayMs));
+    await delay(PROFILE_STATUS_INTERVAL_MS);
   }
 
-  throw new Error('Profile picture processing timed out');
-};
+  throw new Error("Profile picture processing timed out");
+}
+
+export async function updateProfilePicture(file, onProgressChange = () => {}) {
+  try {
+    onProgressChange(ProfileUploadStates.PREPARING);
+
+    if (!file) throw new Error("No file provided");
+
+    const { data: imageUrl } = await apiClient.post("/aws/presigned-url", {
+      fileName: file.name,
+      contentType: file.type,
+      type: "profile-picture",
+    });
+
+    onProgressChange(ProfileUploadStates.UPLOADING);
+    await awsUploadService.uploadToS3(imageUrl.uploadUrl, file);
+
+    onProgressChange(ProfileUploadStates.PROCESSING);
+    const { data } = await apiClient.post("/upload/profile-picture", {
+      imageUrl,
+    });
+
+    const result = await checkProfilePictureProcessingStatus(
+      data.jobId,
+      onProgressChange,
+    );
+    onProgressChange(ProfileUploadStates.COMPLETED);
+
+    return result;
+  } catch (error) {
+    onProgressChange(ProfileUploadStates.FAILED);
+    throw toApiError(
+      error,
+      error.message || "Failed to upload profile picture",
+    );
+  }
+}
