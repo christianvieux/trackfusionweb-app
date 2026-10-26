@@ -19,7 +19,7 @@ function InitialProfilePictureSetup() {
       router.push("/feed");
     } catch (error) {
       // Handle upload error
-      console.error("Couldn't upload profile picture: ", error)
+      console.error("Couldn't upload profile picture: ", error);
     }
   };
 
@@ -30,16 +30,21 @@ function InitialProfilePictureSetup() {
   useEffect(() => {
     if (userInfo) {
       if (userInfo.profile_picture_url) {
-        console.log("idk")
-        router.push("/feed")
+        router.push("/feed");
       }
     }
-  }, [userInfo, router])
-  
+  }, [userInfo, router]);
+
   return (
-    <div id="new_profile_page" className="flex items-center justify-center p-4 overflow-auto max-h-full max-w-full">
-      <div id="container" className="gap-8 flex flex-col bg-black border-2 border-gray-dark p-4 max-h-full max-w-md overflow-y-auto">
-        <h1 className="text-3xl font-bold text-green-light w-max">
+    <div
+      id="new_profile_page"
+      className="flex max-h-full max-w-full items-center justify-center overflow-auto p-4"
+    >
+      <div
+        id="container"
+        className="border-gray-dark flex max-h-full max-w-md flex-col gap-8 overflow-y-auto border-2 bg-black p-4"
+      >
+        <h1 className="text-green-light w-max text-3xl font-bold">
           {`Welcome, ${userInfo?.username || ""}`}
         </h1>
 
@@ -50,23 +55,22 @@ function InitialProfilePictureSetup() {
           </p>
         </div>
 
-          <UpdateProfilePictureForm
-            initialProfilePicture={null}
-            onSubmit={handleProfilePictureSubmit}
-            isInitialSetup={true}
-            className="overflow-x-auto max-w-full"
-          />
-        
+        <UpdateProfilePictureForm
+          initialProfilePicture={null}
+          onSubmit={handleProfilePictureSubmit}
+          isInitialSetup={true}
+          className="max-w-full overflow-x-auto"
+        />
 
-        <div className="text-sm italic text-foreground/70">
+        <div className="text-foreground/70 text-sm italic">
           <p className="mb-4">
-            Not ready to upload a photo? That's okay. You can always add or
+            Not ready to upload a photo? That&apos;s okay. You can always add or
             update your profile picture later in Account Settings.
           </p>
 
           <button
             onClick={handleSkip}
-            className="text-green-light underline transition-colors duration-300 hover:text-green"
+            className="text-green-light hover:text-green underline transition-colors duration-300"
           >
             Skip for now
           </button>

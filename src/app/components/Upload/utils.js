@@ -19,13 +19,6 @@ export const UPLOAD_STATE_MESSAGES = {
   COMPLETED: "Upload complete!",
 };
 
-export function getAllowedTypes(envValue = "") {
-  return envValue
-    .split(",")
-    .map((type) => type.trim())
-    .filter(Boolean);
-}
-
 export function getFileExtensions(types = []) {
   return types.map((type) => `.${type.split("/")[1]}`).join(", ");
 }

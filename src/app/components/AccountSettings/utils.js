@@ -1,9 +1,6 @@
-export const ALLOWED_IMAGE_TYPES = (
-  process.env.NEXT_PUBLIC_ALLOWED_IMAGE_TYPES || "image/jpeg,image/png,image/webp"
-)
-  .split(",")
-  .map((type) => type.trim())
-  .filter(Boolean);
+import { ALLOWED_IMAGE_TYPES } from "../../utils/fileTypes";
+
+export { ALLOWED_IMAGE_TYPES };
 
 export function getAllowedImageExtensions() {
   return ALLOWED_IMAGE_TYPES.map((type) => `.${type.split("/")[1]}`).join(", ");
