@@ -41,7 +41,7 @@ export function FavoriteTracksProvider({ children }) {
     } finally {
       setLoading(false);
     }
-  }, [user?.id]);
+  }, [user]);
 
   useEffect(() => {
     refresh();

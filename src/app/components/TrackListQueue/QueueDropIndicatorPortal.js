@@ -7,11 +7,9 @@ export default function QueueDropIndicatorPortal({
   isHovered,
   itemBeingDragged,
   placementDrop,
-  cardElement,
+  cardRect,
 }) {
-  if (!canDrag || !cardElement || typeof document === "undefined") return null;
-
-  const rect = cardElement.getBoundingClientRect();
+  if (!canDrag || !cardRect || typeof document === "undefined") return null;
 
   return createPortal(
     <DropIndicator
@@ -21,10 +19,10 @@ export default function QueueDropIndicatorPortal({
       style={{
         top:
           placementDrop === "above"
-            ? `${rect.top - 2}px`
-            : `${rect.bottom - 2}px`,
-        width: `${rect.width}px`,
-        left: `${rect.left}px`,
+            ? `${cardRect.top - 2}px`
+            : `${cardRect.bottom - 2}px`,
+        width: `${cardRect.width}px`,
+        left: `${cardRect.left}px`,
         zIndex: 8888,
       }}
     />,

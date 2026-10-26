@@ -24,6 +24,7 @@ export default function QueueTrackItem({
     isDragging,
     dragPosition,
     dragOffset,
+    cardRect,
     handleMouseDown,
     handleMouseEnter,
     handleMouseLeave,
@@ -64,7 +65,7 @@ export default function QueueTrackItem({
           track={track}
           dragPosition={dragPosition}
           dragOffset={dragOffset}
-          width={cardRef.current?.offsetWidth}
+          width={cardRect?.width}
           rightContent={rightContent}
         />
       )}
@@ -74,7 +75,7 @@ export default function QueueTrackItem({
         isHovered={isHovered}
         itemBeingDragged={state.itemBeingDragged}
         placementDrop={state.placementDrop}
-        cardElement={cardRef.current}
+        cardRect={cardRect}
       />
     </div>
   );

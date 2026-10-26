@@ -1,13 +1,17 @@
 // src/app/context/SessionContext.js
-'use client';
-import React, { createContext, useContext, useState, useEffect } from 'react';
-import { useSessionStatus } from '../hooks/useSessionStatus';
-import { loginUser, logoutUser } from '../services/authService';
+"use client";
+import React, { createContext, useContext, useState, useEffect } from "react";
+import { useSessionStatus } from "../hooks/useSessionStatus";
+import { loginUser, logoutUser } from "../services/authService";
 
 export const SessionContext = createContext(null);
 
 export const SessionProvider = ({ children }) => {
-  const { sessionData, loading: sessionLoading, error: sessionError  } = useSessionStatus();
+  const {
+    sessionData,
+    loading: sessionLoading,
+    error: sessionError,
+  } = useSessionStatus();
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -22,7 +26,7 @@ export const SessionProvider = ({ children }) => {
       setError(null);
       return response.user;
     } catch (err) {
-      const message = err.message || 'Login failed. Please try again.';
+      const message = err.message || "Login failed. Please try again.";
       setError(message);
       throw new Error(message); // Rethrow the error
     } finally {
@@ -37,19 +41,19 @@ export const SessionProvider = ({ children }) => {
       setUser(null);
       setError(null);
     } catch (err) {
-      const message = err.message || 'Logout failed. Please try again.';
+      const message = err.message || "Logout failed. Please try again.";
       setError(message);
       throw new Error(message); // Rethrow the error
     } finally {
       setLoading(false);
     }
   };
-  
+
   const contextValue = {
     user,
     setUser,
     loading,
-    error: sessionError || error,
+    error: sessionError?.message || error,
     login,
     logout,
     isLoggedIn,
@@ -71,6 +75,5 @@ export const SessionProvider = ({ children }) => {
     </SessionContext.Provider>
   );
 };
-
 
 export const useSession = () => useContext(SessionContext);

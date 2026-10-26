@@ -1,7 +1,12 @@
 import { useCallback, useEffect, useRef } from "react";
 
-export default function useRafDebounce(callback, deps = []) {
+export default function useRafDebounce(callback) {
   const frameRef = useRef(null);
+  const callbackRef = useRef(callback);
+
+  useEffect(() => {
+    callbackRef.current = callback;
+  }, [callback]);
 
   const debouncedCallback = useCallback((...args) => {
     if (frameRef.current) {
@@ -9,9 +14,9 @@ export default function useRafDebounce(callback, deps = []) {
     }
 
     frameRef.current = requestAnimationFrame(() => {
-      callback(...args);
+      callbackRef.current(...args);
     });
-  }, deps);
+  }, []);
 
   useEffect(() => {
     return () => {

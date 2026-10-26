@@ -58,7 +58,6 @@ export default function ScrollableContainer({children, canScroll=true, className
       }, [scrollDirection, currentScrollSpeed, canScroll, scrollSpeed]);
 
       useEffect(() => {
-        // console.log(scrollDirection);
       }, [scrollDirection]);
 
     return (
