@@ -6,15 +6,17 @@ import {
 } from "../components/StaticPage";
 
 const collectedData = [
-  "Basic account information, such as username and email.",
-  "Usage data and preferences.",
-  "Uploaded content history.",
+  "Account information, including username and email address.",
+  "Profile images, uploaded audio, and the metadata supplied with that content.",
+  "Favorites and the session data required to keep an account signed in.",
+  "Limited technical logs used to operate and protect the service.",
 ];
 
 const dataUsage = [
-  "To demonstrate user authentication functionality.",
-  "To showcase content management features.",
-  "To display platform usage statistics.",
+  "To create and authenticate accounts.",
+  "To store, process, play, and share user-submitted content.",
+  "To provide favorites, profiles, and other requested features.",
+  "To troubleshoot failures, prevent abuse, and maintain service security.",
 ];
 
 function BulletList({ items }) {
@@ -32,14 +34,13 @@ export default function PrivacyPage() {
     <StaticPageShell title="Privacy Policy">
       <div className="space-y-6 text-lg">
         <p>
-          TrackFusionWeb is committed to demonstrating good privacy practices as
-          part of this portfolio project. This policy outlines how user data
-          would be handled in a production environment.
+          TrackFusionWeb processes the information needed to operate its account,
+          upload, playback, analysis, profile, and favorites features.
         </p>
 
         <StaticPageCard title="Data Collection">
           <div className="space-y-4">
-            <p>For demonstration purposes, we may collect:</p>
+            <p>The service may collect:</p>
             <BulletList items={collectedData} />
           </div>
         </StaticPageCard>
@@ -48,9 +49,17 @@ export default function PrivacyPage() {
           <BulletList items={dataUsage} />
         </StaticPageCard>
 
+        <StaticPageCard title="Service Providers">
+          <p>
+            TrackFusionWeb relies on hosting, storage, database, and email
+            delivery providers to operate. Information is shared with those
+            providers only as needed to deliver the service.
+          </p>
+        </StaticPageCard>
+
         <p className="mt-6 text-sm">
-          Note: This is a portfolio project, and no actual user data is stored
-          or processed for commercial purposes.
+          Questions about personal information or account deletion can be sent
+          through the Contact page.
         </p>
       </div>
     </StaticPageShell>

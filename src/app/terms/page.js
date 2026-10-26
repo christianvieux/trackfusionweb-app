@@ -6,10 +6,10 @@ import {
 } from "../components/StaticPage";
 
 const usageTerms = [
-  "This is a demonstration project and not a commercial service.",
-  "Features are provided for demonstration purposes only.",
-  "User data may not be permanently stored or secured.",
-  "The service may be modified or terminated at any time.",
+  "Provide accurate account information and keep your credentials private.",
+  "Do not misuse the service, interfere with its operation, or attempt unauthorized access.",
+  "The service is provided as available and may change, experience interruptions, or be discontinued.",
+  "Accounts or content that violate these terms may be removed.",
 ];
 
 const contentGuidelines = [
@@ -33,8 +33,8 @@ export default function TermsPage() {
     <StaticPageShell title="Terms of Service">
       <div className="space-y-6 text-lg">
         <p>
-          This is a portfolio project created for
-          demonstration purposes. By using this service, you acknowledge that:
+          TrackFusionWeb is a portfolio music-sharing service. By creating an
+          account or using the application, you agree to the following terms:
         </p>
 
         <StaticPageCard title="Usage Terms">
