@@ -1,6 +1,12 @@
 # TrackFusionWeb Frontend
 
-TrackFusionWeb is a responsive music-sharing application for uploading, discovering, playing, analyzing, favoriting, and sharing audio tracks. This repository contains the Next.js frontend for [trackfusionweb.com](https://trackfusionweb.com); the Express API is maintained in the separate [TrackFusion-Backend](https://github.com/christianvieux/TrackFusion-Backend) repository.
+TrackFusionWeb is a responsive music-sharing application for uploading, discovering, playing, analyzing, favoriting, and sharing audio tracks. This repository contains the Next.js frontend.
+
+🌐 **Live application:** [TrackFusionWeb](https://trackfusionweb.com)
+
+⚙️ **Backend API repository:** [trackfusionweb-api](https://github.com/christianvieux/trackfusionweb-api)
+
+The production API is available at [api.trackfusionweb.com](https://api.trackfusionweb.com).
 
 ## Architecture
 
