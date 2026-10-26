@@ -1,184 +1,151 @@
-// src/services/tracks.js
-import axios from 'axios';
-import Fake_Data from './fake_tracks';
-import { awsUploadService } from './awsService';
-import getApiBaseUrl from '../utils/getApiBaseUrl';
-// API base URL
-const API_BASE_URL = getApiBaseUrl();
+import { apiClient, toApiError } from "./apiClient";
+import { awsUploadService } from "./awsService";
 
 export const uploadStates = {
-  PREPARING: 'PREPARING',
-  UPLOADING: 'UPLOADING',
-  PROCESSING: 'PROCESSING',
-  COMPLETED: 'COMPLETED'
+  PREPARING: "PREPARING",
+  UPLOADING: "UPLOADING",
+  PROCESSING: "PROCESSING",
+  COMPLETED: "COMPLETED",
 };
 
-export const fetchRecentTracks = async () => {
-  try {
-    const response = await axios.get(`${API_BASE_URL}/tracks/public`, { withCredentials: true });
+const MAX_UPLOAD_STATUS_CHECKS = 60;
+const UPLOAD_STATUS_INTERVAL_MS = 5_000;
 
-    console.log('response', response.data);
-    return response.data;
-    // return Fake_Data();
-  } catch (error) {
-    if (error.response && error.response.data && error.response.data.error) {
-      throw new Error(error.response.data.error);
-    } else {
-      throw new Error('Failed to fetch recent tracks. Please try again.');
-    }
-  }
-};
+function encodePathSegment(value) {
+  return encodeURIComponent(String(value));
+}
 
-export const updateTrack = async (trackId, updatedData) => {
+function delay(duration) {
+  return new Promise((resolve) => setTimeout(resolve, duration));
+}
+
+export async function fetchRecentTracks() {
   try {
-    const response = await axios.put(`${API_BASE_URL}/tracks/${trackId}`, updatedData, { withCredentials: true });
+    const response = await apiClient.get("/tracks/public");
     return response.data;
   } catch (error) {
-    if (error.response && error.response.data && error.response.data.error) {
-      throw new Error(error.response.data.error);
-    } else {
-      throw new Error('Failed to update track. Please try again.');
-    }
+    throw toApiError(error, "Failed to fetch recent tracks. Please try again.");
   }
-};
+}
 
-export const fetchPopularTracks = async () => {
+export async function updateTrack(trackId, updatedData) {
   try {
-    const response = await axios.get(`${API_BASE_URL}/tracks/popular`, { withCredentials: true });
+    const response = await apiClient.put(
+      `/tracks/${encodePathSegment(trackId)}`,
+      updatedData,
+    );
     return response.data;
   } catch (error) {
-    if (error.response && error.response.data && error.response.data.error) {
-      throw new Error(error.response.data.error);
-    } else {
-      throw new Error('Failed to fetch popular tracks. Please try again.');
-    }
+    throw toApiError(error, "Failed to update track. Please try again.");
   }
-};
+}
 
-const pollUploadStatus = async (jobId, onProgressChange) => {
-  const MAX_RETRIES = 60; // 5 minutes total with 5s interval
-  const POLL_INTERVAL = 5000; // 5 seconds
-  let retries = 0;
+async function pollUploadStatus(jobId, onProgressChange) {
+  const encodedJobId = encodePathSegment(jobId);
 
-  while (retries < MAX_RETRIES) {
-    const { data: status } = await axios.get(`${API_BASE_URL}/upload/track-status/${jobId}`);
+  for (let attempt = 0; attempt < MAX_UPLOAD_STATUS_CHECKS; attempt += 1) {
+    const { data: status } = await apiClient.get(
+      `/upload/track-status/${encodedJobId}`,
+    );
 
-    switch (status.state) {
-      case 'completed':
-        return status.result;
-      case 'failed':
-        console.log('Upload failed:', status);
-        throw new Error(status.error);
-      case 'active':
-        onProgressChange?.(uploadStates.PROCESSING, status.progress);
-        break;
+    if (status.state === "completed") return status.result;
+
+    if (status.state === "failed") {
+      throw new Error(status.error || "Track processing failed");
     }
 
-    await new Promise(resolve => setTimeout(resolve, POLL_INTERVAL));
-    retries++;
+    if (status.state === "active") {
+      onProgressChange?.(uploadStates.PROCESSING, status.progress);
+    }
+
+    await delay(UPLOAD_STATUS_INTERVAL_MS);
   }
 
-  throw new Error('Upload processing timed out');
-};
+  throw new Error("Upload processing timed out");
+}
 
-export const uploadTrack = async (formData, onProgressChange) => {
+async function createPresignedUpload(file, type) {
+  if (!file) return undefined;
+
+  const { data } = await apiClient.post("/aws/presigned-url", {
+    fileName: file.name,
+    contentType: file.type,
+    type,
+  });
+
+  return data;
+}
+
+export async function uploadTrack(formData, onProgressChange) {
   try {
-    // 1. Prepare file info for presigned URLs
     onProgressChange?.(uploadStates.PREPARING);
-    const fileInfo = {
-      trackFileName: formData.get("trackFile").name,
-      imageFileName: formData.get("imageFile")?.name,
-      contentTypes: {
-        track: formData.get("trackFile").type,
-        image: formData.get("imageFile")?.type,
-      },
-    };
 
-    // 2. Get presigned URLs
-    const [trackUrl, trackCoverUrl] = await Promise.all([
-      fileInfo.trackFileName && axios.post(`${API_BASE_URL}/aws/presigned-url`, { fileName: fileInfo.trackFileName, type: 'track' })
-      .then(({ data }) => data),
-      fileInfo.imageFileName && axios.post(`${API_BASE_URL}/aws/presigned-url`, {fileName: fileInfo.imageFileName, type: 'image'})
-      .then(({ data }) => data)
+    const trackFile = formData.get("trackFile");
+    const imageFile = formData.get("imageFile");
+
+    if (!(trackFile instanceof File)) {
+      throw new Error("Choose an audio file before uploading");
+    }
+
+    const [trackUrl, imageUrl] = await Promise.all([
+      createPresignedUpload(trackFile, "track"),
+      imageFile instanceof File
+        ? createPresignedUpload(imageFile, "image")
+        : undefined,
     ]);
 
-    // 3. Upload files to S3
     onProgressChange?.(uploadStates.UPLOADING);
     await Promise.all([
-      awsUploadService.uploadToS3(trackUrl.uploadUrl, formData.get("trackFile")),
-      formData.get("imageFile") &&
-        awsUploadService.uploadToS3(trackCoverUrl.uploadUrl, formData.get("imageFile")),
+      awsUploadService.uploadToS3(trackUrl.uploadUrl, trackFile),
+      imageFile instanceof File
+        ? awsUploadService.uploadToS3(imageUrl.uploadUrl, imageFile)
+        : undefined,
     ]);
 
-    // 4. Finalize upload
     onProgressChange?.(uploadStates.PROCESSING);
-    const { jobId } = (await axios.post(`${API_BASE_URL}/upload/track`, {
-      trackUrl: trackUrl,
-      imageUrl: trackCoverUrl,
+    const { data } = await apiClient.post("/upload/track", {
+      trackUrl,
+      imageUrl,
       name: formData.get("name"),
       artist: formData.get("artist"),
       description: formData.get("description"),
       genre: formData.get("genre"),
       mood: formData.get("mood"),
-      bpm: formData.get("bpm"),
-      is_private: formData.get("is_private"),
+      bpm: formData.get("bpm") || null,
+      is_private: formData.get("is_private") === "true",
       category: formData.get("category"),
-    })).data;
+    });
 
-    // 5. Poll for completion
-    const track = await pollUploadStatus(jobId, onProgressChange);
+    const track = await pollUploadStatus(data.jobId, onProgressChange);
     onProgressChange?.(uploadStates.COMPLETED);
 
     return track;
   } catch (error) {
-    throw new Error(error.response?.data?.error || error.message || "Failed to upload track");
+    throw toApiError(error, error.message || "Failed to upload track");
   }
-};
+}
 
-export const testResponseTime = async () => {
+export async function fetchAuthorizedUrl(trackId) {
   try {
-    const response = await axios.post(
-      `/api/tracks/test`, 
-      { 
-        withCredentials: true 
-      },
-      { timeout: 60000 } // Set timeout to 60 second
+    const response = await apiClient.get(
+      `/tracks/${encodePathSegment(trackId)}/authorized-url`,
     );
-    
     return response.data;
   } catch (error) {
-    if (error.response && error.response.data && error.response.data.error) {
-      throw new Error(error.response.data.error);
-    } else {
-      throw new Error('Failed. Response time :( ');
-    }
+    throw toApiError(
+      error,
+      "Failed to prepare this track for playback. Please try again.",
+    );
   }
 }
 
-export const fetchAuthorizedUrl = async (trackId) => {
+export async function fetchTrack(trackId) {
   try {
-    const response = await axios.get(`${API_BASE_URL}/tracks/${trackId}/authorized-url`, { withCredentials: true });
-    
+    const response = await apiClient.get(
+      `/tracks/${encodePathSegment(trackId)}`,
+    );
     return response.data;
   } catch (error) {
-    if (error.response && error.response.data && error.response.data.error) {
-      throw new Error(error.response.data.error);
-    } else {
-      throw new Error('Failed to fetch authorized URL. Please try again.');
-    }
+    throw toApiError(error, "Failed to fetch track. Please try again.");
   }
 }
-
-export const fetchTrack = async (trackId) => {
-  try {
-    const response = await axios.get(`${API_BASE_URL}/tracks/${trackId}`, { withCredentials: true });
-    return response.data;
-    // return Fake_Data()[0];
-  } catch (error) {
-    if (error.response && error.response.data && error.response.data.error) {
-      throw new Error(error.response.data.error);
-    } else {
-      throw new Error('Failed to fetch track. Please try again.');
-    }
-  }
-};

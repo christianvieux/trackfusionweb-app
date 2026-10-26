@@ -1,28 +1,21 @@
 // context/TrackListContext.js
 
-import React, { createContext, useState, useContext, useEffect, useMemo } from 'react';
-import PropTypes from 'prop-types';
+import React, { createContext, useState, useContext, useMemo } from "react";
 
-const TrackListContext = createContext([]);
+const TrackListContext = createContext({
+  trackList: [],
+  setTrackList: () => {},
+});
 
 export const TrackListProvider = ({ children, initialTrackList = [] }) => {
-    const [trackList, setTrackList] = useState(initialTrackList);
-    const value = useMemo(() => ({ trackList, setTrackList }), [trackList]);
+  const [trackList, setTrackList] = useState(initialTrackList);
+  const value = useMemo(() => ({ trackList, setTrackList }), [trackList]);
 
-    // useEffect(() => {
-    //     setTrackList(initialTrackList);
-    // }, [initialTrackList]);
-
-    return (
-        <TrackListContext.Provider value={value}>
-            {children}
-        </TrackListContext.Provider>
-    );
-};
-
-TrackListProvider.propTypes = {
-    children: PropTypes.node.isRequired,
-    initialTrackList: PropTypes.array
+  return (
+    <TrackListContext.Provider value={value}>
+      {children}
+    </TrackListContext.Provider>
+  );
 };
 
 export const useTrackList = () => useContext(TrackListContext);

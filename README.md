@@ -1,139 +1,79 @@
-# TrackFusion Frontend
+# TrackFusionWeb Frontend
 
-A modern music streaming interface built with Next.js, designed to provide an engaging user experience for music discovery and playback.
+TrackFusionWeb is a responsive music-sharing application for uploading, discovering, playing, analyzing, favoriting, and sharing audio tracks. This repository contains the Next.js frontend.
 
-## Live Demo
+🌐 **Live application:** [TrackFusionWeb](https://trackfusionweb.com)
 
-here: https://trackfusionweb.vercel.app/home
+⚙️ **Backend API repository:** [trackfusionweb-api](https://github.com/christianvieux/trackfusionweb-api)
 
-## Backend Repository
+The production API is available at [api.trackfusionweb.com](https://api.trackfusionweb.com).
 
-here: https://github.com/christianvieux/TrackFusion-Backend
+## Architecture
 
----
+- Next.js 16 App Router and React 19
+- HeroUI components with Tailwind CSS 4
+- Axios API client with credentialed cookie authentication
+- Direct browser uploads through API-issued Amazon S3 presigned URLs
+- Client contexts for session, favorites, playback, queue, and track state
+- Vercel hosting, with the browser calling `https://api.trackfusionweb.com` directly
 
-## Quick Start
+No cloud credentials or backend secrets belong in this repository. Values prefixed with `NEXT_PUBLIC_` are embedded in the browser bundle and must be treated as public configuration.
 
-Set up your development environment in a few simple steps:
+## Local development
+
+Requirements: Node.js 20.9 or newer and npm.
 
 ```bash
-# Get the code
-git clone https://github.com/christianvieux/TrackFusion-Frontend.git
-cd trackfusion-frontend
-
-# IMPORTANT: This project depends on the backend API
-# Make sure you clone and run the backend as well:
-# https://github.com/christianvieux/TrackFusion-Backend
-
-# Install dependencies
-npm install
-
-# Set up environment variables
+npm ci
 cp .env.example .env.local
-
-# Start development
 npm run dev
 ```
 
-Visit [http://localhost:3001](http://localhost:3001) to see your application.
+The frontend runs at [http://localhost:3001](http://localhost:3001). The default local API URL is `http://localhost:3000`, which matches the backend’s default port.
 
----
+### Environment variables
 
-## Environment Configuration
+| Variable                            | Required                   | Purpose                                                                                                               |
+| ----------------------------------- | -------------------------- | --------------------------------------------------------------------------------------------------------------------- |
+| `NEXT_PUBLIC_API_URL`               | Production                 | Absolute backend origin; use `https://api.trackfusionweb.com` in Vercel. Do not add `/api`.                           |
+| `NEXT_PUBLIC_SITE_URL`              | Recommended                | Canonical frontend origin used for metadata and share links. Production defaults to `https://trackfusionweb.com`.     |
+| `NEXT_PUBLIC_ALLOWED_IMAGE_DOMAINS` | When API images are remote | Comma-separated hostnames permitted by Next.js image optimization. Include every S3/CDN hostname returned by the API. |
+| `NEXT_PUBLIC_ALLOWED_IMAGE_TYPES`   | Optional                   | Comma-separated upload MIME types; built-in defaults cover JPEG, PNG, WebP, HEIC, and HEIF.                           |
+| `NEXT_PUBLIC_ALLOWED_AUDIO_TYPES`   | Optional                   | Comma-separated upload MIME types; built-in defaults cover MP3, WAV, OGG, M4A, and AAC.                               |
 
-The included `.env.example` file contains the necessary configuration for local development:
+Restart the development server after changing `.env.local`. Vercel must rebuild the application after a public environment variable changes.
 
-```plaintext
-# API and URL Configuration
-API_URL=YourAPIURL # Example: http://localhost:3000
-NEXT_PUBLIC_FRONTEND_URL=YourFrontendURL # Example: http://localhost:3001
+## Quality checks
 
-# Supported File Types
-NEXT_PUBLIC_ALLOWED_AUDIO_TYPES=audio/mp3,audio/wav,audio/wave,audio/mpeg,audio/ogg,audio/x-wav,audio/x-m4a,audio/aac
-NEXT_PUBLIC_ALLOWED_IMAGE_TYPES=image/jpeg,image/jpg,image/png,image/heic,image/heif
+```bash
+npm run lint
+npm test
+npm run build
 ```
 
-### Important Notes
+`npm run check` runs all three checks. A GitHub Actions workflow applies the same gate to pull requests and pushes to `main`.
 
-* `API_URL` must match your running backend server
-* If your backend isn’t running, most features will break (auth, uploads, music data, etc.)
+## Production deployment
 
----
+Connect this repository to Vercel and select `main` as the production branch. Vercel detects Next.js automatically; no custom build command or separate deployment infrastructure is required.
 
-## Development Notes
+Set these production values in Vercel before the first deployment:
 
-The frontend connects to the TrackFusion backend API for:
+```text
+NEXT_PUBLIC_API_URL=https://api.trackfusionweb.com
+NEXT_PUBLIC_SITE_URL=https://trackfusionweb.com
+NEXT_PUBLIC_ALLOWED_IMAGE_DOMAINS=<comma-separated API image hostnames>
+```
 
-* User authentication
-* Music upload and streaming
-* Playlist and track management
-* Image and audio handling
+The backend must also allow the production frontend origin and generate reset links for it. In the backend environment, verify:
 
-Before running locally:
+```text
+FRONTEND_URL=https://trackfusionweb.com
+CORS_ALLOWED_ORIGINS=https://trackfusionweb.com
+COOKIE_SECURE=true
+COOKIE_SAME_SITE=lax
+```
 
-1. Clone the backend repo
-   [https://github.com/christianvieux/TrackFusion-Backend](https://github.com/christianvieux/TrackFusion-Backend)
+Leave `COOKIE_DOMAIN` unset. `lax` is sufficient for the same-site `trackfusionweb.com` and `api.trackfusionweb.com` production origins. Authenticated Vercel preview deployments use a cross-site `vercel.app` origin and require both that exact preview origin in CORS and `COOKIE_SAME_SITE=none`; use that broader setting only if preview authentication is needed.
 
-2. Start the backend server
-
-3. Make sure your `.env.local` matches your backend URL
-
----
-
-## Tech Stack
-
-* **Framework**: Next.js 16
-* **UI Library**: React 19 with HeroUI
-* **Styling**: Tailwind CSS 4
-* **Animations**: Framer Motion
-* **HTTP Client**: Axios
-* **Search**: Fuse.js
-* **Audio Visualization**: AudioMotion Analyzer
-* **Image Processing**: browser-image-compression
-* **Carousel**: Embla Carousel
-* **Notifications**: React Hot Toast
-
----
-
-## Features
-
-### User Experience
-* **Music Discovery**: Browse and search music with fuzzy search functionality
-* **Audio Playback**: Interactive audio player with visualizer and playback controls
-* **User Authentication**: Secure login/signup with password reset capabilities
-* **User Profiles**: Customizable profile with picture uploads and settings management
-
-### Track Management
-* **Upload & Configuration**: Upload audio and image files with metadata editing
-* **Favorites System**: Save and organize favorite tracks
-* **Track Sharing**: Share tracks via modal with social features
-* **Playlist Support**: Create and manage personal music collections
-
-### Advanced Features
-* **Audio Visualization**: Real-time audio spectrum analysis
-* **Track Analysis**: Detailed track attribute visualization and statistics
-* **Image Processing**: Optimized image compression for efficient uploads
-* **Responsive Design**: Mobile-optimized interface with smooth animations
-
----
-
-## Project Links
-
-Frontend Live Site:
-[https://trackfusionweb.vercel.app/home](https://trackfusionweb.vercel.app/home)
-
-Frontend Repository:
-[https://github.com/christianvieux/TrackFusion-Frontend](https://github.com/christianvieux/TrackFusion-Frontend)
-
-Backend Repository:
-[https://github.com/christianvieux/TrackFusion-Backend](https://github.com/christianvieux/TrackFusion-Backend)
-
----
-
-## Questions?
-
-Reach out through:
-
-* Email: [christianvieux.dev@gmail.com](mailto:christianvieux.dev@gmail.com)
-* LinkedIn: [https://www.linkedin.com/in/christian-vieux-dev/](https://www.linkedin.com/in/christian-vieux-dev/)
-* GitHub: [https://github.com/christianvieux](https://github.com/christianvieux)
+After deployment, manually verify login/session/logout, password reset links, track and profile-image uploads, audio analysis, playback, favorites, and remote image rendering against the production API.

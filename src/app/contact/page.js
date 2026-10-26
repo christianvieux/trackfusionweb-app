@@ -1,6 +1,6 @@
 import React from "react";
 import { Mail } from "lucide-react";
-import GithubIcon from "../components/Icons/GitHubIcon" 
+import GithubIcon from "../components/Icons/GitHubIcon";
 import LinkedinIcon from "../components/Icons/LinkedInIcon";
 
 import {
@@ -45,7 +45,7 @@ export default function ContactPage() {
       <div className="mb-12 space-y-6 text-lg">
         <p>
           Thank you for exploring TrackFusion. As a full stack web developer,
-          I'm always interested in discussing new opportunities, receiving
+          I&apos;m always interested in discussing new opportunities, receiving
           feedback on my projects, or engaging in technical discussions about
           web development.
         </p>
@@ -64,11 +64,11 @@ export default function ContactPage() {
 
         <StaticPageCard title="About This Project" className="p-8">
           <p>
-            TrackFusionWeb is part of my web development portfolio, demonstrating
-            expertise in:
+            TrackFusionWeb is part of my web development portfolio,
+            demonstrating expertise in:
           </p>
 
-          <div className="mt-4 grid grid-cols-2 gap-4 text-primary">
+          <div className="text-primary mt-4 grid grid-cols-2 gap-4">
             {projectSkills.map((skill) => (
               <div key={skill}>• {skill}</div>
             ))}
@@ -76,9 +76,7 @@ export default function ContactPage() {
         </StaticPageCard>
       </div>
 
-      <StaticPageButton href="/home">
-        Back to Home
-      </StaticPageButton>
+      <StaticPageButton href="/home">Back to Home</StaticPageButton>
     </StaticPageShell>
   );
 }

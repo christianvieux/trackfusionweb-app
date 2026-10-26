@@ -1,22 +1,19 @@
 // src/app/components/updateProfilePictureForm.js
 
 import React, { useState, useEffect } from "react";
-import { 
-  Button, 
-} from "@heroui/react";
+import { Button } from "@heroui/react";
 import ImageIcon from "./Icons/ImageIcon.js";
 import withAuth from "../hoc/withAuth.js";
-import { updateProfilePicture } from "../services/authService.js"
-import Avatar from "./Avatar.js"
-import imageCompression from 'browser-image-compression';
+import { updateProfilePicture } from "../services/authService.js";
+import { ALLOWED_IMAGE_TYPES } from "../utils/fileTypes";
+import Avatar from "./Avatar.js";
+import imageCompression from "browser-image-compression";
 
-const ALLOWED_IMAGE_TYPES = process.env.NEXT_PUBLIC_ALLOWED_IMAGE_TYPES.split(',');
-
-function ProfilePictureUpload({ 
-  initialProfilePicture = null, 
-  onSubmit= async () => {}, 
+function ProfilePictureUpload({
+  initialProfilePicture = null,
+  onSubmit = async () => {},
   isInitialSetup = false,
-  className="",
+  className = "",
   ...props
 }) {
   const [imageFile, setImageFile] = useState(null);
@@ -54,7 +51,7 @@ function ProfilePictureUpload({
         }
       } else {
         setError(
-          `Invalid file type. Please select a valid image file (${ALLOWED_IMAGE_TYPES.map(type => '.' + type.split('/')[1]).join(", ")}).`
+          `Invalid file type. Please select a valid image file (${ALLOWED_IMAGE_TYPES.map((type) => "." + type.split("/")[1]).join(", ")}).`,
         );
       }
     }
@@ -62,7 +59,7 @@ function ProfilePictureUpload({
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     if (!imageFile) {
       setError("Please select a profile picture.");
       return;
@@ -72,12 +69,9 @@ function ProfilePictureUpload({
     setError(null);
 
     try {
-      const response = await updateProfilePicture(imageFile, (state, progress) => {
-        // Optional: Handle upload state changes
-        console.log('Upload state:', state, progress);
-      });
+      const response = await updateProfilePicture(imageFile);
 
-      await onSubmit(response)
+      await onSubmit(response);
       // Reset state after successful upload
       setImageFile(null);
     } catch (error) {
@@ -100,25 +94,25 @@ function ProfilePictureUpload({
   }, [initialProfilePicture, imageFile]);
 
   return (
-    <div className={`min-h-80 w-80 self-center rounded-md border-2 border-gray-dark bg-black/60 p-4 text-green ${className}`} {...props}>
-      <form 
+    <div
+      className={`border-gray-dark text-green min-h-80 w-80 self-center rounded-md border-2 bg-black/60 p-4 ${className}`}
+      {...props}
+    >
+      <form
         encType="multipart/form-data"
         className="flex size-full flex-col gap-2"
         onSubmit={handleSubmit}
       >
         {/* Preview Area */}
-        <div className="flex justify-center mb-4">
-          <Avatar 
-            src={previewImage} 
-            className="w-32 h-32"
-          />
+        <div className="mb-4 flex justify-center">
+          <Avatar src={previewImage} className="h-32 w-32" />
         </div>
 
         {/* File Upload */}
-        <label className="flex grow justify-center rounded-lg border-2 border-dashed border-gray/70 bg-gray-darkest/50 p-4">
+        <label className="border-gray/70 bg-gray-darkest/50 flex grow justify-center rounded-lg border-2 border-dashed p-4">
           <input
             name="profilePicture"
-            className="hidden text-green"
+            className="text-green hidden"
             type="file"
             accept={ALLOWED_IMAGE_TYPES.join(",")}
             onChange={handleImageChange}
@@ -126,37 +120,35 @@ function ProfilePictureUpload({
           <div className="flex gap-2">
             <ImageIcon className="size-6" />
             <span>
-              {isInitialSetup 
-                ? "Upload Profile Picture" 
+              {isInitialSetup
+                ? "Upload Profile Picture"
                 : "Change Profile Picture"}
             </span>
           </div>
         </label>
 
         {imageFile && (
-          <div className="grow text-wrap p-2">
+          <div className="grow p-2 text-wrap">
             <p className="float-start pr-2 font-bold">Selected Image:</p>
             <p className="truncate">{imageFile.name}</p>
           </div>
         )}
 
-        {error && (
-          <p className="text-center text-red">
-            {error}
-          </p>
-        )}
+        {error && <p className="text-red text-center">{error}</p>}
 
         {/* Submit and Cancel Buttons */}
-        <div className="mt-4 flex grow gap-2 text-green">
+        <div className="text-green mt-4 flex grow gap-2">
           <Button
             variant="ghost"
             type="submit"
             isLoading={isUploading}
             isDisabled={!imageFile || isUploading}
           >
-            {isUploading 
-              ? "Uploading..." 
-              : (isInitialSetup ? "Set Profile Picture" : "Update Profile Picture")}
+            {isUploading
+              ? "Uploading..."
+              : isInitialSetup
+                ? "Set Profile Picture"
+                : "Update Profile Picture"}
           </Button>
           <Button
             variant="ghost"

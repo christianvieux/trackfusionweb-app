@@ -26,35 +26,34 @@ export default function useQueueTrackDrag({
   const [dragPosition, setDragPosition] = useState({ x: 0, y: 0 });
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
   const [isDragging, setIsDragging] = useState(false);
+  const [cardRect, setCardRect] = useState(null);
 
-  const updateDropPlacement = useRafDebounce(
-    (event) => {
-      if (!canDrag) return;
+  const updateDropPlacement = useRafDebounce((event) => {
+    if (!canDrag) return;
 
-      setState((previousState) => {
-        const draggedTrack = previousState.itemBeingDragged;
+    setState((previousState) => {
+      const draggedTrack = previousState.itemBeingDragged;
 
-        if (!draggedTrack || isSameQueueItem(draggedTrack, track)) {
-          return previousState;
-        }
+      if (!draggedTrack || isSameQueueItem(draggedTrack, track)) {
+        return previousState;
+      }
 
-        if (shouldIgnoreDropPlacement(event, cardRef.current)) {
-          return previousState;
-        }
+      if (shouldIgnoreDropPlacement(event, cardRef.current)) {
+        return previousState;
+      }
 
-        return {
-          ...previousState,
-          lastItemHovered: track,
-          placementDrop: getDropPlacement(event, cardRef.current),
-        };
-      });
-    },
-    [canDrag, track, setState],
-  );
+      return {
+        ...previousState,
+        lastItemHovered: track,
+        placementDrop: getDropPlacement(event, cardRef.current),
+      };
+    });
+  });
 
   const handleMouseEnter = useCallback(
     (event) => {
       setIsHovered(true);
+      setCardRect(cardRef.current?.getBoundingClientRect() || null);
 
       setState((previousState) => {
         const nextState = {
@@ -133,8 +132,10 @@ export default function useQueueTrackDrag({
       if (!hasMovedPastThreshold) return;
 
       if (canDrag && !isDragging) {
-        const rect = cardRef.current.getBoundingClientRect();
+        const rect = cardRef.current?.getBoundingClientRect();
+        if (!rect) return;
 
+        setCardRect(rect);
         setDragOffset({
           x: event.clientX - rect.left,
           y: event.clientY - rect.top,
@@ -154,14 +155,7 @@ export default function useQueueTrackDrag({
         y: event.clientY,
       });
     },
-    [
-      isPressedDown,
-      initialClickPosition,
-      canDrag,
-      isDragging,
-      track,
-      setState,
-    ],
+    [isPressedDown, initialClickPosition, canDrag, isDragging, track, setState],
   );
 
   const handleGlobalMouseUp = useCallback(() => {
@@ -198,6 +192,7 @@ export default function useQueueTrackDrag({
     isDragging,
     dragPosition,
     dragOffset,
+    cardRect,
     handleMouseDown,
     handleMouseEnter,
     handleMouseLeave,

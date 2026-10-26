@@ -1,172 +1,129 @@
-// src/services/user.js
-import axios from "axios";
-import getApiBaseUrl from '../utils/getApiBaseUrl';
+import { apiClient, toApiError } from "./apiClient";
 
-const API_BASE_URL = getApiBaseUrl();
+function encodePathSegment(value) {
+  return encodeURIComponent(String(value));
+}
 
-
-export const deleteOwnedTrack = async (trackId) => {
+export async function deleteOwnedTrack(trackId) {
   try {
-    const response = await axios.delete(
-      `${API_BASE_URL}/tracks/${trackId}`,
-      {
-        data: {
-          trackId
-        },
-        withCredentials: true
-      }
+    const response = await apiClient.delete(
+      `/tracks/${encodePathSegment(trackId)}`,
     );
-
     return response.data;
   } catch (error) {
-    if (error.response && error.response.data && error.response.data.error) {
-      throw new Error(error.response.data.error); // Throw error with backend message
-    } else {
-      throw new Error("An unexpected error occurred. Please try again."); // Generic error message
-    }
-  }
-};
-
-export const removeFavoriteTrack = async (trackId, userId) => {
-  try {
-    const response = await axios.delete(
-      `${API_BASE_URL}/tracks/favorites`,
-      {
-        data: { userId, trackId },
-        withCredentials: true
-      }
-    );
-    return true; //response.data;
-  } catch (error) {
-    if (error.response && error.response.data && error.response.data.error) {
-      throw new Error(error.response.data.error); // Throw error with backend message
-    } else {
-      throw new Error("An unexpected error occurred. Please try again."); // Generic error message
-    }
-  }
-};
-
-export const addFavoriteTrack = async (trackId, userId) => {
-  try {
-    const response = await axios.post(
-      `${API_BASE_URL}/tracks/favorites`,
-      { trackId, userId },
-      { withCredentials: true }
-    );
-    return true; //response.data;
-  } catch (error) {
-    if (error.response && error.response.data && error.response.data.error) {
-      throw new Error(error.response.data.error); // Throw error with backend message
-    } else {
-      throw new Error("An unexpected error occurred. Please try again."); // Generic error message
-    }
-  }
-};
-
-export const fetchFavoriteTracks = async (userId) => {
-  try {
-    const response = await axios.get(`${API_BASE_URL}/tracks/favorites`, {
-      params: { userId }, // Correctly pass userId as part of the params object
-      withCredentials: true,
-    });
-    return response.data;
-  } catch (error) {
-    if (error.response && error.response.data && error.response.data.error) {
-      throw new Error(error.response.data.error); // Throw error with backend message
-    } else {
-      throw new Error(
-        "An unexpected error occurred trying to get favorite tracks. Please try again."
-      ); // Generic error message
-    }
-  }
-};
-
-export const fetchOwnedTracks = async (userId) => {
-  try {
-    const response = await axios.get(`${API_BASE_URL}/tracks/user`, {
-      params: { userId }, // Correctly pass userId as part of the params object
-      withCredentials: true,
-    });
-
-    console.log(response.data);
-
-    return response.data;
-  } catch (error) {
-    if (error.response && error.response.data && error.response.data.error) {
-      throw new Error(error.response.data.error); // Throw error with backend message
-    } else {
-      throw new Error(
-        "An unexpected error occurred trying to get owned tracks. Please try again."
-      ); // Generic error message
-    }
-  }
-};
-
-export const register = async (email, username, password, otp_code) => {
-  try {
-    const response = await axios.post(`${API_BASE_URL}/users/register`, { email, username, password, otp_code }, { withCredentials: true });
-
-    return response.data;
-  } catch (error) {
-    if (error.response && error.response.data && error.response.data.error) {
-      throw new Error(error.response.data.error); // Throw error with backend message
-    } else {
-      throw new Error('Failed to complete registration. Please try again.'); // Generic error message
-    }
-  }
-};
-
-export const checkEmail = async (email) => {
-  try {
-    const response = await axios.post(`${API_BASE_URL}/users/check-email`, { email }, { withCredentials: true });
-    
-    return response.data;
-  } catch (error) {
-    if (error.response && error.response.data && error.response.data.error) {
-      throw new Error(error.response.data.error); // Throw error with backend message
-    } else {
-      throw new Error('Failed to check email. Please try again.'); // Generic error message
-    }
+    throw toApiError(error, "Failed to delete the track. Please try again.");
   }
 }
 
-export const fetchPublicUserInfo = async (userId) => {
+export async function removeFavoriteTrack(trackId) {
   try {
-    const response = await axios.get(`${API_BASE_URL}/users/info/${userId}`, { withCredentials: true });
+    await apiClient.delete("/tracks/favorites", { data: { trackId } });
+    return true;
+  } catch (error) {
+    throw toApiError(
+      error,
+      "Failed to remove the track from favorites. Please try again.",
+    );
+  }
+}
 
+export async function addFavoriteTrack(trackId) {
+  try {
+    await apiClient.post("/tracks/favorites", { trackId });
+    return true;
+  } catch (error) {
+    throw toApiError(
+      error,
+      "Failed to add the track to favorites. Please try again.",
+    );
+  }
+}
+
+export async function fetchFavoriteTracks() {
+  try {
+    const response = await apiClient.get("/tracks/favorites");
     return response.data;
   } catch (error) {
-    if (error.response && error.response.data && error.response.data.error) {
-      throw new Error(error.response.data.error); // Throw error with backend message
-    } else {
-      throw new Error('Failed to get user information. Please try again.'); // Generic error message
-    }
+    throw toApiError(
+      error,
+      "Failed to load favorite tracks. Please try again.",
+    );
   }
-};
+}
 
-
-export const fetchUserPublicFavoriteTracks = async (userId) => {
+export async function fetchOwnedTracks() {
   try {
-    const response = await axios.get(`${API_BASE_URL}/public/favorite-tracks/${userId}`, { withCredentials: true });
+    const response = await apiClient.get("/tracks/user");
     return response.data;
   } catch (error) {
-    if (error.response && error.response.data && error.response.data.error) {
-      throw new Error(error.response.data.error);
-    } else {
-      throw new Error('Failed to fetch popular tracks. Please try again.');
-    }
+    throw toApiError(error, "Failed to load your tracks. Please try again.");
   }
-};
+}
 
-export const fetchUserPublicTracks = async (userId) => {
+export async function register(email, username, password, otpCode) {
   try {
-    const response = await axios.get(`${API_BASE_URL}/public/tracks/${userId}`, { withCredentials: true });
+    const response = await apiClient.post("/users/register", {
+      email,
+      username,
+      password,
+      otp_code: otpCode,
+    });
     return response.data;
   } catch (error) {
-    if (error.response && error.response.data && error.response.data.error) {
-      throw new Error(error.response.data.error);
-    } else {
-      throw new Error('Failed to fetch popular tracks. Please try again.');
-    }
+    throw toApiError(
+      error,
+      "Failed to complete registration. Please try again.",
+    );
   }
-};
+}
+
+export async function checkEmail(email) {
+  try {
+    const response = await apiClient.post("/users/check-email", { email });
+    return response.data;
+  } catch (error) {
+    throw toApiError(error, "Failed to check email. Please try again.");
+  }
+}
+
+export async function fetchPublicUserInfo(userId) {
+  try {
+    const response = await apiClient.get(
+      `/users/info/${encodePathSegment(userId)}`,
+    );
+    return response.data;
+  } catch (error) {
+    throw toApiError(
+      error,
+      "Failed to get user information. Please try again.",
+    );
+  }
+}
+
+export async function fetchUserPublicFavoriteTracks(userId) {
+  try {
+    const response = await apiClient.get(
+      `/public/favorite-tracks/${encodePathSegment(userId)}`,
+    );
+    return response.data;
+  } catch (error) {
+    throw toApiError(
+      error,
+      "Failed to load this user’s favorite tracks. Please try again.",
+    );
+  }
+}
+
+export async function fetchUserPublicTracks(userId) {
+  try {
+    const response = await apiClient.get(
+      `/public/tracks/${encodePathSegment(userId)}`,
+    );
+    return response.data;
+  } catch (error) {
+    throw toApiError(
+      error,
+      "Failed to load this user’s tracks. Please try again.",
+    );
+  }
+}

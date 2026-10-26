@@ -1,31 +1,61 @@
-//app/layout.js
-// .css file
 import "../../public/css/global.css";
-import React from "react";
-import App from "./components/app.js";
-import { SessionProvider } from "./context/SessionContext.js";
-import { UserInfoProvider } from "./context/UserInfoContext";
-import { DynamicStyles } from "./components/DynamicStyles";
-import { TrackEventsProvider } from "./context/TrackEventsContext";
+import "../../public/css/shooting_stars.css";
 
-const RootLayout = ({ children }) => {
+import App from "./components/app";
+import { SessionProvider } from "./context/SessionContext";
+import { TrackEventsProvider } from "./context/TrackEventsContext";
+import { UserInfoProvider } from "./context/UserInfoContext";
+import { getSiteUrl } from "./utils/getSiteUrl";
+
+export const metadata = {
+  metadataBase: new URL(getSiteUrl()),
+  title: {
+    default: "TrackFusionWeb",
+    template: "%s | TrackFusionWeb",
+  },
+  description:
+    "Upload, discover, play, analyze, save, and share music with TrackFusionWeb.",
+  applicationName: "TrackFusionWeb",
+  alternates: {
+    canonical: "/",
+  },
+  openGraph: {
+    type: "website",
+    siteName: "TrackFusionWeb",
+    title: "TrackFusionWeb",
+    description: "A community platform for discovering and sharing music.",
+    url: "/",
+    images: ["/images/TrackFusion_Title_Logo.png"],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "TrackFusionWeb",
+    description: "A community platform for discovering and sharing music.",
+    images: ["/images/TrackFusion_Title_Logo.png"],
+  },
+  icons: {
+    icon: "/favicon.ico",
+  },
+};
+
+export const viewport = {
+  width: "device-width",
+  initialScale: 1,
+  themeColor: "#0a0a12",
+};
+
+export default function RootLayout({ children }) {
   return (
     <html lang="en">
-      <head>
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <DynamicStyles />
-      </head>
-      <body className="h-screen bg-green-darkest">
-          <SessionProvider>
-            <UserInfoProvider>
-              <TrackEventsProvider>
-                <App>{children}</App>
-              </TrackEventsProvider>
-            </UserInfoProvider>
-          </SessionProvider>
+      <body className="bg-background min-h-dvh">
+        <SessionProvider>
+          <UserInfoProvider>
+            <TrackEventsProvider>
+              <App>{children}</App>
+            </TrackEventsProvider>
+          </UserInfoProvider>
+        </SessionProvider>
       </body>
     </html>
   );
-};
-
-export default RootLayout;
+}

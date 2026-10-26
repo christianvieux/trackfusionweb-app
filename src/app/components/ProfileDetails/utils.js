@@ -1,4 +1,4 @@
-export const DEFAULT_AVATAR = "/images/default-avatar.jpg";
+export const DEFAULT_AVATAR = "/images/pfp-pic.jpg";
 
 export function formatJoinDate(date) {
   if (!date) return "Unknown date";

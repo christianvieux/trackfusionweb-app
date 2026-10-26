@@ -1,31 +1,31 @@
 //app/hooks/useAuthStatus.js
 import { useState, useEffect } from "react";
 import { getSessionStatus } from "../services/authService";
-import { usePathname } from 'next/navigation'
 
 export const useSessionStatus = () => {
   const [sessionData, setSessionData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const pathname = usePathname();
-
   useEffect(() => {
+    let isActive = true;
+
     const checkSession = async () => {
       try {
-        setLoading(true);
         const data = await getSessionStatus();
-        setSessionData(data);
+        if (isActive) setSessionData(data);
       } catch (error) {
-        console.error("Error fetching session status", error);
-        setError(error);
+        if (isActive) setError(error);
       } finally {
-        setLoading(false);
+        if (isActive) setLoading(false);
       }
     };
-  
-    checkSession();
-  }, [pathname]); // Only one useEffect, triggered on pathname change
 
+    checkSession();
+
+    return () => {
+      isActive = false;
+    };
+  }, []);
 
   return { sessionData, loading, error };
 };

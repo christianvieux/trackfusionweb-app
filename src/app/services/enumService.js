@@ -1,23 +1,21 @@
-// Frontend/src/app/services/enum.js
-import axios from 'axios';
-import getApiBaseUrl from '../utils/getApiBaseUrl';
-// API base URL
-const API_BASE_URL = getApiBaseUrl();
+import { apiClient, toApiError } from "./apiClient";
 
-export const fetchEnumValues = async (type) => {
+export async function fetchEnumValues(type) {
   try {
-    const response = await axios.get(`${API_BASE_URL}/enums/${type}`);
+    const response = await apiClient.get(
+      `/enums/${encodeURIComponent(String(type))}`,
+    );
     return response.data;
   } catch (error) {
-    throw new Error('Failed to fetch enum values');
+    throw toApiError(error, "Failed to fetch enum values");
   }
-};
+}
 
-export const fetchTrackAttributes = async () => {
+export async function fetchTrackAttributes() {
   try {
-    const response = await axios.get(`${API_BASE_URL}/enums/trackAttributes`);
+    const response = await apiClient.get("/enums/trackAttributes");
     return response.data;
   } catch (error) {
-    throw new Error(`Failed to fetch track attributes: ${error}`);
+    throw toApiError(error, "Failed to fetch track attributes");
   }
-};
+}

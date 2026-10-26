@@ -1,4 +1,5 @@
 import React from "react";
+import Link from "next/link";
 
 const footerLinks = [
   { label: "Home", href: "/home" },
@@ -23,9 +24,9 @@ export default function Footer() {
         <ul className="flex flex-wrap justify-center gap-8">
           {footerLinks.map(({ label, href }) => (
             <li key={href} className="hover:text-primary">
-              <a className="text-green-light" href={href}>
+              <Link className="text-green-light" href={href}>
                 {label}
-              </a>
+              </Link>
             </li>
           ))}
         </ul>
