@@ -25,7 +25,8 @@ export default function UpdatePasswordForm() {
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
 
   const requirements = useMemo(
-    () => getPasswordRequirements(formData.newPassword, formData.currentPassword),
+    () =>
+      getPasswordRequirements(formData.newPassword, formData.currentPassword),
     [formData.newPassword, formData.currentPassword],
   );
 
@@ -81,13 +82,12 @@ export default function UpdatePasswordForm() {
               name="current-password"
               label="Current Password"
               placeholder="Enter your current password"
-              autoComplete="new-password"
+              autoComplete="current-password"
               value={formData.currentPassword}
               onChange={(value) => updateField("currentPassword", value)}
               error={errors.currentPassword}
               isDisabled={isLoading}
               isVisible={isPasswordVisible}
-              onToggleVisibility={() => setIsPasswordVisible((c) => !c)}
             />
             <PasswordField
               name="new-password"
@@ -99,6 +99,7 @@ export default function UpdatePasswordForm() {
               error={errors.newPassword}
               isDisabled={isLoading}
               isVisible={isPasswordVisible}
+              onToggleVisibility={() => setIsPasswordVisible((c) => !c)}
             />
             <PasswordField
               name="confirm-password"

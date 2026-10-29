@@ -12,6 +12,7 @@ import imageCompression from "browser-image-compression";
 function ProfilePictureUpload({
   initialProfilePicture = null,
   onSubmit = async () => {},
+  onCancel = () => {},
   isInitialSetup = false,
   className = "",
   ...props
@@ -75,7 +76,10 @@ function ProfilePictureUpload({
       // Reset state after successful upload
       setImageFile(null);
     } catch (error) {
-      setError(error.toString());
+      setError(
+        error.message ||
+          "Unable to update your profile picture. Please try again.",
+      );
     } finally {
       setIsUploading(false);
     }
@@ -85,6 +89,7 @@ function ProfilePictureUpload({
     setError(null);
     setImageFile(null);
     setPreviewImage(initialProfilePicture);
+    onCancel();
   };
 
   useEffect(() => {

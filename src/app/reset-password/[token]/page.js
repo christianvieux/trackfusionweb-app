@@ -42,9 +42,9 @@ const ResetPasswordForm = ({
           aria-label="toggle password visibility"
         >
           {!hidePassword ? (
-            <EyeSlashFilledIcon className="pointer-events-none text-2xl text-default-400" />
+            <EyeSlashFilledIcon className="text-default-400 pointer-events-none text-2xl" />
           ) : (
-            <EyeFilledIcon className="pointer-events-none text-2xl text-default-400" />
+            <EyeFilledIcon className="text-default-400 pointer-events-none text-2xl" />
           )}
         </button>
       }
@@ -97,8 +97,11 @@ export default function ResetPassword({ params }) {
   } = state;
   const { token } = unwrappedParams;
 
-  const setField = useCallback((field, value) =>
-    setState((prevState) => ({ ...prevState, [field]: value })), []);
+  const setField = useCallback(
+    (field, value) =>
+      setState((prevState) => ({ ...prevState, [field]: value })),
+    [],
+  );
   const toggleVisibility = () => setField("hidePassword", !hidePassword);
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -113,27 +116,36 @@ export default function ResetPassword({ params }) {
       setField("message", "Password has been reset successfully.");
       setField("successful", true);
     } catch (error) {
-      setField("message", `Unable to reset password. ${error.message}`);
+      setField(
+        "message",
+        error.message || "Unable to reset your password. Please try again.",
+      );
       setField("successful", false);
     }
     setField("loading", false);
   };
-  const verifyToken = useCallback(async (token) => {
-    try {
-      await verifyResetToken(token);
-      setField("tokenValid", true);
-    } catch (error) {
-      setField("message", `Unable to reset password. ${error.message}`);
-      setField("tokenValid", false);
-    }
-  }, [setField]);
+  const verifyToken = useCallback(
+    async (token) => {
+      try {
+        await verifyResetToken(token);
+        setField("tokenValid", true);
+      } catch (error) {
+        setField(
+          "message",
+          error.message || "This password reset link is no longer valid.",
+        );
+        setField("tokenValid", false);
+      }
+    },
+    [setField],
+  );
 
   useEffect(() => {
     verifyToken(token);
   }, [token, verifyToken]);
 
   return (
-    <div className="flex flex-col items-center justify-between gap-4 self-center rounded-lg border-2 border-purple-dark bg-green-darkest/30 p-4 text-green shadow-lg">
+    <div className="border-purple-dark bg-green-darkest/30 text-green flex flex-col items-center justify-between gap-4 self-center rounded-lg border-2 p-4 shadow-lg">
       {tokenValid == null && <p className="text-center text-lg">Loading...</p>}
       {tokenValid === false && (
         <>
@@ -147,7 +159,7 @@ export default function ResetPassword({ params }) {
         <>
           <h1 className="text-2xl">Reset your password</h1>
           {successful ? (
-            <p className="text-center text-green">
+            <p className="text-green text-center">
               {message}{" "}
               <a href="/login" className="underline">
                 Go to Login

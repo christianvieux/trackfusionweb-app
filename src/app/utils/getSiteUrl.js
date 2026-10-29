@@ -1,4 +1,4 @@
-const LOCAL_SITE_URL = "http://localhost:3001";
+const LOCAL_SITE_URL = "http://localhost:3000";
 const PRODUCTION_SITE_URL = "https://trackfusionweb.com";
 
 export function normalizeSiteUrl(value) {

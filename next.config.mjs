@@ -1,23 +1,4 @@
-function getRemoteImagePatterns() {
-  const configuredDomains =
-    process.env.NEXT_PUBLIC_ALLOWED_IMAGE_DOMAINS?.split(",") ?? [];
-
-  return configuredDomains
-    .map((domain) => domain.trim())
-    .filter(Boolean)
-    .map((domain) => {
-      const url = new URL(
-        domain.includes("://") ? domain : `https://${domain}`,
-      );
-
-      return {
-        protocol: url.protocol.replace(":", ""),
-        hostname: url.hostname,
-        port: url.port,
-        pathname: "/**",
-      };
-    });
-}
+import { resolveRemoteImageConfig } from "./config/remoteImages.mjs";
 
 const securityHeaders = [
   { key: "X-Content-Type-Options", value: "nosniff" },
@@ -39,9 +20,7 @@ if (process.env.NODE_ENV === "production") {
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   poweredByHeader: false,
-  images: {
-    remotePatterns: getRemoteImagePatterns(),
-  },
+  images: resolveRemoteImageConfig(),
   async headers() {
     return [
       {

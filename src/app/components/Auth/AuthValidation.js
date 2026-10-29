@@ -1,7 +1,9 @@
 export function validateEmail(value = "") {
-  if (!value.trim()) return "Email is required";
+  const normalizedValue = String(value).trim().toLowerCase();
 
-  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
+  if (!normalizedValue) return "Email is required";
+
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizedValue)) {
     return "Enter a valid email";
   }
 
@@ -10,6 +12,20 @@ export function validateEmail(value = "") {
 
 export function validateRequired(value = "", label = "Field") {
   if (!String(value).trim()) return `${label} is required`;
+  return null;
+}
+
+export function validateVerificationCode(value = "") {
+  const normalizedValue = String(value).trim();
+
+  if (!normalizedValue) return "Verification code is required";
+  if (!/^\d+$/.test(normalizedValue)) {
+    return "Verification code must contain only numbers";
+  }
+  if (normalizedValue.length !== 6) {
+    return "Verification code must be exactly 6 digits";
+  }
+
   return null;
 }
 
