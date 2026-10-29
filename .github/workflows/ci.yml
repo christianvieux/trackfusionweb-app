@@ -16,7 +16,7 @@ jobs:
     env:
       NEXT_PUBLIC_API_URL: https://api.trackfusionweb.com
       NEXT_PUBLIC_SITE_URL: https://trackfusionweb.com
-      NEXT_PUBLIC_ALLOWED_IMAGE_DOMAINS: christianvieux-trackfusionweb-storage-bucket.s3.us-east-1.amazonaws.com
+      NEXT_IMAGE_REMOTE_ORIGINS: https://s3.us-east-1.amazonaws.com
 
     steps:
       - name: Check out repository

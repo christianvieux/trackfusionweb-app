@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { Button, Form, Switch } from "@heroui/react";
+import { Button, Form } from "@heroui/react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
@@ -15,11 +15,20 @@ import {
   validatePassword,
   validatePasswordsMatch,
   validateRequired,
+  validateVerificationCode,
 } from "../components/Auth/AuthValidation";
 
 import { useSession } from "../context/SessionContext";
 import { checkEmail, register } from "../services/userService";
-import { generateOtp, verifyOtp } from "../services/otpService";
+import {
+  checkOtpCooldown,
+  generateOtp,
+  verifyOtp,
+} from "../services/otpService";
+import {
+  isRegistrationEnabled,
+  normalizeEmailAddress,
+} from "../utils/registrationAvailability";
 
 const SIGNUP_STEPS = [
   { label: "Email" },
@@ -36,39 +45,54 @@ const INITIAL_FORM = {
   agreementChecked: false,
 };
 
+const REGISTRATION_COOLDOWN_SECONDS = 60;
+
 export default function SignUpPage() {
   const router = useRouter();
   const { isLoggedIn, login, error: sessionError } = useSession();
+  const registrationEnabled = isRegistrationEnabled();
 
   const [step, setStep] = useState(1);
   const [form, setForm] = useState(INITIAL_FORM);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [loadingAction, setLoadingAction] = useState("");
+  const [resendCooldownSeconds, setResendCooldownSeconds] = useState(0);
+  const [arePasswordsVisible, setArePasswordsVisible] = useState(false);
 
   const isBusy = Boolean(loadingAction);
 
   const canContinue = useMemo(() => {
-    if (step === 1) return !validateEmail(form.email);
+    if (step === 1) return validateEmail(form.email) === null;
 
     if (step === 2) {
-      return !validateRequired(form.verificationCode, "Verification code");
+      return validateVerificationCode(form.verificationCode) === null;
     }
 
     return (
-      !validateRequired(form.username, "Username") &&
-      !validatePassword(form.password) &&
-      !validatePasswordsMatch(form.password, form.confirmPassword) &&
+      validateRequired(form.username, "Username") === null &&
+      validatePassword(form.password) === null &&
+      validatePasswordsMatch(form.password, form.confirmPassword) === null &&
       form.agreementChecked
     );
   }, [form, step]);
 
-  function updateField(event) {
-    const { name, value, checked, type } = event.target;
+  useEffect(() => {
+    if (resendCooldownSeconds <= 0) return undefined;
 
+    const timeoutId = window.setTimeout(() => {
+      setResendCooldownSeconds((currentSeconds) =>
+        Math.max(0, currentSeconds - 1),
+      );
+    }, 1000);
+
+    return () => window.clearTimeout(timeoutId);
+  }, [resendCooldownSeconds]);
+
+  function updateField(name, value) {
     setForm((currentForm) => ({
       ...currentForm,
-      [name]: type === "checkbox" ? checked : value,
+      [name]: name === "email" ? normalizeEmailAddress(value) : value,
     }));
 
     setError("");
@@ -76,17 +100,43 @@ export default function SignUpPage() {
   }
 
   async function handleEmailStep() {
+    if (!registrationEnabled) {
+      setError(
+        "Registration is temporarily unavailable. Please try again later.",
+      );
+      return;
+    }
+
+    const normalizedEmail = normalizeEmailAddress(form.email);
+    const emailValidationError = validateEmail(normalizedEmail);
+
+    if (emailValidationError) {
+      setError(emailValidationError);
+      return;
+    }
+
     setLoadingAction("email");
 
     try {
-      const response = await checkEmail(form.email);
+      const [emailResponse, cooldownResponse] = await Promise.all([
+        checkEmail(normalizedEmail),
+        checkOtpCooldown(normalizedEmail, "registration"),
+      ]);
 
-      if (response.exists) {
+      if (emailResponse.exists) {
         setError("Email is already associated with an existing account.");
         return;
       }
 
-      await generateOtp(form.email, "registration");
+      if (cooldownResponse?.cooldownActive) {
+        setError(
+          "Too many verification-code requests. Please wait a moment before requesting another code.",
+        );
+        return;
+      }
+
+      await generateOtp(normalizedEmail, "registration");
+      setResendCooldownSeconds(REGISTRATION_COOLDOWN_SECONDS);
       setStep(2);
     } catch (error) {
       setError(error.message || "Could not send verification code");
@@ -96,10 +146,26 @@ export default function SignUpPage() {
   }
 
   async function handleVerifyStep() {
+    if (!registrationEnabled) {
+      setError(
+        "Registration is temporarily unavailable. Please try again later.",
+      );
+      return;
+    }
+
+    const verificationCodeError = validateVerificationCode(
+      form.verificationCode,
+    );
+    if (verificationCodeError) {
+      setError(verificationCodeError);
+      return;
+    }
+
+    const normalizedEmail = normalizeEmailAddress(form.email);
     setLoadingAction("verify");
 
     try {
-      await verifyOtp(form.email, form.verificationCode, "registration");
+      await verifyOtp(normalizedEmail, form.verificationCode, "registration");
       setStep(3);
     } catch (error) {
       setError(error.message || "Invalid verification code");
@@ -109,18 +175,26 @@ export default function SignUpPage() {
   }
 
   async function handleRegisterStep() {
+    if (!registrationEnabled) {
+      setError(
+        "Registration is temporarily unavailable. Please try again later.",
+      );
+      return;
+    }
+
+    const normalizedEmail = normalizeEmailAddress(form.email);
     setLoadingAction("register");
 
     try {
       await register(
-        form.email,
+        normalizedEmail,
         form.username,
         form.password,
         form.verificationCode,
       );
 
       setSuccess("Your account was successfully created!");
-      await login({ email: form.email, password: form.password });
+      await login({ email: normalizedEmail, password: form.password });
 
       router.push("/new-profile-picture");
     } catch (error) {
@@ -131,10 +205,44 @@ export default function SignUpPage() {
   }
 
   async function handleResendCode() {
+    if (!registrationEnabled) {
+      setError(
+        "Registration is temporarily unavailable. Please try again later.",
+      );
+      return;
+    }
+
+    const normalizedEmail = normalizeEmailAddress(form.email);
+    const emailValidationError = validateEmail(normalizedEmail);
+
+    if (emailValidationError) {
+      setError(emailValidationError);
+      return;
+    }
+
+    if (resendCooldownSeconds > 0) {
+      setError("Please wait before requesting another verification code.");
+      return;
+    }
+
     setLoadingAction("resend");
 
     try {
-      await generateOtp(form.email, "registration");
+      const cooldownResponse = await checkOtpCooldown(
+        normalizedEmail,
+        "registration",
+      );
+
+      if (cooldownResponse?.cooldownActive) {
+        setError(
+          "Too many verification-code requests. Please wait before trying again.",
+        );
+        setResendCooldownSeconds(REGISTRATION_COOLDOWN_SECONDS);
+        return;
+      }
+
+      await generateOtp(normalizedEmail, "registration");
+      setResendCooldownSeconds(REGISTRATION_COOLDOWN_SECONDS);
       setSuccess("Verification code sent again.");
     } catch (error) {
       setError(error.message || "Could not resend code");
@@ -147,6 +255,13 @@ export default function SignUpPage() {
     event.preventDefault();
     setError("");
     setSuccess("");
+
+    if (!registrationEnabled) {
+      setError(
+        "Registration is temporarily unavailable. Please try again later.",
+      );
+      return;
+    }
 
     if (step === 1) return handleEmailStep();
     if (step === 2) return handleVerifyStep();
@@ -175,19 +290,27 @@ export default function SignUpPage() {
         footer={
           <>
             <span>Already have an account?</span>
-            <Link href="/login" className="text-primary hover:text-primary-hover">
+            <Link
+              href="/login"
+              className="text-primary hover:text-primary-hover"
+            >
               Log in
             </Link>
           </>
         }
       >
         <Form onSubmit={handleSubmit} className="flex flex-col gap-4">
-          <div className="rounded-lg border border-warning/50 bg-warning/10 p-3 text-warning">
-            <p className="text-center font-semibold">🚧 Under Maintenance 🚧</p>
-            <p className="text-center text-xs">
-              Registration is temporarily unavailable while improvements are being added.
-            </p>
-          </div>
+          {!registrationEnabled && (
+            <div className="border-warning/50 bg-warning/10 text-warning rounded-lg border p-3">
+              <p className="text-center font-semibold">
+                Registration temporarily disabled
+              </p>
+              <p className="text-center text-xs">
+                Please try again later or contact support if you need immediate
+                access.
+              </p>
+            </div>
+          )}
 
           <AuthStepProgress steps={SIGNUP_STEPS} currentStep={step} />
 
@@ -205,7 +328,7 @@ export default function SignUpPage() {
               value={form.email}
               onChange={updateField}
               validate={validateEmail}
-              isDisabled
+              isDisabled={isBusy || !registrationEnabled}
             />
           )}
 
@@ -216,24 +339,30 @@ export default function SignUpPage() {
                 name="verificationCode"
                 label="Verification Code"
                 placeholder="Enter the code sent to your email"
+                autoComplete="one-time-code"
+                inputMode="numeric"
+                maxLength={6}
                 value={form.verificationCode}
                 onChange={updateField}
-                validate={(value) =>
-                  validateRequired(value, "Verification code")
-                }
+                validate={validateVerificationCode}
+                isDisabled={isBusy || !registrationEnabled}
               />
 
-              <p className="text-center text-sm text-muted-foreground">
-                Didn&apos;t receive code?{" "}
+              <p className="text-muted-foreground text-center text-sm">
+                {resendCooldownSeconds > 0
+                  ? `Resend available in ${resendCooldownSeconds}s`
+                  : "Didn't receive code?"}{" "}
                 <Button
                   type="button"
                   variant="light"
                   className="text-primary"
                   onPress={handleResendCode}
                   isLoading={loadingAction === "resend"}
-                  isDisabled={isBusy}
+                  isDisabled={
+                    isBusy || resendCooldownSeconds > 0 || !registrationEnabled
+                  }
                 >
-                  Resend Code
+                  {resendCooldownSeconds > 0 ? "Wait to resend" : "Resend Code"}
                 </Button>
               </p>
             </>
@@ -249,6 +378,7 @@ export default function SignUpPage() {
                 value={form.username}
                 onChange={updateField}
                 validate={(value) => validateRequired(value, "Username")}
+                isDisabled={isBusy || !registrationEnabled}
               />
 
               <AuthPasswordField
@@ -259,6 +389,12 @@ export default function SignUpPage() {
                 value={form.password}
                 onChange={updateField}
                 validate={validatePassword}
+                autoComplete="new-password"
+                isDisabled={isBusy || !registrationEnabled}
+                isVisible={arePasswordsVisible}
+                onToggleVisibility={() =>
+                  setArePasswordsVisible((isVisible) => !isVisible)
+                }
               />
 
               <AuthPasswordField
@@ -271,17 +407,27 @@ export default function SignUpPage() {
                 validate={() =>
                   validatePasswordsMatch(form.password, form.confirmPassword)
                 }
+                autoComplete="new-password"
+                isDisabled={isBusy || !registrationEnabled}
+                isVisible={arePasswordsVisible}
+                showVisibilityToggle={false}
               />
 
-              <div className="flex gap-3 rounded-lg bg-muted p-3">
-                <Switch
+              <div className="bg-muted flex items-start gap-3 rounded-lg p-3">
+                <input
+                  id="agreementChecked"
                   name="agreementChecked"
-                  isSelected={form.agreementChecked}
-                  onChange={updateField}
-                  className="shrink-0"
+                  type="checkbox"
+                  checked={form.agreementChecked}
+                  onChange={(event) =>
+                    updateField("agreementChecked", event.target.checked)
+                  }
+                  disabled={isBusy || !registrationEnabled}
+                  aria-label="Agree to the terms and privacy policy"
+                  className="accent-primary focus-visible:outline-primary mt-0.5 size-5 shrink-0 cursor-pointer focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                 />
 
-                <p className="text-sm text-muted-foreground">
+                <p className="text-muted-foreground text-sm">
                   I agree to the{" "}
                   <Link href="/terms" className="text-primary">
                     terms and conditions
@@ -299,29 +445,25 @@ export default function SignUpPage() {
           <div className="flex gap-4">
             <Button
               type="button"
-              className="flex-1 border border-primary text-primary"
+              className="border-primary text-primary flex-1 border"
               variant="bordered"
               onPress={goBack}
-              isDisabled={step === 1 || isBusy}
+              isDisabled={step === 1 || isBusy || !registrationEnabled}
             >
               Back
             </Button>
 
             <Button
               type="submit"
-              className="flex-1 bg-primary text-background hover:bg-primary-hover"
+              className="bg-primary text-background hover:bg-primary-hover flex-1"
               isLoading={
                 loadingAction === "email" ||
                 loadingAction === "verify" ||
                 loadingAction === "register"
               }
-              isDisabled={!canContinue || isBusy || true}
+              isDisabled={!canContinue || isBusy || !registrationEnabled}
             >
-              {step === 1
-                ? "Next"
-                : step === 2
-                  ? "Verify Code"
-                  : "Register"}
+              {step === 1 ? "Next" : step === 2 ? "Verify Code" : "Register"}
             </Button>
           </div>
         </Form>

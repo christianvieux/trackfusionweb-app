@@ -51,7 +51,9 @@ async function pollUploadStatus(jobId, onProgressChange) {
     if (status.state === "completed") return status.result;
 
     if (status.state === "failed") {
-      throw new Error(status.error || "Track processing failed");
+      throw new Error(
+        "We couldn't process this track. Check the files and try again.",
+      );
     }
 
     if (status.state === "active") {
@@ -121,7 +123,7 @@ export async function uploadTrack(formData, onProgressChange) {
 
     return track;
   } catch (error) {
-    throw toApiError(error, error.message || "Failed to upload track");
+    throw toApiError(error, "Failed to upload track. Please try again.");
   }
 }
 

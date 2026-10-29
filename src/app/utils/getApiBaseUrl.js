@@ -1,4 +1,4 @@
-const LOCAL_API_URL = "http://localhost:3000";
+const LOCAL_API_URL = "http://localhost:8081";
 
 export function normalizeBaseUrl(value) {
   const normalizedValue = String(value || "").trim();

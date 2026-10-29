@@ -13,10 +13,9 @@ function InitialProfilePictureSetup() {
   const handleProfilePictureSubmit = async (newUrl) => {
     try {
       setUserInfo((prev) => {
-        const updatedUrl = `${newUrl}?v=${new Date().getTime()}`;
-        return { ...prev, profile_picture_url: updatedUrl };
+        return { ...prev, profile_picture_url: newUrl };
       });
-      router.push("/feed");
+      router.replace("/feed");
     } catch (error) {
       // Handle upload error
       console.error("Couldn't upload profile picture: ", error);
@@ -24,13 +23,13 @@ function InitialProfilePictureSetup() {
   };
 
   const handleSkip = () => {
-    router.push("/feed");
+    router.replace("/feed");
   };
 
   useEffect(() => {
     if (userInfo) {
       if (userInfo.profile_picture_url) {
-        router.push("/feed");
+        router.replace("/feed");
       }
     }
   }, [userInfo, router]);
@@ -58,6 +57,7 @@ function InitialProfilePictureSetup() {
         <UpdateProfilePictureForm
           initialProfilePicture={null}
           onSubmit={handleProfilePictureSubmit}
+          onCancel={handleSkip}
           isInitialSetup={true}
           className="max-w-full overflow-x-auto"
         />

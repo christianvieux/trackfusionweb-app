@@ -1,10 +1,20 @@
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 
-import { normalizeBaseUrl } from "./getApiBaseUrl";
+import getApiBaseUrl, { normalizeBaseUrl } from "./getApiBaseUrl";
 
 describe("normalizeBaseUrl", () => {
+  afterEach(() => {
+    vi.unstubAllEnvs();
+  });
+
   it("uses the local API when no value is configured", () => {
-    expect(normalizeBaseUrl()).toBe("http://localhost:3000");
+    expect(normalizeBaseUrl()).toBe("http://localhost:8081");
+  });
+
+  it("uses NEXT_PUBLIC_API_URL when it is configured", () => {
+    vi.stubEnv("NEXT_PUBLIC_API_URL", "https://api.example.com/");
+
+    expect(getApiBaseUrl()).toBe("https://api.example.com");
   });
 
   it("normalizes a configured API origin", () => {

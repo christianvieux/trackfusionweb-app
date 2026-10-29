@@ -52,7 +52,9 @@ export async function analyzeAudio(
       if (status.state === "completed") return status.result;
 
       if (status.state === "failed") {
-        throw new Error(status.error || "Analysis failed");
+        throw new Error(
+          "We couldn't analyze this audio file. Check the file and try again.",
+        );
       }
 
       await delay(ANALYSIS_STATUS_INTERVAL_MS);
@@ -60,6 +62,6 @@ export async function analyzeAudio(
 
     throw new Error("Audio analysis timed out");
   } catch (error) {
-    throw toApiError(error, error.message || "Failed to analyze audio");
+    throw toApiError(error, "Failed to analyze audio. Please try again.");
   }
 }

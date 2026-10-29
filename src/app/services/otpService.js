@@ -1,7 +1,5 @@
 import { apiClient, toApiError } from "./apiClient";
 
-const OTP_FALLBACK = "An unexpected error occurred. Please try again.";
-
 export async function generateOtp(email, purpose) {
   try {
     const response = await apiClient.post("/otp/generate", {
@@ -10,7 +8,10 @@ export async function generateOtp(email, purpose) {
     });
     return response.data;
   } catch (error) {
-    throw toApiError(error, OTP_FALLBACK);
+    throw toApiError(
+      error,
+      "Could not send the verification code. Please try again.",
+    );
   }
 }
 
@@ -23,7 +24,10 @@ export async function verifyOtp(email, otpCode, purpose) {
     });
     return response.data;
   } catch (error) {
-    throw toApiError(error, OTP_FALLBACK);
+    throw toApiError(
+      error,
+      "Could not verify the code. Please check it and try again.",
+    );
   }
 }
 
@@ -34,6 +38,9 @@ export async function checkOtpCooldown(email, purpose) {
     });
     return response.data;
   } catch (error) {
-    throw toApiError(error, OTP_FALLBACK);
+    throw toApiError(
+      error,
+      "Could not check verification-code availability. Please try again.",
+    );
   }
 }

@@ -104,7 +104,9 @@ async function checkProfilePictureProcessingStatus(jobId, onProgressChange) {
     if (status.state === "completed") return status.result;
 
     if (status.state === "failed") {
-      throw new Error(status.error || "Profile picture processing failed");
+      throw new Error(
+        "We couldn't process this profile picture. Try a different image.",
+      );
     }
 
     if (status.progress) {
@@ -148,7 +150,7 @@ export async function updateProfilePicture(file, onProgressChange = () => {}) {
     onProgressChange(ProfileUploadStates.FAILED);
     throw toApiError(
       error,
-      error.message || "Failed to upload profile picture",
+      "Failed to upload profile picture. Please try again.",
     );
   }
 }
