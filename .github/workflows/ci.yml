@@ -15,7 +15,7 @@ jobs:
     timeout-minutes: 15
     env:
       NEXT_PUBLIC_API_URL: https://api.trackfusionweb.com
-      NEXT_PUBLIC_SITE_URL: https://trackfusionweb.com
+      NEXT_PUBLIC_SITE_URL: https://www.trackfusionweb.com
       NEXT_IMAGE_REMOTE_ORIGINS: https://s3.us-east-1.amazonaws.com
 
     steps:

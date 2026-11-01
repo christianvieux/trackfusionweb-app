@@ -1,5 +1,5 @@
 const LOCAL_SITE_URL = "http://localhost:3000";
-const PRODUCTION_SITE_URL = "https://trackfusionweb.com";
+const PRODUCTION_SITE_URL = "https://www.trackfusionweb.com";
 
 export function normalizeSiteUrl(value) {
   const fallback =
@@ -28,7 +28,7 @@ export function normalizeSiteUrl(value) {
     return url.origin;
   } catch {
     throw new Error(
-      "NEXT_PUBLIC_SITE_URL must be an absolute HTTP(S) URL, such as https://trackfusionweb.com",
+      "NEXT_PUBLIC_SITE_URL must be an absolute HTTP(S) URL, such as https://www.trackfusionweb.com",
     );
   }
 }
