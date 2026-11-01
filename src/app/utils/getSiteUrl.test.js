@@ -8,9 +8,15 @@ describe("site URL utilities", () => {
   });
 
   it("normalizes configured site origins", () => {
-    expect(normalizeSiteUrl("https://trackfusionweb.com/")).toBe(
-      "https://trackfusionweb.com",
+    expect(normalizeSiteUrl("https://www.trackfusionweb.com/")).toBe(
+      "https://www.trackfusionweb.com",
     );
+  });
+
+  it("uses the canonical production origin as its production fallback", () => {
+    vi.stubEnv("NODE_ENV", "production");
+
+    expect(normalizeSiteUrl("")).toBe("https://www.trackfusionweb.com");
   });
 
   it("uses Next.js's default local port as its development fallback", () => {
