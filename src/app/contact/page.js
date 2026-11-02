@@ -44,7 +44,7 @@ export default function ContactPage() {
     <StaticPageShell title="Get in Touch">
       <div className="mb-12 space-y-6 text-lg">
         <p>
-          Thank you for exploring TrackFusion. As a full stack web developer,
+          Thank you for exploring TrackFusionWeb. As a full stack web developer,
           I&apos;m always interested in discussing new opportunities, receiving
           feedback on my projects, or engaging in technical discussions about
           web development.
