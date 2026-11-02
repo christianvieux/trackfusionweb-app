@@ -1,6 +1,6 @@
 # TrackFusionWeb App
 
-[![CI](https://github.com/christianvieux/TrackFusion-Frontend/actions/workflows/ci.yml/badge.svg)](https://github.com/christianvieux/TrackFusion-Frontend/actions/workflows/ci.yml)
+[![CI](https://github.com/christianvieux/TrackFusionWeb-Frontend/actions/workflows/ci.yml/badge.svg)](https://github.com/christianvieux/TrackFusionWeb-Frontend/actions/workflows/ci.yml)
 
 The web app for **TrackFusionWeb**, a music-sharing platform for uploading,
 discovering, organizing, and analyzing tracks.
@@ -50,7 +50,7 @@ changes do not change these hosted links.
 ### 2. Download the project
 
 ```bash
-git clone https://github.com/christianvieux/TrackFusion-Frontend.git trackfusionweb-app
+git clone https://github.com/christianvieux/TrackFusionWeb-Frontend.git trackfusionweb-app
 cd trackfusionweb-app
 ```
 

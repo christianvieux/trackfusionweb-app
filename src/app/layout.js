@@ -25,13 +25,13 @@ export const metadata = {
     title: "TrackFusionWeb",
     description: "A community platform for discovering and sharing music.",
     url: "/",
-    images: ["/images/TrackFusion_Title_Logo.png"],
+    images: ["/images/TrackFusionWeb_Title_Logo.png"],
   },
   twitter: {
     card: "summary_large_image",
     title: "TrackFusionWeb",
     description: "A community platform for discovering and sharing music.",
-    images: ["/images/TrackFusion_Title_Logo.png"],
+    images: ["/images/TrackFusionWeb_Title_Logo.png"],
   },
   icons: {
     icon: "/favicon.ico",
