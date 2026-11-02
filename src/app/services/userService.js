@@ -60,20 +60,60 @@ export async function fetchOwnedTracks() {
   }
 }
 
-export async function register(email, username, password, otpCode) {
+const REGISTRATION_GRANT_ERROR_CODES = new Set([
+  "REGISTRATION_GRANT_REQUIRED",
+  "REGISTRATION_GRANT_INVALID",
+]);
+
+function createRegistrationGrantError(code, message, cause) {
+  const error = new Error(message, cause ? { cause } : undefined);
+  error.code = code;
+  return error;
+}
+
+export function isRegistrationGrantError(error) {
+  return REGISTRATION_GRANT_ERROR_CODES.has(error?.code);
+}
+
+export async function register(email, username, password, registrationGrant) {
+  const normalizedRegistrationGrant =
+    typeof registrationGrant === "string" ? registrationGrant.trim() : "";
+
+  if (!normalizedRegistrationGrant) {
+    throw createRegistrationGrantError(
+      "REGISTRATION_GRANT_REQUIRED",
+      "Email verification is required. Request a new code and verify again.",
+    );
+  }
+
   try {
     const response = await apiClient.post("/users/register", {
       email,
       username,
       password,
-      otp_code: otpCode,
+      registration_grant: normalizedRegistrationGrant,
     });
     return response.data;
   } catch (error) {
-    throw toApiError(
+    const apiError = toApiError(
       error,
       "Failed to complete registration. Please try again.",
     );
+    const responseError = error?.response?.data?.error;
+
+    if (
+      error?.response?.status === 400 &&
+      typeof responseError === "string" &&
+      /email verification.*(?:required|invalid|expired)/i.test(responseError)
+    ) {
+      throw createRegistrationGrantError(
+        "REGISTRATION_GRANT_INVALID",
+        apiError.message,
+        error,
+      );
+    }
+
+    throw apiError;
   }
 }
 

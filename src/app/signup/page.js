@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useReducer, useState } from "react";
 import { Button, Form } from "@heroui/react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -19,7 +19,11 @@ import {
 } from "../components/Auth/AuthValidation";
 
 import { useSession } from "../context/SessionContext";
-import { checkEmail, register } from "../services/userService";
+import {
+  checkEmail,
+  isRegistrationGrantError,
+  register,
+} from "../services/userService";
 import {
   checkOtpCooldown,
   generateOtp,
@@ -29,6 +33,13 @@ import {
   isRegistrationEnabled,
   normalizeEmailAddress,
 } from "../utils/registrationAvailability";
+import {
+  getRegistrationGrant,
+  REGISTRATION_GRANT_ACTIONS,
+  REGISTRATION_GRANT_EXPIRED_MESSAGE,
+  REGISTRATION_GRANT_REQUIRED_MESSAGE,
+  registrationGrantReducer,
+} from "./registrationGrantState";
 
 const SIGNUP_STEPS = [
   { label: "Email" },
@@ -59,6 +70,10 @@ export default function SignUpPage() {
   const [loadingAction, setLoadingAction] = useState("");
   const [resendCooldownSeconds, setResendCooldownSeconds] = useState(0);
   const [arePasswordsVisible, setArePasswordsVisible] = useState(false);
+  const [registrationGrant, dispatchRegistrationGrant] = useReducer(
+    registrationGrantReducer,
+    null,
+  );
 
   const isBusy = Boolean(loadingAction);
 
@@ -90,6 +105,16 @@ export default function SignUpPage() {
   }, [resendCooldownSeconds]);
 
   function updateField(name, value) {
+    if (name === "email") {
+      dispatchRegistrationGrant({
+        type: REGISTRATION_GRANT_ACTIONS.EMAIL_CHANGED,
+      });
+    } else if (name === "verificationCode") {
+      dispatchRegistrationGrant({
+        type: REGISTRATION_GRANT_ACTIONS.CODE_CHANGED,
+      });
+    }
+
     setForm((currentForm) => ({
       ...currentForm,
       [name]: name === "email" ? normalizeEmailAddress(value) : value,
@@ -97,6 +122,19 @@ export default function SignUpPage() {
 
     setError("");
     setSuccess("");
+  }
+
+  function requireNewVerification(message) {
+    dispatchRegistrationGrant({
+      type: REGISTRATION_GRANT_ACTIONS.REGISTRATION_REJECTED,
+    });
+    setForm((currentForm) => ({
+      ...currentForm,
+      verificationCode: "",
+    }));
+    setStep(2);
+    setSuccess("");
+    setError(message);
   }
 
   async function handleEmailStep() {
@@ -135,6 +173,13 @@ export default function SignUpPage() {
         return;
       }
 
+      dispatchRegistrationGrant({
+        type: REGISTRATION_GRANT_ACTIONS.CODE_REQUESTED,
+      });
+      setForm((currentForm) => ({
+        ...currentForm,
+        verificationCode: "",
+      }));
       await generateOtp(normalizedEmail, "registration");
       setResendCooldownSeconds(REGISTRATION_COOLDOWN_SECONDS);
       setStep(2);
@@ -165,7 +210,23 @@ export default function SignUpPage() {
     setLoadingAction("verify");
 
     try {
-      await verifyOtp(normalizedEmail, form.verificationCode, "registration");
+      const verificationResponse = await verifyOtp(
+        normalizedEmail,
+        form.verificationCode,
+        "registration",
+      );
+      const verifiedRegistrationGrant = getRegistrationGrant(
+        verificationResponse,
+      );
+      if (!verifiedRegistrationGrant) {
+        requireNewVerification(REGISTRATION_GRANT_REQUIRED_MESSAGE);
+        return;
+      }
+
+      dispatchRegistrationGrant({
+        type: REGISTRATION_GRANT_ACTIONS.VERIFIED,
+        registrationGrant: verifiedRegistrationGrant,
+      });
       setStep(3);
     } catch (error) {
       setError(error.message || "Invalid verification code");
@@ -183,6 +244,12 @@ export default function SignUpPage() {
     }
 
     const normalizedEmail = normalizeEmailAddress(form.email);
+
+    if (!registrationGrant) {
+      requireNewVerification(REGISTRATION_GRANT_REQUIRED_MESSAGE);
+      return;
+    }
+
     setLoadingAction("register");
 
     try {
@@ -190,14 +257,22 @@ export default function SignUpPage() {
         normalizedEmail,
         form.username,
         form.password,
-        form.verificationCode,
+        registrationGrant,
       );
 
+      dispatchRegistrationGrant({
+        type: REGISTRATION_GRANT_ACTIONS.SIGNUP_SUCCEEDED,
+      });
       setSuccess("Your account was successfully created!");
       await login({ email: normalizedEmail, password: form.password });
 
       router.push("/new-profile-picture");
     } catch (error) {
+      if (isRegistrationGrantError(error)) {
+        requireNewVerification(REGISTRATION_GRANT_EXPIRED_MESSAGE);
+        return;
+      }
+
       setError(error.message || "Registration failed");
     } finally {
       setLoadingAction("");
@@ -241,6 +316,13 @@ export default function SignUpPage() {
         return;
       }
 
+      dispatchRegistrationGrant({
+        type: REGISTRATION_GRANT_ACTIONS.CODE_REQUESTED,
+      });
+      setForm((currentForm) => ({
+        ...currentForm,
+        verificationCode: "",
+      }));
       await generateOtp(normalizedEmail, "registration");
       setResendCooldownSeconds(REGISTRATION_COOLDOWN_SECONDS);
       setSuccess("Verification code sent again.");
@@ -272,6 +354,15 @@ export default function SignUpPage() {
   function goBack() {
     setError("");
     setSuccess("");
+    if (step === 3) {
+      dispatchRegistrationGrant({
+        type: REGISTRATION_GRANT_ACTIONS.VERIFICATION_RESTARTED,
+      });
+      setForm((currentForm) => ({
+        ...currentForm,
+        verificationCode: "",
+      }));
+    }
     setStep((currentStep) => Math.max(1, currentStep - 1));
   }
 
