@@ -335,7 +335,7 @@ export default function AudioPlayer({
 
     function renderMeta() {
         return (
-            <div className="flex min-w-0 flex-1 items-center gap-3">
+            <div className="stage-meta-panel flex min-w-0 flex-1 items-center gap-3">
                 <div className="min-w-0 flex-1">
                     <p className="truncate text-[1.1rem] font-bold text-foreground">
                         {currentTrack.name || 'Unknown track'}
@@ -429,7 +429,7 @@ export default function AudioPlayer({
                     </>
                 )}
 
-                <div className="stage-progress-grid">
+                <div className="stage-progress-grid stage-progress-panel">
                     <span>{formatDuration(sliderValue * duration)}</span>
                     <Slider
                         aria-label="Track progress"

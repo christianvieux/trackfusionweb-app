@@ -338,6 +338,28 @@ body {
         animation: stage-art-settle 0.4s cubic-bezier(0.2, 0.8, 0.2, 1) both;
     }
 
+    .stage-meta-panel,
+    .stage-progress-panel {
+        border: 1px solid rgb(52 211 153 / 0.17);
+        background:
+            linear-gradient(135deg, rgb(52 211 153 / 0.075), transparent 62%),
+            rgb(4 12 18 / 0.42);
+        box-shadow:
+            inset 0 1px 0 rgb(255 255 255 / 0.025),
+            0 10px 28px rgb(0 0 0 / 0.12);
+        backdrop-filter: blur(8px);
+    }
+
+    .stage-meta-panel {
+        border-radius: 12px;
+        padding: 9px 10px;
+    }
+
+    .stage-progress-panel {
+        border-radius: 10px;
+        padding: 9px;
+    }
+
     .stage-progress-grid {
         display: grid;
         grid-template-columns: auto minmax(0, 1fr) auto;
