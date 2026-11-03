@@ -30,7 +30,7 @@ function TrackTile({ track, creator, playlist }) {
     return (
         <article
             aria-current={isCurrentTrack ? 'true' : undefined}
-            className={`group flex min-w-0 flex-col rounded-[14px] border p-2 transition focus-within:border-success/70 hover:border-success/70 ${
+            className={`track-tile-card group flex min-w-0 flex-col border transition focus-within:border-success/70 hover:border-success/70 ${
                 isCurrentTrack
                     ? 'border-success/40 bg-success/10'
                     : 'border-success/20 bg-white/[.035]'
@@ -69,10 +69,10 @@ function TrackTile({ track, creator, playlist }) {
                 )}
             </div>
 
-            <div className="flex min-w-0 flex-1 flex-col px-0.5 pt-2.5">
+            <div className="track-tile-details flex min-w-0 flex-1 flex-col">
                 <Link
                     href={`/track/${track.id}`}
-                    className="truncate text-sm font-bold text-foreground transition-colors hover:text-primary"
+                    className="track-tile-title truncate font-bold text-foreground transition-colors hover:text-primary"
                     title={track.name || 'Unknown track'}
                 >
                     {track.name || 'Unknown track'}
@@ -82,28 +82,28 @@ function TrackTile({ track, creator, playlist }) {
                     creator={creator}
                     userId={track.creator_id}
                     animate={shouldAnimateAvatar}
-                    className="mt-1 max-w-full"
+                    className="track-tile-creator mt-1 max-w-full"
                     avatarClassName="size-4"
-                    nameClassName="text-xs font-semibold"
+                    nameClassName="track-tile-creator-name font-semibold"
                 />
 
                 {attributeSummary && (
                     <p
-                        className="mt-1 truncate text-[11px] text-muted-foreground"
+                        className="track-tile-summary mt-1 truncate text-muted-foreground"
                         title={attributeSummary}
                     >
                         {attributeSummary}
                     </p>
                 )}
 
-                <div className="mt-auto flex items-center justify-between gap-2 pt-2 text-xs text-muted-foreground">
+                <div className="track-tile-footer mt-auto flex items-center justify-between text-muted-foreground">
                     <span>{formatDuration(track.length)}</span>
 
                     <div className="flex items-center gap-2">
                         <FavoriteButton
                             track={track}
                             showLikes
-                            className="h-6 min-w-6"
+                            className="track-tile-favorite h-6 min-w-6"
                             classNames={{ svg: 'size-4' }}
                         />
                         <TrackOptionsDropdown

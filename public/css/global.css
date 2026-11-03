@@ -1247,6 +1247,33 @@ body {
         gap: 12px;
     }
 
+    .track-tile-card {
+        border-radius: 14px;
+        padding: 8px;
+    }
+
+    .track-tile-details {
+        padding: 10px 2px 0;
+    }
+
+    .track-tile-title {
+        font-size: 0.875rem;
+    }
+
+    .track-tile-creator-name,
+    .track-tile-footer {
+        font-size: 0.75rem;
+    }
+
+    .track-tile-summary {
+        font-size: 0.6875rem;
+    }
+
+    .track-tile-footer {
+        gap: 8px;
+        padding-top: 8px;
+    }
+
     .track-spotlight-grid {
         display: grid;
         grid-template-columns: minmax(0, 5fr) minmax(0, 6fr);
@@ -1261,6 +1288,9 @@ body {
     }
 
     .track-spotlight-hero {
+        position: sticky;
+        z-index: 1;
+        top: 8px;
         display: grid !important;
         grid-template-columns: clamp(108px, 34%, 150px) minmax(0, 1fr);
         align-items: center;
@@ -1402,10 +1432,60 @@ body {
 
         .track-spotlight-hero {
             position: static;
+            top: auto;
         }
     }
 
     @container (max-width: 480px) {
+        .track-tile-grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 8px;
+        }
+
+        .track-tile-card {
+            border-radius: 10px;
+            padding: 6px;
+        }
+
+        .track-tile-details {
+            padding: 7px 0 0;
+        }
+
+        .track-tile-title {
+            font-size: 0.75rem;
+            line-height: 1rem;
+        }
+
+        .track-tile-creator {
+            gap: 4px;
+        }
+
+        .track-tile-creator-name,
+        .track-tile-footer {
+            font-size: 0.6875rem;
+        }
+
+        .track-tile-summary {
+            display: none;
+        }
+
+        .track-tile-footer {
+            gap: 4px;
+            padding-top: 6px;
+        }
+
+        .track-tile-footer > div {
+            gap: 2px;
+        }
+
+        .track-tile-favorite > div {
+            gap: 2px;
+        }
+
+        .track-tile-favorite > div > span {
+            font-size: 0.625rem;
+        }
+
         .track-layout-label {
             display: none;
         }

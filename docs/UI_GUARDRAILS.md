@@ -29,6 +29,13 @@ behaviors.
   subtitle. They must never push actions into an implicit second grid row.
 - Rows, Tiles, and Spotlight must preserve playback, favorite, creator, menu,
   filter, and artwork-fallback behavior.
+- At narrow track-browser widths, Tiles use the shared two-column compact
+  treatment rather than shrinking a desktop card ad hoc. Keep primary actions
+  usable and hide only lower-priority metadata when space is exhausted.
+- Layout-owned responsive properties such as Spotlight `position` belong in
+  component CSS. Do not add a Tailwind `sticky`/`top-*` utility to markup when a
+  container query must disable it; the utility layer can override the component
+  breakpoint and make the hero overlap its track items.
 - Track pages keep a bounded `min-height: 0` flex chain from the page panel to
   `.track-list-viewport`. That shared viewport owns vertical overflow for Rows,
   Tiles, and Spotlight; do not return an ancestor to content-sized `h-max` or

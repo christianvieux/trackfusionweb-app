@@ -41,7 +41,7 @@ function TrackSpotlightView({ tracks, creatorsById, emptyMessage }) {
     return (
         <div aria-label="Tracks in spotlight" className="track-spotlight-grid">
             <article
-                className={`track-spotlight-hero sticky top-2 flex min-w-0 flex-col rounded-[14px] border p-3 ${
+                className={`track-spotlight-hero min-w-0 rounded-[14px] border p-3 ${
                     currentTrack?.id != null &&
                     String(currentTrack.id) === String(selectedTrack.id)
                         ? 'border-success/40 bg-success/10'
