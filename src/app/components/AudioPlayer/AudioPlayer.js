@@ -331,32 +331,35 @@ export default function AudioPlayer({
 
     function renderMeta() {
         return (
-            <div className="stage-meta-panel flex min-w-0 flex-1 items-center gap-3">
+            <div className="stage-meta-panel flex min-w-0 flex-1 items-center gap-2">
                 <div className="min-w-0 flex-1">
-                    <p className="truncate text-[1.1rem] font-bold text-foreground">
+                    <p
+                        className="truncate text-[.95rem] font-bold leading-tight text-foreground"
+                        title={currentTrack.name || 'Unknown track'}
+                    >
                         {currentTrack.name || 'Unknown track'}
                     </p>
                     <TrackCreatorLink
                         creator={currentCreator}
                         userId={currentTrack.creator_id}
                         animate={isPlaying}
-                        className="mt-1 max-w-full !text-[#a7f3d0] hover:!text-[#d1fae5]"
-                        avatarClassName="size-5"
-                        nameClassName="text-[.88rem] font-semibold"
+                        className="mt-1 max-w-full gap-1.5 !text-[#a7f3d0] hover:!text-[#d1fae5]"
+                        avatarClassName="size-[18px]"
+                        nameClassName="text-[.78rem] font-semibold"
                     />
                 </div>
 
-                <div className="stage-meta-actions flex shrink-0 items-center gap-1">
+                <div className="stage-meta-actions flex shrink-0 items-center">
                     <FavoriteButton
                         track={currentTrack}
-                        className="size-9 min-w-9 !text-[#a7f3d0]"
-                        classNames={{ svg: 'size-[18px]' }}
+                        className="size-8 min-w-8 !text-[#a7f3d0]"
+                        classNames={{ svg: 'size-4' }}
                     />
                     <TrackOptionsDropdown
                         track={currentTrack}
                         creator={currentCreator}
-                        className="size-9"
-                        triggerClassName="size-9 rounded-lg !text-[#a7f3d0] hover:bg-[rgb(52_211_153_/_0.1)]"
+                        className="size-8"
+                        triggerClassName="size-8 rounded-lg !text-[#a7f3d0] hover:bg-[rgb(52_211_153_/_0.1)]"
                     />
                 </div>
             </div>

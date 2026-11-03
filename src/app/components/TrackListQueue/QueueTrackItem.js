@@ -54,7 +54,7 @@ export default function QueueTrackItem({
     >
       <TrackCardBase
         track={track}
-        className={`hover:bg-muted w-full! rounded-lg p-2 ${
+        className={`hover:bg-muted w-full! gap-1.5 rounded-lg p-1.5 [&_#left_content]:gap-1.5 [&_#left_content>div:first-child]:size-9 [&_#right_content]:shrink-0 [&_p]:text-sm ${
           classNames.QueueTrackItem || ""
         } ${isDragging ? "opacity-50" : "opacity-100"}`}
         rightContent={rightContent}

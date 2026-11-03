@@ -71,15 +71,21 @@ function StageQueueItem({
             <TrackVisual
                 track={track}
                 creator={creator}
-                className="size-9 rounded-lg"
+                className="size-8 rounded-md"
                 avatarClassName="size-2/3"
-                sizes="36px"
+                sizes="32px"
             />
             <div className="min-w-0">
-                <p className="truncate text-sm font-bold text-foreground">
+                <p
+                    className="truncate text-[.78rem] font-bold leading-tight text-foreground"
+                    title={name}
+                >
                     {name}
                 </p>
-                <p className="truncate text-xs text-muted-foreground">
+                <p
+                    className="truncate text-[.68rem] leading-tight text-muted-foreground"
+                    title={creator?.username || track.artist || 'Unknown creator'}
+                >
                     {creator?.username || track.artist || 'Unknown creator'} ·{' '}
                     {formatDuration(track.length)}
                 </p>
@@ -104,8 +110,8 @@ function StageQueueItem({
                 <TrackOptionsDropdown
                     track={track}
                     creator={creator}
-                    className="size-8"
-                    triggerClassName="size-8 rounded-lg text-[var(--stage-accent-light)] hover:bg-[rgb(52_211_153_/_0.1)]"
+                    className="size-7"
+                    triggerClassName="size-7 rounded-md text-[var(--stage-accent-light)] hover:bg-[rgb(52_211_153_/_0.1)]"
                 />
             </div>
 
