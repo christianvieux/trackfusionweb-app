@@ -5,6 +5,7 @@ import { Slider } from '@heroui/react'
 import {
     ChevronDown,
     List,
+    PanelBottomClose,
     Repeat,
     Shuffle,
     SkipBack,
@@ -24,6 +25,7 @@ import {
 } from '../TrackList/utils'
 import VolumeSlider from './Volume'
 import AudioElement from './AudioElement'
+import CollapsedPlayer from './CollapsedPlayer'
 
 import { usePlayback } from '../../context/PlaybackContext'
 import { useTrackManager } from '../../context/TrackManagerContext'
@@ -88,7 +90,10 @@ function QueueBadge({ count }) {
     )
 }
 
-export default function AudioPlayer() {
+export default function AudioPlayer({
+    isCollapsed = false,
+    onCollapsedChange = () => {},
+}) {
     const {
         shufflePlaylist,
         resetPlaylist,
@@ -371,10 +376,13 @@ export default function AudioPlayer() {
         )
     }
 
-    function renderStageContent({ showClose = false } = {}) {
+    function renderStageContent({
+        showClose = false,
+        showCollapse = false,
+    } = {}) {
         return (
             <div
-                className={`stage-player-content ${isQueueOpen ? 'is-queue-open' : ''}`}
+                className={`stage-player-content ${isQueueOpen ? 'is-queue-open' : ''} ${showCollapse ? 'has-collapse-control' : ''}`}
             >
                 {showClose && (
                     <button
@@ -384,6 +392,19 @@ export default function AudioPlayer() {
                         className="stage-sheet-close"
                     >
                         <ChevronDown className="size-6" />
+                    </button>
+                )}
+
+                {showCollapse && (
+                    <button
+                        type="button"
+                        aria-label="Collapse player to the bottom"
+                        title="Collapse player to the bottom"
+                        onClick={() => onCollapsedChange(true)}
+                        className="stage-collapse-toggle"
+                    >
+                        <PanelBottomClose className="size-4" />
+                        <span>Collapse</span>
                     </button>
                 )}
 
@@ -503,9 +524,33 @@ export default function AudioPlayer() {
                 }}
             />
 
-            <aside className="stage-player" aria-label="Now playing">
-                {renderStageContent()}
-            </aside>
+            {isCollapsed ? (
+                <CollapsedPlayer
+                    track={currentTrack}
+                    creator={currentCreator}
+                    isPlaying={isPlaying}
+                    progress={sliderValue}
+                    duration={duration}
+                    volume={volumeValue}
+                    queueCount={upcomingTracks.length}
+                    isBusy={isFetchingTrack || isBuffering}
+                    onProgressChange={handleSliderChange}
+                    onProgressChangeEnd={handleSliderChangeEnd}
+                    onVolumeChange={setVolumeValue}
+                    onPlayPause={handlePlayPause}
+                    onPrevious={handlePrevious}
+                    onNext={handleSkip}
+                    onOpenQueue={() => {
+                        setIsQueueOpen(true)
+                        onCollapsedChange(false)
+                    }}
+                    onExpand={() => onCollapsedChange(false)}
+                />
+            ) : (
+                <aside className="stage-player" aria-label="Now playing">
+                    {renderStageContent({ showCollapse: true })}
+                </aside>
+            )}
 
             <div className="player-mini-bar">
                 <TrackVisual

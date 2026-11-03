@@ -37,6 +37,10 @@ track-browser, and Stage player work.
   and compact player bar. The header create button opens links for Upload and
   Analyze instead of duplicating the desktop navigation.
 - The player is only mounted when a track is active.
+- On desktop, the Stage can collapse into a dedicated bottom player that
+  returns the right-side column to page content. Expanding restores the Stage in
+  its original position. The selected mode is stored in local storage so it
+  also works for guests.
 
 ## Playback and queue
 
@@ -45,6 +49,10 @@ track-browser, and Stage player work.
   reduced-motion preferences.
 - The Stage shows track artwork, creator information, progress, transport,
   volume, favorite, options, and queue controls in one right-side panel.
+- The collapsed player keeps the current track, progress, core transport,
+  volume, favorite, options, queue access, and an explicit expand action in a
+  compact floating window. Narrow desktop widths progressively hide secondary
+  controls while retaining playback and expansion.
 - Queue and upcoming-playlist sections share the existing playback manager and
   drag/drop ordering logic. Items can move within or between sections, be
   removed, or be selected directly with their play button.

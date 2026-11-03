@@ -11,6 +11,10 @@ import NavBar from './nav-bar'
 import Sidebar from './Sidebar'
 
 import AudioPlayer from './AudioPlayer/AudioPlayer'
+import {
+    PLAYER_LAYOUTS,
+} from './AudioPlayer/playerLayout'
+import usePlayerLayout from './AudioPlayer/usePlayerLayout'
 import VideoBackground from './VideoBackground'
 
 import { FavoriteTracksProvider } from '../context/FavoriteTracksContext'
@@ -77,6 +81,7 @@ function AppShell({ children }) {
     const { currentTrack } = useTrackManager()
     const { canShowPlayback } = usePlayback()
     const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false)
+    const [playerLayout, setPlayerLayout] = usePlayerLayout()
     const showPlayer = canShowPlayback && Boolean(currentTrack)
 
     return (
@@ -84,6 +89,7 @@ function AppShell({ children }) {
             id="App"
             data-dock="right"
             data-has-player={showPlayer ? 'true' : 'false'}
+            data-player-layout={playerLayout}
             data-sidebar-collapsed={isSidebarCollapsed ? 'true' : 'false'}
             className="app-shell relative isolate h-dvh min-h-0 overflow-hidden text-foreground"
         >
@@ -118,7 +124,18 @@ function AppShell({ children }) {
                 </footer>
             </main>
 
-            {showPlayer && <AudioPlayer />}
+            {showPlayer && (
+                <AudioPlayer
+                    isCollapsed={playerLayout === PLAYER_LAYOUTS.COLLAPSED}
+                    onCollapsedChange={(isCollapsed) =>
+                        setPlayerLayout(
+                            isCollapsed
+                                ? PLAYER_LAYOUTS.COLLAPSED
+                                : PLAYER_LAYOUTS.STAGE
+                        )
+                    }
+                />
+            )}
 
             <MobileTabBar />
         </div>
