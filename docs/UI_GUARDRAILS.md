@@ -83,7 +83,7 @@ behaviors.
   memo boundary is added.
 - Track items stay visually quiet at rest. The persisted current track uses the
   shared brighter border, subtle green wash, and inset start-edge marker in
-  Rows, Tiles, Spotlight, and queue surfaces; a Spotlight selection alone must
+  Rows, Tiles, and Spotlight; a Spotlight selection alone must
   not masquerade as the playing track.
 
 ## Queue contract
@@ -119,7 +119,7 @@ behaviors.
 - Progress and volume sliders remain visually distinct. Playback progress may
   interpolate between coarse media `timeupdate` events, but transitions must be
   disabled while the user is dragging so seeking remains immediate.
-- Slider rails and fills remain one-pixel hairlines while their owning slider
+- Slider rails and fills remain compact three-pixel lines while their owning slider
   components retain the larger accessible pointer/touch target.
 
 ## Settings contract

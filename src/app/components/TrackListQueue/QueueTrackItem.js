@@ -8,18 +8,16 @@ import QueueTrackActions from "./QueueTrackActions";
 import QueueTrackDragPreview from "./QueueTrackDragPreview";
 import QueueDropIndicatorPortal from "./QueueDropIndicatorPortal";
 import useQueueTrackDrag from "./useQueueTrackDrag";
-import { getQueueItemId, isSameAudioTrack } from "./utils";
+import { getQueueItemId } from "./utils";
 
 export default function QueueTrackItem({
   track,
   state,
   setState,
   handleDrop,
-  currentTrack,
   canDrag = true,
   classNames = {},
 }) {
-  const isCurrentTrack = isSameAudioTrack(track, currentTrack);
   const {
     cardRef,
     isHovered,
@@ -46,10 +44,9 @@ export default function QueueTrackItem({
   return (
     <div
       ref={cardRef}
-      aria-current={isCurrentTrack ? "true" : undefined}
       className={`queue-track-item relative w-full transition-all duration-200 ${
         canDrag ? "cursor-grab active:cursor-grabbing" : "cursor-pointer"
-      } ${isCurrentTrack ? "is-current" : ""}`}
+      }`}
       onMouseDown={handleMouseDown}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}

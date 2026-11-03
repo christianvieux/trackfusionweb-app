@@ -123,7 +123,6 @@ function TrackListQueue({ classNames = {}, variant = "default", onClear }) {
   }, [playlist, currentTrack]);
 
   const sharedListProps = {
-    currentTrack,
     state,
     setState,
     handleDrop,

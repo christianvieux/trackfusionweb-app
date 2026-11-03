@@ -542,9 +542,9 @@ body {
     }
 
     .stage-slider-track {
-        height: 1px !important;
-        min-height: 1px !important;
-        max-height: 1px !important;
+        height: 3px !important;
+        min-height: 3px !important;
+        max-height: 3px !important;
         padding-block: 0 !important;
         border: 0;
         border-radius: 2px;
@@ -552,19 +552,25 @@ body {
     }
 
     .stage-slider-fill {
-        height: 1px !important;
-        min-height: 1px !important;
-        max-height: 1px !important;
+        height: 3px !important;
+        min-height: 3px !important;
+        max-height: 3px !important;
         border-radius: 2px;
         background: linear-gradient(90deg, #34d399, #a7f3d0);
         box-shadow: 0 0 10px rgb(52 211 153 / 0.42);
     }
 
     .stage-slider-thumb {
-        width: 6px;
-        height: 6px;
-        border: 1px solid #a7f3d0;
-        background: #080816;
+        width: 10px !important;
+        min-width: 10px !important;
+        max-width: 10px !important;
+        height: 10px !important;
+        min-height: 10px !important;
+        max-height: 10px !important;
+        border: 2px solid #a7f3d0;
+        border-radius: 999px !important;
+        background: #064e3b;
+        box-shadow: 0 0 0 2px rgb(8 8 22 / 0.8);
     }
 
     .stage-progress-slider-fill {
@@ -600,7 +606,10 @@ body {
 
     .stage-volume-slider-thumb {
         border-color: #c4b5fd;
-        box-shadow: 0 0 7px rgb(139 92 246 / 0.3);
+        background: #4c1d95;
+        box-shadow:
+            0 0 0 2px rgb(8 8 22 / 0.8),
+            0 0 7px rgb(139 92 246 / 0.3);
     }
 
     .stage-controls {
@@ -698,17 +707,6 @@ body {
         background: rgb(52 211 153 / 0.045);
     }
 
-    .stage-queue-item.is-current {
-        border-color: rgb(74 222 128 / 0.4);
-        border-bottom-style: solid;
-        background: rgb(52 211 153 / 0.075);
-        box-shadow: inset 3px 0 0 #4ade80;
-    }
-
-    .stage-queue-item.is-current .stage-queue-title {
-        color: var(--color-success-hover);
-    }
-
     .stage-queue-item.is-dragging {
         opacity: 0.42;
     }
@@ -756,17 +754,6 @@ body {
     .queue-track-item:hover .queue-track-card {
         border-color: rgb(52 211 153 / 0.18);
         background: rgb(52 211 153 / 0.045);
-    }
-
-    .queue-track-item.is-current .queue-track-card {
-        border-color: rgb(74 222 128 / 0.4);
-        border-bottom-style: solid;
-        background: rgb(52 211 153 / 0.075);
-        box-shadow: inset 3px 0 0 #4ade80;
-    }
-
-    .queue-track-item.is-current .track-card-title {
-        color: var(--color-success-hover);
     }
 
     .stage-queue-sections {
