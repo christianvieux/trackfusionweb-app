@@ -11,9 +11,9 @@ import { formatDuration } from '../../../utils/audio'
 import {
     getCreatorForTrack,
     getTrackKey,
-    parseAttributes,
 } from '../utils'
 
+import TrackAttributePills from './TrackAttributePills'
 import TrackCreatorLink from './TrackCreatorLink'
 import TrackListEmptyState from './TrackListEmptyState'
 import TrackVisual from './TrackVisual'
@@ -23,11 +23,6 @@ function TrackTile({ track, creator, playlist, onFilter }) {
     const [isInteracting, setIsInteracting] = useState(false)
     const [isOptionsOpen, setIsOptionsOpen] = useState(false)
     const shouldAnimateAvatar = isInteracting || isOptionsOpen
-    const attributes = [
-        { type: 'category', value: parseAttributes(track.category)[0] },
-        { type: 'genre', value: parseAttributes(track.genre)[0] },
-        { type: 'mood', value: parseAttributes(track.mood)[0] },
-    ].filter(({ value }) => Boolean(value))
     const isCurrentTrack =
         currentTrack?.id != null && String(currentTrack.id) === String(track.id)
 
@@ -89,21 +84,11 @@ function TrackTile({ track, creator, playlist, onFilter }) {
                     nameClassName="track-tile-creator-name font-semibold"
                 />
 
-                {attributes.length > 0 && (
-                    <div className="track-tile-tags mt-2 flex flex-wrap gap-1">
-                        {attributes.map(({ type, value }) => (
-                            <button
-                                key={`${type}-${value}`}
-                                type="button"
-                                aria-label={`Filter by ${type}: ${value}`}
-                                onClick={() => onFilter?.(type, value)}
-                                className={`track-attribute-pill track-attribute-pill--${type}`}
-                            >
-                                {value}
-                            </button>
-                        ))}
-                    </div>
-                )}
+                <TrackAttributePills
+                    track={track}
+                    onFilter={onFilter}
+                    className="track-tile-tags mt-2 flex flex-wrap gap-1"
+                />
 
                 <div className="track-tile-footer mt-auto flex items-center justify-between text-muted-foreground">
                     <span>{formatDuration(track.length)}</span>

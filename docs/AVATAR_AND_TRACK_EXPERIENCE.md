@@ -22,6 +22,9 @@ track-browser, and Stage player work.
   is rendered on a stable, track-specific color palette.
 - Track browsing supports Rows, Tiles, and Spotlight presentations without
   changing filtering, favorites, menus, playback, or pagination behavior.
+- Rows, Tiles, and the Spotlight feature card share the same compact category,
+  genre, and mood pills. Selecting a pill applies the corresponding track
+  filter in every layout.
 - Rows use independently rounded items. Empty row results are separated from
   the column header so the header rule and dashed empty-state border do not
   visually collide.

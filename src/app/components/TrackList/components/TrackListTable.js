@@ -253,6 +253,7 @@ export default function TrackListTable({
                             tracks={paginatedTracks}
                             creatorsById={creatorsById}
                             emptyMessage={emptyMessage}
+                            onFilter={toggleFilter}
                         />
                     )}
             </div>

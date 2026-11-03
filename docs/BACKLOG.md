@@ -1,5 +1,16 @@
 # TrackFusionWeb Backlog
 
+## Recently completed
+
+The blob-avatar, deterministic artwork, three-layout track browser, responsive
+Stage player, queue interaction, and local upload/analyze portability work is
+complete on `feat/blob-avatars-and-artwork-fix`. The final layout pass also
+standardized interactive attribute pills across Rows, Tiles, and Spotlight.
+
+Before merge, run the verification commands in
+[`AVATAR_AND_TRACK_EXPERIENCE.md`](./AVATAR_AND_TRACK_EXPERIENCE.md) and review
+the behavioral contracts in [`UI_GUARDRAILS.md`](./UI_GUARDRAILS.md).
+
 ## Draggable, dockable playback window
 
 **Status:** Backlog — benched on purpose

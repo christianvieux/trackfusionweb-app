@@ -11,6 +11,7 @@ import { formatDuration } from '../../../utils/audio'
 import { useTrackManager } from '../../../context/TrackManagerContext'
 
 import TrackCreatorLink from './TrackCreatorLink'
+import TrackAttributePills from './TrackAttributePills'
 import {
     getCreatorDisplayName,
     parseAttributes,
@@ -42,17 +43,9 @@ export default function TrackRowDesktop({
         .filter(Boolean)
         .join(' · ')
     const genre = parseAttributes(track.genre)[0]
-    const mood = parseAttributes(track.mood)[0]
-    const category = parseAttributes(track.category)[0]
     const mediumSubtitle = ['TrackFusionWeb', genre]
         .filter(Boolean)
         .join(' · ')
-
-    const tags = [
-        { type: 'category', value: category },
-        { type: 'genre', value: genre },
-        { type: 'mood', value: mood },
-    ].filter(({ value }) => Boolean(value))
 
     return (
         <article
@@ -91,19 +84,12 @@ export default function TrackRowDesktop({
                 )}
             </div>
 
-            <div className="track-row-tags min-w-0 items-center gap-1 overflow-hidden">
-                {tags.map(({ type, value }) => (
-                    <button
-                        key={`${type}-${value}`}
-                        type="button"
-                        aria-label={`Filter by ${type.charAt(0).toUpperCase() + type.slice(1)}: ${value}`}
-                        onClick={() => onFilter?.(type, value)}
-                        className={`track-attribute-pill track-attribute-pill--${type}`}
-                    >
-                        {value}
-                    </button>
-                ))}
-            </div>
+            <TrackAttributePills
+                track={track}
+                onFilter={onFilter}
+                preserveSpace
+                className="track-row-tags min-w-0 items-center gap-1 overflow-hidden"
+            />
 
             <div className="track-row-creator min-w-0">
                 <TrackCreatorLink

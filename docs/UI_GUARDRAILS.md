@@ -29,6 +29,9 @@ behaviors.
   subtitle. They must never push actions into an implicit second grid row.
 - Rows, Tiles, and Spotlight must preserve playback, favorite, creator, menu,
   filter, and artwork-fallback behavior.
+- Category, genre, and mood metadata use the shared `TrackAttributePills`
+  component in Rows, Tiles, and Spotlight so filtering behavior, color roles,
+  and responsive sizing remain consistent.
 - At narrow track-browser widths, Tiles use the shared two-column compact
   treatment rather than shrinking a desktop card ad hoc. Keep primary actions
   usable and hide only lower-priority metadata when space is exhausted.

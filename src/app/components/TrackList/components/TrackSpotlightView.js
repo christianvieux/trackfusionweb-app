@@ -11,15 +11,15 @@ import { formatDuration } from '../../../utils/audio'
 import {
     getCreatorDisplayName,
     getCreatorForTrack,
-    getTrackAttributeSummary,
     getTrackKey,
 } from '../utils'
 
+import TrackAttributePills from './TrackAttributePills'
 import TrackCreatorLink from './TrackCreatorLink'
 import TrackListEmptyState from './TrackListEmptyState'
 import TrackVisual from './TrackVisual'
 
-function TrackSpotlightView({ tracks, creatorsById, emptyMessage }) {
+function TrackSpotlightView({ tracks, creatorsById, emptyMessage, onFilter }) {
     const { currentTrack } = useTrackManager()
     const [selectedTrackKey, setSelectedTrackKey] = useState(null)
     const [isInteracting, setIsInteracting] = useState(false)
@@ -36,8 +36,6 @@ function TrackSpotlightView({ tracks, creatorsById, emptyMessage }) {
         ) || tracks[0]
     const selectedCreator = getCreatorForTrack(creatorsById, selectedTrack)
     const shouldAnimateAvatar = isInteracting || isOptionsOpen
-    const attributeSummary = getTrackAttributeSummary(selectedTrack)
-
     return (
         <div aria-label="Tracks in spotlight" className="track-spotlight-grid">
             <article
@@ -92,14 +90,11 @@ function TrackSpotlightView({ tracks, creatorsById, emptyMessage }) {
                         </span>
                     </div>
 
-                    {attributeSummary && (
-                        <p
-                            className="mt-1 truncate text-xs text-muted-foreground/80"
-                            title={attributeSummary}
-                        >
-                            {attributeSummary}
-                        </p>
-                    )}
+                    <TrackAttributePills
+                        track={selectedTrack}
+                        onFilter={onFilter}
+                        className="track-spotlight-tags mt-2 flex flex-wrap gap-1"
+                    />
 
                     <div className="mt-3 flex items-center gap-3">
                         <TrackPlayButton
