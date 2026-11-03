@@ -56,5 +56,30 @@ describe('track list utilities', () => {
         expect(getTrackVisualPalette({ id: 1 })).not.toEqual(
             getTrackVisualPalette({ id: 2 })
         )
+
+        expect(
+            getTrackVisualPalette({ id: 1, uniqueId: 'queue-copy-a' })
+        ).toEqual(getTrackVisualPalette({ id: 1, uniqueId: 'queue-copy-b' }))
+
+        expect(
+            getTrackVisualPalette({
+                name: 'Midnight Static',
+                creator_id: 9,
+                genre: 'Jazz',
+            })
+        ).toEqual(
+            getTrackVisualPalette({
+                name: 'Midnight Static',
+                creator_id: 9,
+                genre: 'Jazz',
+            })
+        )
+
+        const generatedPalettes = new Set(
+            Array.from({ length: 64 }, (_, index) =>
+                JSON.stringify(getTrackVisualPalette({ id: index + 1 }))
+            )
+        )
+        expect(generatedPalettes.size).toBeGreaterThanOrEqual(60)
     })
 })

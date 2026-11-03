@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { memo, useEffect, useMemo, useState } from 'react'
 
 import BlobAvatarDisplay from '../../BlobAvatarDisplay'
 import TrackArtwork from '../../TrackArtwork'
@@ -10,7 +10,7 @@ function hasArtwork(track) {
     return typeof track?.image_url === 'string' && track.image_url.trim() !== ''
 }
 
-export default function TrackVisual({
+function TrackVisual({
     track,
     creator,
     animateAvatar = false,
@@ -31,10 +31,12 @@ export default function TrackVisual({
 
     const showArtwork = Boolean(artworkUrl) && !artworkFailed
     const creatorName = creator?.username || 'Creator'
-    const palette = getTrackVisualPalette(track)
-    const background =
-        backgroundOverride ||
-        `linear-gradient(135deg, ${palette.from} 0%, ${palette.via} 52%, ${palette.to} 100%)`
+    const background = useMemo(() => {
+        if (backgroundOverride) return backgroundOverride
+
+        const palette = getTrackVisualPalette(track)
+        return `linear-gradient(135deg, ${palette.from} 0%, ${palette.via} 52%, ${palette.to} 100%)`
+    }, [backgroundOverride, track])
     const avatarColor = creator?.avatar?.color || '#22c55e'
 
     return (
@@ -73,3 +75,5 @@ export default function TrackVisual({
         </div>
     )
 }
+
+export default memo(TrackVisual)

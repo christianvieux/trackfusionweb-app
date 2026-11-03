@@ -1,6 +1,7 @@
 import Image from 'next/image'
+import { memo } from 'react'
 
-export default function VideoBackground({ playVideo = false }) {
+function VideoBackground({ playVideo = false }) {
     return (
         <>
             <div className="fixed inset-0 -z-30">
@@ -34,3 +35,5 @@ export default function VideoBackground({ playVideo = false }) {
         </>
     )
 }
+
+export default memo(VideoBackground)

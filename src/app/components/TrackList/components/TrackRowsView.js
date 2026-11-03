@@ -1,14 +1,11 @@
+import { memo } from 'react'
+
 import { getCreatorForTrack, getTrackKey } from '../utils'
 
 import TrackListEmptyState from './TrackListEmptyState'
 import TrackRowDesktop from './TrackRowDesktop'
 
-export default function TrackRowsView({
-    tracks,
-    creatorsById,
-    emptyMessage,
-    onFilter,
-}) {
+function TrackRowsView({ tracks, creatorsById, emptyMessage, onFilter }) {
     return (
         <div role="table" aria-label="Tracks in rows" className="space-y-0.5">
             <div role="row" className="track-row-grid track-row-header">
@@ -24,10 +21,7 @@ export default function TrackRowsView({
             </div>
 
             {tracks.length === 0 ? (
-                <TrackListEmptyState
-                    message={emptyMessage}
-                    className="mt-3"
-                />
+                <TrackListEmptyState message={emptyMessage} className="mt-3" />
             ) : (
                 tracks.map((track, index) => (
                     <TrackRowDesktop
@@ -42,3 +36,5 @@ export default function TrackRowsView({
         </div>
     )
 }
+
+export default memo(TrackRowsView)

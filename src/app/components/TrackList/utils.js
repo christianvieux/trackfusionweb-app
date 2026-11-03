@@ -1,20 +1,31 @@
 import { getColorForAttribute } from '../../../config/Colors'
 
-const TRACK_VISUAL_PALETTES = Object.freeze([
-    { from: '#68224F', via: '#431A48', to: '#1B1028' },
-    { from: '#543080', via: '#34245E', to: '#16142D' },
-    { from: '#27527A', via: '#263B66', to: '#111A30' },
-    { from: '#17605D', via: '#164448', to: '#0C252A' },
-    { from: '#276044', via: '#1C4635', to: '#0C241B' },
-    { from: '#71501E', via: '#4D341A', to: '#27190C' },
-    { from: '#733344', via: '#4D2235', to: '#27101B' },
-    { from: '#51418A', via: '#362D68', to: '#181631' },
-])
+function getStableTrackIdentity(track = {}) {
+    const persistedId = track.trackId ?? track.id
+    if (persistedId != null) return `track:${String(persistedId)}`
+
+    const descriptiveIdentity = [
+        track.name,
+        track.artist,
+        track.creator_id,
+        track.category,
+        track.genre,
+        track.mood,
+    ]
+        .map((value) =>
+            String(value ?? '')
+                .trim()
+                .toLowerCase()
+        )
+        .join('|')
+
+    return descriptiveIdentity.replaceAll('|', '')
+        ? `attributes:${descriptiveIdentity}`
+        : `instance:${String(track.uniqueId ?? 'track')}`
+}
 
 function hashTrackIdentity(track = {}) {
-    const identity = String(
-        track.id ?? track.uniqueId ?? track.name ?? track.creator_id ?? 'track'
-    )
+    const identity = getStableTrackIdentity(track)
     let hash = 2166136261
 
     for (const character of identity) {
@@ -89,20 +100,24 @@ export function getTrackAttributeSummary(track = {}) {
 }
 
 export function getTrackVisualPalette(track = {}) {
-    return TRACK_VISUAL_PALETTES[
-        hashTrackIdentity(track) % TRACK_VISUAL_PALETTES.length
-    ]
+    const hash = hashTrackIdentity(track)
+    const baseHue = hash % 360
+    const hueDirection = hash & 1 ? 1 : -1
+    const hueSpread = 20 + ((hash >>> 8) % 38)
+    const middleHue = (baseHue + hueDirection * hueSpread + 360) % 360
+    const endHue = (middleHue + hueDirection * 12 + 360) % 360
+    const saturation = 48 + ((hash >>> 16) % 17)
+    const lightness = 29 + ((hash >>> 24) % 8)
+
+    return {
+        from: `hsl(${baseHue} ${saturation}% ${lightness}%)`,
+        via: `hsl(${middleHue} ${Math.max(42, saturation - 8)}% ${Math.max(19, lightness - 10)}%)`,
+        to: `hsl(${endHue} ${Math.max(34, saturation - 16)}% ${Math.max(9, lightness - 21)}%)`,
+    }
 }
 
 export function getStageVisualBackground(track = {}) {
-    const name = String(track.name || 'TrackFusionWeb')
-    const hue =
-        (Array.from(name).reduce(
-            (sum, character) => sum + character.charCodeAt(0),
-            0
-        ) %
-            70) +
-        250
+    const palette = getTrackVisualPalette(track)
 
-    return `linear-gradient(135deg, hsl(${hue} 55% 34%), hsl(${hue + 35} 65% 10%))`
+    return `linear-gradient(135deg, ${palette.from}, ${palette.to})`
 }

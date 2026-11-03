@@ -49,37 +49,39 @@ const PlayButton = forwardRef(function PlayButton(
             <span className="play-btn__wob" aria-hidden="true">
                 <span className="play-btn__fill" />
                 <svg className="play-btn__ring" viewBox="0 0 48 48">
-                    <defs>
-                        <filter
-                            id={roughEdgeFilterId}
-                            x="-15%"
-                            y="-15%"
-                            width="130%"
-                            height="130%"
-                        >
-                            <feTurbulence
-                                type="fractalNoise"
-                                baseFrequency="0.035 0.055"
-                                numOctaves="1"
-                                seed="4"
-                                result="edgeNoise"
+                    {playing && (
+                        <defs>
+                            <filter
+                                id={roughEdgeFilterId}
+                                x="-15%"
+                                y="-15%"
+                                width="130%"
+                                height="130%"
                             >
-                                <animate
-                                    attributeName="baseFrequency"
-                                    values="0.035 0.055;0.05 0.04;0.035 0.055"
-                                    dur="2.4s"
-                                    repeatCount="indefinite"
+                                <feTurbulence
+                                    type="fractalNoise"
+                                    baseFrequency="0.035 0.055"
+                                    numOctaves="1"
+                                    seed="4"
+                                    result="edgeNoise"
+                                >
+                                    <animate
+                                        attributeName="baseFrequency"
+                                        values="0.035 0.055;0.05 0.04;0.035 0.055"
+                                        dur="2.4s"
+                                        repeatCount="indefinite"
+                                    />
+                                </feTurbulence>
+                                <feDisplacementMap
+                                    in="SourceGraphic"
+                                    in2="edgeNoise"
+                                    scale="0.8"
+                                    xChannelSelector="R"
+                                    yChannelSelector="G"
                                 />
-                            </feTurbulence>
-                            <feDisplacementMap
-                                in="SourceGraphic"
-                                in2="edgeNoise"
-                                scale="0.8"
-                                xChannelSelector="R"
-                                yChannelSelector="G"
-                            />
-                        </filter>
-                    </defs>
+                            </filter>
+                        </defs>
+                    )}
                     <g
                         className="play-btn__rings"
                         filter={

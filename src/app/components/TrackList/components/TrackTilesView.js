@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { memo, useState } from 'react'
 import Link from 'next/link'
 import { useTrackManager } from '../../../context/TrackManagerContext'
 
@@ -25,8 +25,7 @@ function TrackTile({ track, creator, playlist }) {
     const shouldAnimateAvatar = isInteracting || isOptionsOpen
     const attributeSummary = getTrackAttributeSummary(track)
     const isCurrentTrack =
-        currentTrack?.id != null &&
-        String(currentTrack.id) === String(track.id)
+        currentTrack?.id != null && String(currentTrack.id) === String(track.id)
 
     return (
         <article
@@ -119,16 +118,13 @@ function TrackTile({ track, creator, playlist }) {
     )
 }
 
-export default function TrackTilesView({ tracks, creatorsById, emptyMessage }) {
+function TrackTilesView({ tracks, creatorsById, emptyMessage }) {
     if (tracks.length === 0) {
         return <TrackListEmptyState message={emptyMessage} />
     }
 
     return (
-        <div
-            aria-label="Tracks in tiles"
-            className="track-tile-grid"
-        >
+        <div aria-label="Tracks in tiles" className="track-tile-grid">
             {tracks.map((track, index) => (
                 <TrackTile
                     key={getTrackKey(track, index)}
@@ -140,3 +136,5 @@ export default function TrackTilesView({ tracks, creatorsById, emptyMessage }) {
         </div>
     )
 }
+
+export default memo(TrackTilesView)

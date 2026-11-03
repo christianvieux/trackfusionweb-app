@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { memo, useState } from 'react'
 import Link from 'next/link'
 import { useTrackManager } from '../../../context/TrackManagerContext'
 
@@ -19,11 +19,7 @@ import TrackCreatorLink from './TrackCreatorLink'
 import TrackListEmptyState from './TrackListEmptyState'
 import TrackVisual from './TrackVisual'
 
-export default function TrackSpotlightView({
-    tracks,
-    creatorsById,
-    emptyMessage,
-}) {
+function TrackSpotlightView({ tracks, creatorsById, emptyMessage }) {
     const { currentTrack } = useTrackManager()
     const [selectedTrackKey, setSelectedTrackKey] = useState(null)
     const [isInteracting, setIsInteracting] = useState(false)
@@ -43,10 +39,7 @@ export default function TrackSpotlightView({
     const attributeSummary = getTrackAttributeSummary(selectedTrack)
 
     return (
-        <div
-            aria-label="Tracks in spotlight"
-            className="track-spotlight-grid"
-        >
+        <div aria-label="Tracks in spotlight" className="track-spotlight-grid">
             <article
                 className={`track-spotlight-hero sticky top-2 flex min-w-0 flex-col rounded-[14px] border p-3 ${
                     currentTrack?.id != null &&
@@ -189,3 +182,5 @@ export default function TrackSpotlightView({
         </div>
     )
 }
+
+export default memo(TrackSpotlightView)

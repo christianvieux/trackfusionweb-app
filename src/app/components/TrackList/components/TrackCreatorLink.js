@@ -1,11 +1,11 @@
 'use client'
 
-import { useState } from 'react'
+import { memo, useState } from 'react'
 import Link from 'next/link'
 
 import BlobAvatarDisplay from '../../BlobAvatarDisplay'
 
-export default function TrackCreatorLink({
+function TrackCreatorLink({
     creator,
     userId,
     animate = false,
@@ -42,3 +42,5 @@ export default function TrackCreatorLink({
         </Link>
     )
 }
+
+export default memo(TrackCreatorLink)

@@ -8,9 +8,30 @@ function getCreatorKey(userId) {
     return userId == null ? null : String(userId)
 }
 
+const creatorCache = new Map()
+const creatorRequests = new Map()
+
+function loadCreator(creatorId) {
+    if (creatorCache.has(creatorId)) {
+        return Promise.resolve(creatorCache.get(creatorId))
+    }
+
+    if (!creatorRequests.has(creatorId)) {
+        const request = fetchPublicUserInfo(creatorId)
+            .then((creator) => {
+                creatorCache.set(creatorId, creator)
+                return creator
+            })
+            .finally(() => creatorRequests.delete(creatorId))
+
+        creatorRequests.set(creatorId, request)
+    }
+
+    return creatorRequests.get(creatorId)
+}
+
 export default function useTrackCreators(tracks = []) {
     const [creatorsById, setCreatorsById] = useState({})
-    const requestedCreatorIds = useRef(new Set())
     const isMounted = useRef(true)
 
     useEffect(() => {
@@ -28,17 +49,13 @@ export default function useTrackCreators(tracks = []) {
                     .map((track) => getCreatorKey(track?.creator_id))
                     .filter(Boolean)
             ),
-        ].filter((creatorId) => !requestedCreatorIds.current.has(creatorId))
+        ].filter((creatorId) => !creatorsById[creatorId])
 
         if (creatorIds.length === 0) return
 
-        creatorIds.forEach((creatorId) => {
-            requestedCreatorIds.current.add(creatorId)
-        })
-
         Promise.allSettled(
             creatorIds.map(async (creatorId) => {
-                const creator = await fetchPublicUserInfo(creatorId)
+                const creator = await loadCreator(creatorId)
                 return [creatorId, creator]
             })
         ).then((results) => {
@@ -57,7 +74,7 @@ export default function useTrackCreators(tracks = []) {
                 ...loadedCreators,
             }))
         })
-    }, [tracks])
+    }, [creatorsById, tracks])
 
     return creatorsById
 }
