@@ -14,6 +14,7 @@ function TrackListSection({
     state,
     setState,
     handleDrop,
+    currentTrack,
     getContainerFromTrack,
     handleDroppableAreaEnter,
     handleDroppableAreaLeave,
@@ -50,6 +51,7 @@ function TrackListSection({
                             state={state}
                             setState={setState}
                             handleDrop={handleDrop}
+                            currentTrack={currentTrack}
                         />
                     ))
                 ) : (

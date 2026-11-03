@@ -44,8 +44,8 @@ function TrackSpotlightView({ tracks, creatorsById, emptyMessage }) {
                 className={`track-spotlight-hero min-w-0 rounded-[14px] border p-3 ${
                     currentTrack?.id != null &&
                     String(currentTrack.id) === String(selectedTrack.id)
-                        ? 'border-success/40 bg-success/10'
-                        : 'border-success/20 bg-white/[.035]'
+                        ? 'is-current'
+                        : ''
                 }`}
                 onPointerEnter={() => setIsInteracting(true)}
                 onPointerLeave={() => setIsInteracting(false)}
@@ -145,11 +145,9 @@ function TrackSpotlightView({ tracks, creatorsById, emptyMessage }) {
                                 setSelectedTrackKey(trackKey)
                                 setIsOptionsOpen(false)
                             }}
-                            className={`grid min-h-14 w-full grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3 rounded-[10px] border px-2 py-2 text-left transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white ${
-                                isSelected || isCurrent
-                                    ? 'border-success/40 bg-success/10'
-                                    : 'border-transparent hover:border-accent/40 hover:bg-secondary-hover/40'
-                            } track-spotlight-row`}
+                            className={`track-spotlight-row grid min-h-14 w-full grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3 border px-2 py-2 text-left transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white ${
+                                isSelected ? 'is-selected' : ''
+                            } ${isCurrent ? 'is-current' : ''}`}
                             style={{ animationDelay: `${index * 45}ms` }}
                         >
                             <TrackVisual
@@ -164,7 +162,7 @@ function TrackSpotlightView({ tracks, creatorsById, emptyMessage }) {
                             />
 
                             <span className="min-w-0">
-                                <span className="block truncate text-sm font-bold text-foreground">
+                                <span className="track-spotlight-title block truncate text-sm font-bold text-foreground">
                                     {track.name || 'Unknown track'}
                                 </span>
                                 <span className="block truncate text-xs text-muted-foreground">

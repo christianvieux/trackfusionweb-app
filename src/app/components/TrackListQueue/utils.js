@@ -8,6 +8,13 @@ export function getAudioTrackId(track) {
   return track?.trackId ?? track?.id;
 }
 
+export function isSameAudioTrack(trackA, trackB) {
+  const trackAId = getAudioTrackId(trackA);
+  const trackBId = getAudioTrackId(trackB);
+
+  return trackAId != null && trackBId != null && String(trackAId) === String(trackBId);
+}
+
 export function createQueueTrack(track) {
   const audioTrackId = getAudioTrackId(track);
 

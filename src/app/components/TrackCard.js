@@ -27,7 +27,7 @@ function TrackCard({
     return (
         <div
             id="track-card"
-            className={`relative z-0 flex min-w-0 items-center gap-2 ${className}`}
+            className={`track-card relative z-0 flex min-w-0 items-center gap-2 ${className}`}
             {...props}
         >
             <div
@@ -44,7 +44,7 @@ function TrackCard({
                 />
 
                 <div className="max-w-full min-w-0 flex-1 overflow-hidden">
-                    <p className="w-max max-w-full truncate text-left text-base font-bold text-foreground">
+                    <p className="track-card-title w-max max-w-full truncate text-left text-base font-bold text-foreground">
                         {titleHref ? (
                             <Link
                                 href={titleHref}

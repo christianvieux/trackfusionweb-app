@@ -13,7 +13,7 @@ import { formatDuration } from '../../utils/audio'
 import QueueDropIndicatorPortal from './QueueDropIndicatorPortal'
 import QueueTrackDragPreview from './QueueTrackDragPreview'
 import useQueueTrackDrag from './useQueueTrackDrag'
-import { getQueueItemId } from './utils'
+import { getQueueItemId, isSameAudioTrack } from './utils'
 
 function StageQueueItem({
     track,
@@ -23,8 +23,10 @@ function StageQueueItem({
     handleDrop,
     onRemove,
     onSelect,
+    currentTrack,
 }) {
     const name = track.name || 'Unknown track'
+    const isCurrentTrack = isSameAudioTrack(track, currentTrack)
     const {
         cardRef,
         isHovered,
@@ -46,9 +48,10 @@ function StageQueueItem({
     return (
         <div
             ref={cardRef}
+            aria-current={isCurrentTrack ? 'true' : undefined}
             className={`stage-queue-item cursor-grab active:cursor-grabbing ${
                 isDragging ? 'is-dragging' : ''
-            }`}
+            } ${isCurrentTrack ? 'is-current' : ''}`}
             onMouseDown={handleMouseDown}
             onMouseEnter={handleMouseEnter}
             onMouseLeave={handleMouseLeave}
@@ -77,7 +80,7 @@ function StageQueueItem({
             />
             <div className="min-w-0">
                 <p
-                    className="truncate text-[.78rem] font-bold leading-tight text-foreground"
+                    className="stage-queue-title truncate text-[.78rem] font-bold leading-tight text-foreground"
                     title={name}
                 >
                     {name}
@@ -142,6 +145,7 @@ function StageQueueSection({
     emptyMessage,
     onRemove,
     onSelect,
+    currentTrack,
     creatorsById,
     state,
     setState,
@@ -176,6 +180,7 @@ function StageQueueSection({
                             handleDrop={handleDrop}
                             onRemove={onRemove}
                             onSelect={onSelect}
+                            currentTrack={currentTrack}
                         />
                     ))}
                 </div>
@@ -193,6 +198,7 @@ export default function StageQueuePanel({
     onRemoveFromQueue,
     onRemoveFromPlaylist,
     onSelectTrack,
+    currentTrack,
     onClear,
     ...dragProps
 }) {
@@ -228,6 +234,7 @@ export default function StageQueuePanel({
                     emptyMessage="Drag a track here to play it first."
                     onRemove={onRemoveFromQueue}
                     onSelect={onSelectTrack}
+                    currentTrack={currentTrack}
                     creatorsById={creatorsById}
                     {...dragProps}
                 />
@@ -238,6 +245,7 @@ export default function StageQueuePanel({
                     emptyMessage="No playlist tracks are coming up."
                     onRemove={onRemoveFromPlaylist}
                     onSelect={onSelectTrack}
+                    currentTrack={currentTrack}
                     creatorsById={creatorsById}
                     {...dragProps}
                 />

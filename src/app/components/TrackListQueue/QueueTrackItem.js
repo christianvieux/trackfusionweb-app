@@ -8,16 +8,18 @@ import QueueTrackActions from "./QueueTrackActions";
 import QueueTrackDragPreview from "./QueueTrackDragPreview";
 import QueueDropIndicatorPortal from "./QueueDropIndicatorPortal";
 import useQueueTrackDrag from "./useQueueTrackDrag";
-import { getQueueItemId } from "./utils";
+import { getQueueItemId, isSameAudioTrack } from "./utils";
 
 export default function QueueTrackItem({
   track,
   state,
   setState,
   handleDrop,
+  currentTrack,
   canDrag = true,
   classNames = {},
 }) {
+  const isCurrentTrack = isSameAudioTrack(track, currentTrack);
   const {
     cardRef,
     isHovered,
@@ -44,9 +46,10 @@ export default function QueueTrackItem({
   return (
     <div
       ref={cardRef}
-      className={`relative w-full transition-all duration-200 ${
+      aria-current={isCurrentTrack ? "true" : undefined}
+      className={`queue-track-item relative w-full transition-all duration-200 ${
         canDrag ? "cursor-grab active:cursor-grabbing" : "cursor-pointer"
-      }`}
+      } ${isCurrentTrack ? "is-current" : ""}`}
       onMouseDown={handleMouseDown}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
@@ -54,7 +57,7 @@ export default function QueueTrackItem({
     >
       <TrackCardBase
         track={track}
-        className={`hover:bg-muted w-full! gap-1.5 rounded-lg p-1.5 [&_#left_content]:gap-1.5 [&_#left_content>div:first-child]:size-9 [&_#right_content]:shrink-0 [&_p]:text-sm ${
+        className={`queue-track-card w-full! gap-1.5 p-1.5 [&_#left_content]:gap-1.5 [&_#left_content>div:first-child]:size-9 [&_#right_content]:shrink-0 [&_p]:text-sm ${
           classNames.QueueTrackItem || ""
         } ${isDragging ? "opacity-50" : "opacity-100"}`}
         rightContent={rightContent}

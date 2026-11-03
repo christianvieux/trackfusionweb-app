@@ -34,10 +34,8 @@ function TrackTile({ track, creator, playlist, onFilter }) {
     return (
         <article
             aria-current={isCurrentTrack ? 'true' : undefined}
-            className={`track-tile-card group flex min-w-0 flex-col border transition focus-within:border-success/70 hover:border-success/70 ${
-                isCurrentTrack
-                    ? 'border-success/40 bg-success/10'
-                    : 'border-success/20 bg-white/[.035]'
+            className={`track-tile-card group flex min-w-0 flex-col border transition ${
+                isCurrentTrack ? 'is-current' : ''
             }`}
             onPointerEnter={() => setIsInteracting(true)}
             onPointerLeave={() => setIsInteracting(false)}

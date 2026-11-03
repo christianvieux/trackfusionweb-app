@@ -1,10 +1,20 @@
 import { describe, expect, it } from 'vitest'
 
-import { insertQueueItem } from './utils'
+import { insertQueueItem, isSameAudioTrack } from './utils'
 
 const tracks = ['a', 'b', 'c'].map((uniqueId) => ({ uniqueId }))
 
 describe('queue drag and drop utilities', () => {
+    it('matches queue copies to the active persisted track', () => {
+        expect(
+            isSameAudioTrack(
+                { id: 7, uniqueId: 'queue-copy' },
+                { trackId: '7', uniqueId: 'playing-copy' }
+            )
+        ).toBe(true)
+        expect(isSameAudioTrack({ id: 7 }, { id: 8 })).toBe(false)
+    })
+
     it('reorders a track within the same list', () => {
         const { targetList } = insertQueueItem({
             sourceList: tracks,
