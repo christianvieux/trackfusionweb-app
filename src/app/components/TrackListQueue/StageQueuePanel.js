@@ -3,6 +3,8 @@
 import { GripVertical, X } from 'lucide-react'
 
 import PlayButton from '../PlayButton'
+import ScrollableContainer from '../ScrollableContainer'
+import TrackOptionsDropdown from '../TrackOptionsDropdown'
 import TrackVisual from '../TrackList/components/TrackVisual'
 import useTrackCreators from '../TrackList/hooks/useTrackCreators'
 import { getCreatorForTrack } from '../TrackList/utils'
@@ -94,6 +96,18 @@ function StageQueueItem({
             >
                 <X className="size-4" />
             </button>
+            <div
+                className="stage-queue-options"
+                onMouseDown={(event) => event.stopPropagation()}
+                onClick={(event) => event.stopPropagation()}
+            >
+                <TrackOptionsDropdown
+                    track={track}
+                    creator={creator}
+                    className="size-8"
+                    triggerClassName="size-8 rounded-lg text-[var(--stage-accent-light)] hover:bg-[rgb(52_211_153_/_0.1)]"
+                />
+            </div>
 
             {isDragging && (
                 <QueueTrackDragPreview
@@ -196,7 +210,11 @@ export default function StageQueuePanel({
                 )}
             </div>
 
-            <div className="stage-queue-sections">
+            <ScrollableContainer
+                canScroll={Boolean(dragProps.state?.itemBeingDragged)}
+                className="stage-queue-sections"
+                data-edge-scroll-container="playback-queue"
+            >
                 <StageQueueSection
                     title="Queue"
                     tracks={queue}
@@ -217,7 +235,7 @@ export default function StageQueuePanel({
                     creatorsById={creatorsById}
                     {...dragProps}
                 />
-            </div>
+            </ScrollableContainer>
         </section>
     )
 }

@@ -391,7 +391,7 @@ body {
 
     .stage-queue-item {
         display: grid;
-        grid-template-columns: 12px 30px 36px minmax(0, 1fr) 32px;
+        grid-template-columns: 12px 30px 36px minmax(0, 1fr) 32px 32px;
         align-items: center;
         gap: 8px;
         border-radius: 10px;
@@ -432,13 +432,19 @@ body {
         color: var(--color-danger);
     }
 
+    .stage-queue-options {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
     .stage-queue-sections {
         display: flex;
         min-height: 0;
         flex: 1;
         flex-direction: column;
         gap: 10px;
-        overflow-y: auto;
+        overflow: auto;
     }
 
     .stage-queue-section {

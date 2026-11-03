@@ -90,7 +90,7 @@ export default function TrackRowDesktop({
                 )}
             </div>
 
-            <div className="track-row-tags flex min-w-0 items-center gap-1 overflow-hidden">
+            <div className="track-row-tags min-w-0 items-center gap-1 overflow-hidden">
                 {tags.map(({ type, value }) => (
                     <button
                         key={`${type}-${value}`}
