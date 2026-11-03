@@ -1,5 +1,3 @@
-export const FALLBACK_TRACK_IMAGE = "/images/6068474.jpg";
-
 export function parseAttributeValues(value) {
   if (!value) return [];
 

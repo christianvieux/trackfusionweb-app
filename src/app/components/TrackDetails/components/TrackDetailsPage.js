@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Card } from "@heroui/react";
 import { useParams } from "next/navigation";
 
 import { fetchTrack } from "../../../services/trackService";
@@ -11,6 +10,14 @@ import LoadingSkeleton from "./LoadingSkeleton";
 import StateCard from "./StateCard";
 import TrackCoverCard from "./TrackCoverCard";
 import TrackInfoPanel from "./TrackInfoPanel";
+
+function TrackDetailsShell({ children }) {
+  return (
+    <main className="mx-auto flex w-full max-w-5xl justify-center px-3 py-4 sm:px-4 sm:py-6">
+      {children}
+    </main>
+  );
+}
 
 export default function TrackDetailsPage() {
   const { id: trackId } = useParams();
@@ -71,29 +78,29 @@ export default function TrackDetailsPage() {
 
   if (isLoading) {
     return (
-      <div className="flex w-full items-center justify-center">
+      <TrackDetailsShell>
         <LoadingSkeleton />
-      </div>
+      </TrackDetailsShell>
     );
   }
 
   if (error || !track) {
     return (
-      <div className="flex w-full items-center justify-center">
+      <TrackDetailsShell>
         <StateCard
           title="Track Unavailable"
           message={error || "This track could not be loaded."}
         />
-      </div>
+      </TrackDetailsShell>
     );
   }
 
   return (
-    <div className="mx-auto flex w-max justify-center px-4 py-8">
-      <Card className="w-full max-w-5xl border-2 border-accent bg-secondary p-5 text-foreground shadow-card">
+    <TrackDetailsShell>
+      <article className="w-full min-w-0 rounded-[14px] border border-success/35 bg-[rgba(8,8,22,.72)] p-3 text-foreground shadow-card backdrop-blur-[6px] sm:p-5">
         <div
           id="Main_Container"
-          className="grid grid-cols-1 gap-6 md:grid-cols-[300px_1fr]"
+          className="grid min-w-0 grid-cols-1 gap-5 md:grid-cols-[minmax(260px,320px)_minmax(0,1fr)] md:gap-6"
         >
           <TrackCoverCard
             track={track}
@@ -103,7 +110,7 @@ export default function TrackDetailsPage() {
 
           <TrackInfoPanel track={track} />
         </div>
-      </Card>
-    </div>
+      </article>
+    </TrackDetailsShell>
   );
 }

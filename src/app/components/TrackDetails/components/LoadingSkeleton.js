@@ -1,4 +1,4 @@
-import { Card, Skeleton } from "@heroui/react";
+import { Skeleton } from "@heroui/react";
 
 function SkeletonLine({ className = "" }) {
   return <Skeleton className={`rounded-lg ${className}`} />;
@@ -6,10 +6,10 @@ function SkeletonLine({ className = "" }) {
 
 export default function LoadingSkeleton() {
   return (
-    <Card className="w-auto bg-secondary p-4 text-foreground shadow-card">
-      <div className="grid grid-cols-1 gap-6 md:grid-cols-[300px_1fr]">
+    <div className="w-full rounded-[14px] border border-success/25 bg-[rgba(8,8,22,.72)] p-3 text-foreground shadow-card sm:p-5">
+      <div className="grid min-w-0 grid-cols-1 gap-5 md:grid-cols-[minmax(260px,320px)_minmax(0,1fr)] md:gap-6">
         <div className="flex flex-col gap-3">
-          <Skeleton className="size-[300px] rounded-lg" />
+          <Skeleton className="aspect-square w-full rounded-xl" />
 
           <div className="flex items-start justify-between px-2">
             <div className="flex gap-2">
@@ -29,7 +29,7 @@ export default function LoadingSkeleton() {
           </div>
         </div>
 
-        <div className="flex max-w-[300px] flex-col gap-3">
+        <div className="flex min-w-0 flex-col gap-3">
           <SkeletonLine className="h-8 w-3/4" />
           <SkeletonLine className="h-6 w-1/2" />
           <SkeletonLine className="h-4 w-32" />
@@ -46,6 +46,6 @@ export default function LoadingSkeleton() {
           </div>
         </div>
       </div>
-    </Card>
+    </div>
   );
 }
