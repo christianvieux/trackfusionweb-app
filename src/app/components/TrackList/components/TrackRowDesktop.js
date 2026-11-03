@@ -74,6 +74,7 @@ export default function TrackRowDesktop({
                     className="w-full"
                     track={track}
                     creator={creator}
+                    titleHref={`/track/${track.id}`}
                     animateAvatar={isOptionsOpen}
                     subtitle="TrackFusionWeb"
                     mediumSubtitle={mediumSubtitle}

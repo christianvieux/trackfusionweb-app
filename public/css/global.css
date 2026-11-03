@@ -1275,6 +1275,12 @@ body {
         font-size: 0.6875rem;
     }
 
+    .track-tile-tags .track-attribute-pill {
+        min-height: 19px;
+        padding: 1px 6px;
+        font-size: 0.625rem;
+    }
+
     .track-tile-footer {
         gap: 8px;
         padding-top: 8px;
@@ -1472,6 +1478,17 @@ body {
         }
 
         .track-tile-summary {
+            display: none;
+        }
+
+        .track-tile-tags {
+            flex-wrap: nowrap;
+            overflow-x: auto;
+            overscroll-behavior-inline: contain;
+            scrollbar-width: none;
+        }
+
+        .track-tile-tags::-webkit-scrollbar {
             display: none;
         }
 

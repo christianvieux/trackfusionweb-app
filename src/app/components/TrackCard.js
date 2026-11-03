@@ -1,4 +1,5 @@
 import { memo } from 'react'
+import Link from 'next/link'
 
 import TrackVisual from './TrackList/components/TrackVisual'
 import { getTrackAttributeSummary } from './TrackList/utils'
@@ -11,6 +12,7 @@ function TrackCard({
     subtitle,
     mediumSubtitle,
     compactSubtitle,
+    titleHref,
     className = '',
     rightContent,
     ...props
@@ -43,7 +45,17 @@ function TrackCard({
 
                 <div className="max-w-full min-w-0 flex-1 overflow-hidden">
                     <p className="w-max max-w-full truncate text-left text-base font-bold text-foreground">
-                        {track.name || 'Unknown Track'}
+                        {titleHref ? (
+                            <Link
+                                href={titleHref}
+                                className="transition-colors hover:text-primary focus-visible:rounded-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+                                title={track.name || 'Unknown Track'}
+                            >
+                                {track.name || 'Unknown Track'}
+                            </Link>
+                        ) : (
+                            track.name || 'Unknown Track'
+                        )}
                     </p>
 
                     <p

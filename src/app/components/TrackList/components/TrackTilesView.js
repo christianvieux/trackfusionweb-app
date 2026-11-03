@@ -10,20 +10,24 @@ import TrackPlayButton from '../../TrackPlayButton'
 import { formatDuration } from '../../../utils/audio'
 import {
     getCreatorForTrack,
-    getTrackAttributeSummary,
     getTrackKey,
+    parseAttributes,
 } from '../utils'
 
 import TrackCreatorLink from './TrackCreatorLink'
 import TrackListEmptyState from './TrackListEmptyState'
 import TrackVisual from './TrackVisual'
 
-function TrackTile({ track, creator, playlist }) {
+function TrackTile({ track, creator, playlist, onFilter }) {
     const { currentTrack } = useTrackManager()
     const [isInteracting, setIsInteracting] = useState(false)
     const [isOptionsOpen, setIsOptionsOpen] = useState(false)
     const shouldAnimateAvatar = isInteracting || isOptionsOpen
-    const attributeSummary = getTrackAttributeSummary(track)
+    const attributes = [
+        { type: 'category', value: parseAttributes(track.category)[0] },
+        { type: 'genre', value: parseAttributes(track.genre)[0] },
+        { type: 'mood', value: parseAttributes(track.mood)[0] },
+    ].filter(({ value }) => Boolean(value))
     const isCurrentTrack =
         currentTrack?.id != null && String(currentTrack.id) === String(track.id)
 
@@ -87,13 +91,20 @@ function TrackTile({ track, creator, playlist }) {
                     nameClassName="track-tile-creator-name font-semibold"
                 />
 
-                {attributeSummary && (
-                    <p
-                        className="track-tile-summary mt-1 truncate text-muted-foreground"
-                        title={attributeSummary}
-                    >
-                        {attributeSummary}
-                    </p>
+                {attributes.length > 0 && (
+                    <div className="track-tile-tags mt-2 flex flex-wrap gap-1">
+                        {attributes.map(({ type, value }) => (
+                            <button
+                                key={`${type}-${value}`}
+                                type="button"
+                                aria-label={`Filter by ${type}: ${value}`}
+                                onClick={() => onFilter?.(type, value)}
+                                className={`track-attribute-pill track-attribute-pill--${type}`}
+                            >
+                                {value}
+                            </button>
+                        ))}
+                    </div>
                 )}
 
                 <div className="track-tile-footer mt-auto flex items-center justify-between text-muted-foreground">
@@ -118,7 +129,7 @@ function TrackTile({ track, creator, playlist }) {
     )
 }
 
-function TrackTilesView({ tracks, creatorsById, emptyMessage }) {
+function TrackTilesView({ tracks, creatorsById, emptyMessage, onFilter }) {
     if (tracks.length === 0) {
         return <TrackListEmptyState message={emptyMessage} />
     }
@@ -131,6 +142,7 @@ function TrackTilesView({ tracks, creatorsById, emptyMessage }) {
                     track={track}
                     creator={getCreatorForTrack(creatorsById, track)}
                     playlist={tracks}
+                    onFilter={onFilter}
                 />
             ))}
         </div>
