@@ -7,12 +7,22 @@ import { usePlayback } from "../../context/PlaybackContext";
 import { useTrackManager } from "../../context/TrackManagerContext";
 
 import TrackListSection from "./TrackListSection";
+import StageQueuePanel from "./StageQueuePanel";
 import useDragAndDrop from "./useDragAndDrop";
 import { getQueueItemId, insertQueueItem } from "./utils";
 
-function TrackListQueue({ classNames = {} }) {
-  const { currentTrack, queue, setQueue, playlist, setPlaylist } =
-    useTrackManager();
+function TrackListQueue({ classNames = {}, variant = "default", onClear }) {
+  const {
+    currentTrack,
+    queue,
+    setQueue,
+    playlist,
+    setPlaylist,
+    initializePlaylist,
+    removeTrackFromQueue,
+    removeTrackFromPlaylist,
+    skipToTrack,
+  } = useTrackManager();
 
   const { canShowPlayback } = usePlayback();
 
@@ -122,6 +132,28 @@ function TrackListQueue({ classNames = {} }) {
   };
 
   if (!canShowPlayback) return null;
+
+  if (variant === "stage") {
+    return (
+      <StageQueuePanel
+        queue={queue}
+        playlist={playlist}
+        upcomingPlaylistTracks={upcomingPlaylistTracks}
+        onRemoveFromQueue={(track) => removeTrackFromQueue(track.uniqueId)}
+        onRemoveFromPlaylist={(track) =>
+          removeTrackFromPlaylist(track.uniqueId)
+        }
+        onSelectTrack={(track) => skipToTrack(track.uniqueId)}
+        onClear={() => {
+          setQueue([]);
+          setPlaylist([]);
+          initializePlaylist([]);
+          onClear?.();
+        }}
+        {...sharedListProps}
+      />
+    );
+  }
 
   return (
       <div

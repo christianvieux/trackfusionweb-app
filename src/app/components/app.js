@@ -1,122 +1,134 @@
-"use client";
+'use client'
 
-import { Menu } from "lucide-react";
-import { usePathname } from "next/navigation";
-import { Toaster } from "react-hot-toast";
+import { useState } from 'react'
+import Link from 'next/link'
+import { Heart, Home, ListTodo, Music } from 'lucide-react'
+import { usePathname } from 'next/navigation'
+import { Toaster } from 'react-hot-toast'
 
-import { Button, Drawer } from "@heroui/react";
+import Footer from './Footer'
+import NavBar from './nav-bar'
+import Sidebar from './Sidebar'
 
-import Footer from "./Footer";
-import NavBar from "./nav-bar";
-import Sidebar from "./Sidebar";
+import AudioPlayer from './AudioPlayer/AudioPlayer'
+import VideoBackground from './VideoBackground'
 
-import AudioPlayer from "./AudioPlayer/AudioPlayer";
-import VideoBackground from "./VideoBackground";
-
-import { FavoriteTracksProvider } from "../context/FavoriteTracksContext";
-import { PlaybackProvider } from "../context/PlaybackContext";
-import { TrackListProvider } from "../context/TrackListContext";
-import { TrackManagerProvider } from "../context/TrackManagerContext";
+import { FavoriteTracksProvider } from '../context/FavoriteTracksContext'
+import { PlaybackProvider, usePlayback } from '../context/PlaybackContext'
+import { TrackListProvider } from '../context/TrackListContext'
+import {
+    TrackManagerProvider,
+    useTrackManager,
+} from '../context/TrackManagerContext'
 
 /* -------------------- */
 /* PROVIDERS */
 /* -------------------- */
 
 function AppProviders({ children }) {
-  return (
-    <FavoriteTracksProvider>
-      <TrackListProvider>
-        <TrackManagerProvider>
-          <PlaybackProvider>{children}</PlaybackProvider>
-        </TrackManagerProvider>
-      </TrackListProvider>
-    </FavoriteTracksProvider>
-  );
+    return (
+        <FavoriteTracksProvider>
+            <TrackListProvider>
+                <TrackManagerProvider>
+                    <PlaybackProvider>{children}</PlaybackProvider>
+                </TrackManagerProvider>
+            </TrackListProvider>
+        </FavoriteTracksProvider>
+    )
 }
 
-/* -------------------- */
-/* MOBILE SIDEBAR DRAWER */
-/* -------------------- */
+const MOBILE_NAV_ITEMS = [
+    { label: 'Home', icon: Home, href: '/home' },
+    { label: 'Feed', icon: ListTodo, href: '/feed' },
+    { label: 'My Tracks', icon: Music, href: '/myTracks' },
+    { label: 'Favorites', icon: Heart, href: '/myFavoriteTracks' },
+]
 
-function MobileSidebarDrawer() {
-  return (
-    <Drawer>
-      <Button
-        isIconOnly
-        variant="light"
-        className="text-primary sm:hidden"
-        aria-label="Open sidebar menu"
-      >
-        <Menu size={24} />
-      </Button>
+function MobileTabBar() {
+    const pathname = usePathname()
 
-      <Drawer.Backdrop>
-        <Drawer.Content placement="left" className="w-max">
-          <Drawer.Dialog className="bg-background w-max p-0">
-            <Drawer.Body className="p-0">
-              <Sidebar
-                className="h-screen !w-64"
-                classNames={{
-                  logo: "mr-8",
-                }}
-              />
-            </Drawer.Body>
-          </Drawer.Dialog>
-        </Drawer.Content>
-      </Drawer.Backdrop>
-    </Drawer>
-  );
+    return (
+        <nav className="mobile-tab-bar" aria-label="Mobile navigation">
+            {MOBILE_NAV_ITEMS.map(({ label, icon: Icon, href }) => {
+                const isActive = pathname.toLowerCase() === href.toLowerCase()
+
+                return (
+                    <Link
+                        key={href}
+                        href={href}
+                        aria-current={isActive ? 'page' : undefined}
+                        className={`mobile-tab-link ${isActive ? 'is-active' : ''}`}
+                    >
+                        <Icon className="size-5" aria-hidden="true" />
+                        <span>{label}</span>
+                    </Link>
+                )
+            })}
+        </nav>
+    )
 }
 
 /* -------------------- */
 /* APP LAYOUT */
 /* -------------------- */
 
-export default function App({ children }) {
-  const pathname = usePathname();
+function AppShell({ children }) {
+    const pathname = usePathname()
+    const { currentTrack } = useTrackManager()
+    const { canShowPlayback } = usePlayback()
+    const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false)
+    const showPlayer = canShowPlayback && Boolean(currentTrack)
 
-  return (
-    <AppProviders>
-      <div
-        id="App"
-        className="text-foreground relative isolate flex h-dvh min-h-0 flex-col overflow-hidden"
-      >
-        <VideoBackground playVideo={pathname === "/home"} />
+    return (
+        <div
+            id="App"
+            data-dock="right"
+            data-has-player={showPlayer ? 'true' : 'false'}
+            data-sidebar-collapsed={isSidebarCollapsed ? 'true' : 'false'}
+            className="app-shell relative isolate h-dvh min-h-0 overflow-hidden text-foreground"
+        >
+            <VideoBackground playVideo={pathname === '/home'} />
 
-        <Toaster position="bottom-center" />
+            <Toaster position="bottom-center" />
 
-        <Sidebar className="fixed top-0 left-0 z-40 hidden h-full !w-64 sm:flex" />
+            <Sidebar
+                className="app-sidebar"
+                isCollapsed={isSidebarCollapsed}
+                showCollapseToggle
+                onToggleCollapse={() =>
+                    setIsSidebarCollapsed((current) => !current)
+                }
+            />
 
-        <div className="ml-0 flex min-h-0 flex-1 flex-col transition-all sm:ml-64">
-          <NavBar LeftContent={<MobileSidebarDrawer />} />
+            <NavBar className="app-topbar" />
 
-          <main
-            id="Full_Content"
-            className="flex min-h-0 flex-1 flex-col gap-4 overflow-hidden"
-          >
-            <section
-              id="content"
-              className="flex min-h-0 min-w-72 flex-1 flex-col items-center overflow-auto p-4 *:max-w-full"
-            >
-              {children}
-            </section>
+            <main id="Full_Content" className="app-main">
+                <section
+                    id="content"
+                    className="flex min-h-0 min-w-0 flex-1 flex-col items-center overflow-auto p-3 *:max-w-full sm:p-4"
+                >
+                    {children}
+                </section>
 
-            <section
-              id="Audio_Player_Section"
-              className="hidden shrink-0 md:block"
-            >
-              <AudioPlayer className="mx-auto" />
-            </section>
+                <footer
+                    id="Bottom_Content"
+                    className="flex shrink-0 flex-col items-center"
+                >
+                    <Footer />
+                </footer>
+            </main>
 
-            <footer
-              id="Bottom_Content"
-              className="flex shrink-0 flex-col items-center gap-8"
-            >
-              <Footer />
-            </footer>
-          </main>
+            {showPlayer && <AudioPlayer />}
+
+            <MobileTabBar />
         </div>
-      </div>
-    </AppProviders>
-  );
+    )
+}
+
+export default function App({ children }) {
+    return (
+        <AppProviders>
+            <AppShell>{children}</AppShell>
+        </AppProviders>
+    )
 }

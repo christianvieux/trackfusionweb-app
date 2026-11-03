@@ -1,18 +1,27 @@
 'use client'
 
-import React, { useCallback, useEffect, useState } from 'react'
-import { Button, Card, Slider } from '@heroui/react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
+import { Slider } from '@heroui/react'
 import {
+    ChevronDown,
+    List,
+    Repeat,
     Shuffle,
     SkipBack,
     SkipForward,
-    Play,
-    Pause,
-    Repeat,
-    List,
 } from 'lucide-react'
 
 import FavoriteButton from '../FavoriteButton'
+import PlayButton from '../PlayButton'
+import TrackListQueue from '../TrackListQueue/TrackListQueue'
+import TrackOptionsDropdown from '../TrackOptionsDropdown'
+import TrackCreatorLink from '../TrackList/components/TrackCreatorLink'
+import TrackVisual from '../TrackList/components/TrackVisual'
+import useTrackCreators from '../TrackList/hooks/useTrackCreators'
+import {
+    getCreatorForTrack,
+    getStageVisualBackground,
+} from '../TrackList/utils'
 import VolumeSlider from './Volume'
 import AudioElement from './AudioElement'
 
@@ -20,62 +29,66 @@ import { usePlayback } from '../../context/PlaybackContext'
 import { useTrackManager } from '../../context/TrackManagerContext'
 import { fetchAuthorizedUrl } from '../../services/trackService'
 import { formatDuration } from '../../utils/audio'
-import TrackOptionsDropdown from '../TrackOptionsDropdown'
 
-/* -------------------- */
-/* SUBCOMPONENTS        */
-/* -------------------- */
+const QUEUE_STORAGE_KEY = 'trackfusionweb-stage-queue-open'
 
-/** A small dot indicator shown beneath a control button when active */
-function ActiveDot({ isActive }) {
-    return (
-        <span
-            className={`mx-auto block h-1 w-1 rounded-full transition-opacity ${
-                isActive ? 'bg-player-accent opacity-100' : 'opacity-0'
-            }`}
-        />
-    )
+function getTrackIdentity(track) {
+    return track?.uniqueId || `track-${track?.id}`
 }
 
-/** Icon button used for all transport/control actions */
 function ControlButton({
-    ariaLabel,
-    onPress,
-    isDisabled,
-    className = '',
+    label,
+    onClick,
+    active = false,
+    disabled = false,
     children,
 }) {
     return (
         <button
             type="button"
-            aria-label={ariaLabel}
-            onClick={onPress}
-            disabled={isDisabled}
-            className={`cursor-pointer flex size-8 flex-col items-center justify-center gap-0.5 rounded-full bg-transparent text-player-muted disabled:cursor-not-allowed disabled:opacity-50 ${className}`}
+            aria-label={label}
+            aria-pressed={active || undefined}
+            onClick={onClick}
+            disabled={disabled}
+            className={`stage-control-button ${active ? 'is-active' : ''}`}
         >
             {children}
         </button>
     )
 }
 
-/** Wraps an icon with optional active color tint */
-function ControlIcon({ Icon, isActive = false, className = '' }) {
+function StageArtwork({ track, creator, compact = false, animate = false }) {
     return (
-        <Icon
-            className={`h-5 w-5 transition-colors ${
-                isActive ? 'text-player-accent' : 'text-player-muted'
-            } ${className}`}
+        <TrackVisual
+            key={getTrackIdentity(track)}
+            track={track}
+            creator={creator}
+            animateAvatar={animate}
+            background={getStageVisualBackground(track)}
+            avatarAura
+            alwaysShowAvatar
+            className={
+                compact
+                    ? 'size-[72px] rounded-xl'
+                    : 'stage-cover aspect-square w-full rounded-2xl'
+            }
+            avatarClassName="size-1/2"
+            sizes={compact ? '72px' : '330px'}
         />
     )
 }
 
-/* -------------------- */
-/* AUDIO PLAYER         */
-/* -------------------- */
+function QueueBadge({ count }) {
+    if (!count) return null
 
-export default function AudioPlayer({
-    className = '',
-}) {
+    return (
+        <span className="absolute -top-1 -right-1 flex min-w-5 items-center justify-center rounded-full bg-success px-1 text-[10px] font-bold text-success-foreground">
+            {count > 99 ? '99+' : count}
+        </span>
+    )
+}
+
+export default function AudioPlayer() {
     const {
         shufflePlaylist,
         resetPlaylist,
@@ -85,23 +98,19 @@ export default function AudioPlayer({
         queue,
         currentTrack,
         isPlaying,
-        setIsPlaying,
         audioRef,
         resumeTrack: resumeTrackInManager,
         pauseTrack: pauseTrackInManager,
         setIsTrackReadyInPlayer,
     } = useTrackManager()
-
     const { canShowPlayback } = usePlayback()
 
     const [audioSrc, setAudioSrc] = useState(null)
     const [currentTrackInPlayer, setCurrentTrackInPlayer] = useState(null)
-
     const [duration, setDuration] = useState(0)
     const [currentTime, setCurrentTime] = useState(0)
     const [sliderValue, setSliderValue] = useState(0)
     const [volumeValue, setVolumeValue] = useState(0.8)
-
     const [isSliderDragging, setIsSliderDragging] = useState(false)
     const [isLooping, setIsLooping] = useState(false)
     const [isShuffling, setIsShuffling] = useState(false)
@@ -109,16 +118,36 @@ export default function AudioPlayer({
     const [isMetadataLoaded, setIsMetadataLoaded] = useState(false)
     const [isFetchingTrack, setIsFetchingTrack] = useState(false)
     const [isTrackReady, setIsTrackReady] = useState(false)
+    const [isQueueOpen, setIsQueueOpen] = useState(false)
+    const [isSheetOpen, setIsSheetOpen] = useState(false)
 
-    const isDisabled =
-        (queue.length === 0 && playlist.length === 0 && !currentTrack) ||
-        isFetchingTrack
+    const upcomingPlaylistTracks = useMemo(() => {
+        if (!currentTrack) return playlist
 
+        const currentIndex = playlist.findIndex(
+            (track) =>
+                getTrackIdentity(track) === getTrackIdentity(currentTrack)
+        )
+
+        return currentIndex === -1
+            ? playlist
+            : playlist.slice(currentIndex + 1)
+    }, [currentTrack, playlist])
+
+    const upcomingTracks = useMemo(
+        () => [...queue, ...upcomingPlaylistTracks],
+        [queue, upcomingPlaylistTracks]
+    )
+    const playerTracks = useMemo(
+        () =>
+            currentTrack
+                ? [currentTrack, ...upcomingTracks]
+                : upcomingTracks,
+        [currentTrack, upcomingTracks]
+    )
+    const creatorsById = useTrackCreators(playerTracks)
+    const currentCreator = getCreatorForTrack(creatorsById, currentTrack)
     const hasTrackEnded = isMetadataLoaded && currentTime >= duration
-
-    /* -------------------- */
-    /* HANDLERS             */
-    /* -------------------- */
 
     const resetPlayback = useCallback(() => {
         setCurrentTrackInPlayer(null)
@@ -137,14 +166,15 @@ export default function AudioPlayer({
     const loadTrack = useCallback(
         async (track) => {
             resetPlayback()
-            if (!track?.url) return
+            if (!track?.id) return
+
             try {
                 setCurrentTrackInPlayer(track)
                 setIsFetchingTrack(true)
                 const { url } = await fetchAuthorizedUrl(track.id)
                 setAudioSrc(url)
-            } catch (err) {
-                console.error('Failed to fetch authorized URL:', err)
+            } catch (error) {
+                console.error('Failed to fetch authorized URL:', error)
                 setAudioSrc(null)
             } finally {
                 setIsFetchingTrack(false)
@@ -153,28 +183,31 @@ export default function AudioPlayer({
         [resetPlayback]
     )
 
-    const handlePlay = useCallback(
-        () => resumeTrackInManager(),
-        [resumeTrackInManager]
-    )
+    const handlePlay = useCallback(() => {
+        if (!audioSrc && currentTrack && !isFetchingTrack) {
+            loadTrack(currentTrack)
+        }
+        resumeTrackInManager()
+    }, [
+        audioSrc,
+        currentTrack,
+        isFetchingTrack,
+        loadTrack,
+        resumeTrackInManager,
+    ])
     const handlePause = useCallback(
         () => pauseTrackInManager(),
         [pauseTrackInManager]
     )
-
     const handlePlayPause = useCallback(() => {
         isPlaying ? handlePause() : handlePlay()
-    }, [isPlaying, handlePlay, handlePause])
-
+    }, [handlePause, handlePlay, isPlaying])
     const handleSkip = useCallback(() => {
         playNextTrack()
-        setIsPlaying(true)
-    }, [playNextTrack, setIsPlaying])
-
+    }, [playNextTrack])
     const handlePrevious = useCallback(() => {
         playPreviousTrack()
-        setIsPlaying(true)
-    }, [playPreviousTrack, setIsPlaying])
+    }, [playPreviousTrack])
 
     function handleSliderChange(value) {
         setSliderValue(value)
@@ -187,32 +220,50 @@ export default function AudioPlayer({
         setIsSliderDragging(false)
     }
 
-    function handleMetadataLoaded(e) {
-        setDuration(e.currentTarget.duration)
+    function handleMetadataLoaded(event) {
+        setDuration(event.currentTarget.duration)
         setIsMetadataLoaded(true)
     }
 
-    function handleTimeUpdate(e) {
-        const { currentTime: t, duration: d } = e.currentTarget
-        setCurrentTime(t)
-        if (!isSliderDragging) setSliderValue(d > 0 ? t / d : 0)
+    function handleTimeUpdate(event) {
+        const { currentTime: nextTime, duration: nextDuration } =
+            event.currentTarget
+        setCurrentTime(nextTime)
+        if (!isSliderDragging) {
+            setSliderValue(nextDuration > 0 ? nextTime / nextDuration : 0)
+        }
     }
 
     function toggleShuffle() {
-        const next = !isShuffling
-        setIsShuffling(next)
-        next ? shufflePlaylist(currentTrack) : resetPlaylist(currentTrack)
+        const nextValue = !isShuffling
+        setIsShuffling(nextValue)
+        nextValue ? shufflePlaylist() : resetPlaylist()
     }
 
-    /* -------------------- */
-    /* EFFECTS              */
-    /* -------------------- */
+    useEffect(() => {
+        setIsQueueOpen(localStorage.getItem(QUEUE_STORAGE_KEY) === 'true')
+    }, [])
+
+    useEffect(() => {
+        localStorage.setItem(QUEUE_STORAGE_KEY, String(isQueueOpen))
+    }, [isQueueOpen])
+
+    useEffect(() => {
+        if (!isSheetOpen) return undefined
+
+        function closeOnEscape(event) {
+            if (event.key === 'Escape') setIsSheetOpen(false)
+        }
+
+        window.addEventListener('keydown', closeOnEscape)
+        return () => window.removeEventListener('keydown', closeOnEscape)
+    }, [isSheetOpen])
 
     useEffect(() => {
         canShowPlayback && currentTrack
             ? loadTrack(currentTrack)
             : resetPlayback()
-    }, [currentTrack, canShowPlayback, loadTrack, resetPlayback])
+    }, [canShowPlayback, currentTrack, loadTrack, resetPlayback])
 
     useEffect(() => {
         const ready =
@@ -220,7 +271,7 @@ export default function AudioPlayer({
             isMetadataLoaded &&
             !isBuffering &&
             !isFetchingTrack &&
-            !!audioSrc
+            Boolean(audioSrc)
         setIsTrackReady(ready)
         setIsTrackReadyInPlayer(ready)
     }, [
@@ -259,224 +310,253 @@ export default function AudioPlayer({
     }, [audioRef, volumeValue])
 
     useEffect(() => {
-        if (!('mediaSession' in navigator)) return
+        if (!('mediaSession' in navigator)) return undefined
         const actions = {
             play: handlePlay,
             pause: handlePause,
             nexttrack: handleSkip,
             previoustrack: handlePrevious,
         }
-        Object.entries(actions).forEach(([a, h]) =>
-            navigator.mediaSession.setActionHandler(a, h)
+        Object.entries(actions).forEach(([action, handler]) =>
+            navigator.mediaSession.setActionHandler(action, handler)
         )
         return () =>
-            Object.keys(actions).forEach((a) =>
-                navigator.mediaSession.setActionHandler(a, null)
+            Object.keys(actions).forEach((action) =>
+                navigator.mediaSession.setActionHandler(action, null)
             )
-    }, [handlePlay, handlePause, handleSkip, handlePrevious])
+    }, [handlePause, handlePlay, handlePrevious, handleSkip])
 
-    if (!canShowPlayback) return null
+    if (!canShowPlayback || !currentTrack) return null
 
-    /* -------------------- */
-    /* CONTROLS CONFIG      */
-    /* -------------------- */
+    function renderMeta() {
+        return (
+            <div className="flex min-w-0 flex-1 items-center gap-3">
+                <div className="min-w-0 flex-1">
+                    <p className="truncate text-[1.1rem] font-bold text-foreground">
+                        {currentTrack.name || 'Unknown track'}
+                    </p>
+                    <TrackCreatorLink
+                        creator={currentCreator}
+                        userId={currentTrack.creator_id}
+                        animate={isPlaying}
+                        className="mt-1 max-w-full !text-[#a7f3d0] hover:!text-[#d1fae5]"
+                        avatarClassName="size-5"
+                        nameClassName="text-[.88rem] font-semibold"
+                    />
+                </div>
 
-    const controls = [
-        {
-            key: 'favorite',
-            node: (
-                <FavoriteButton
-                    isIconOnly
-                    className="size-7 bg-transparent text-player-muted"
-                    isDisabled={isDisabled}
-                    track={currentTrack}
-                />
-            ),
-            isActive: false,
-        },
-        {
-            key: 'shuffle',
-            icon: Shuffle,
-            ariaLabel: 'shuffle',
-            onPress: toggleShuffle,
-            isActive: isShuffling,
-        },
-        {
-            key: 'previous',
-            icon: SkipBack,
-            ariaLabel: 'previous',
-            onPress: handlePrevious,
-            isActive: false,
-        },
-        {
-            key: 'playpause',
-            node: (
-                <div className="relative size-8">
-                    {isTrackReady && !isPlaying && (
-                        <span className="animate-circle_pulse absolute inset-0 rounded-full bg-player-muted/20" />
-                    )}
+                <div className="stage-meta-actions flex shrink-0 items-center gap-1">
+                    <FavoriteButton
+                        track={currentTrack}
+                        className="size-9 min-w-9 !text-[#a7f3d0]"
+                        classNames={{ svg: 'size-[18px]' }}
+                    />
+                    <TrackOptionsDropdown
+                        track={currentTrack}
+                        creator={currentCreator}
+                        className="size-9"
+                        triggerClassName="size-9 rounded-lg !text-[#a7f3d0] hover:bg-[rgb(52_211_153_/_0.1)]"
+                    />
+                </div>
+            </div>
+        )
+    }
 
+    function renderQueue() {
+        return (
+            <TrackListQueue
+                variant="stage"
+                onClear={() => setIsShuffling(false)}
+            />
+        )
+    }
+
+    function renderStageContent({ showClose = false } = {}) {
+        return (
+            <div
+                className={`stage-player-content ${isQueueOpen ? 'is-queue-open' : ''}`}
+            >
+                {showClose && (
                     <button
                         type="button"
-                        aria-label={isPlaying ? 'pause' : 'play'}
-                        onClick={handlePlayPause}
-                        disabled={isDisabled || isBuffering || isFetchingTrack}
-                        className="relative flex size-8 items-center justify-center overflow-visible rounded-full bg-player-muted/25 ring-2 ring-player-muted disabled:cursor-not-allowed disabled:opacity-50"
+                        aria-label="Close player"
+                        onClick={() => setIsSheetOpen(false)}
+                        className="stage-sheet-close"
                     >
-                        {React.createElement(isPlaying ? Pause : Play, {
-                            className: 'z-10 size-4 text-player-foreground',
-                            fill: 'currentColor',
-                        })}
+                        <ChevronDown className="size-6" />
+                    </button>
+                )}
+
+                {isQueueOpen ? (
+                    <div className="flex items-center gap-3">
+                        <StageArtwork
+                            track={currentTrack}
+                            creator={currentCreator}
+                            compact
+                            animate={isPlaying}
+                        />
+                        {renderMeta()}
+                    </div>
+                ) : (
+                    <>
+                        <StageArtwork
+                            track={currentTrack}
+                            creator={currentCreator}
+                            animate={isPlaying}
+                        />
+                        {renderMeta()}
+                    </>
+                )}
+
+                <div className="stage-progress-grid">
+                    <span>{formatDuration(sliderValue * duration)}</span>
+                    <Slider
+                        aria-label="Track progress"
+                        value={sliderValue}
+                        minValue={0}
+                        maxValue={1}
+                        step={0.001}
+                        onChange={handleSliderChange}
+                        onChangeEnd={handleSliderChangeEnd}
+                        isDisabled={!duration}
+                        className="min-w-0"
+                    >
+                        <Slider.Track className="stage-slider-track">
+                            <Slider.Fill className="stage-slider-fill" />
+                            <Slider.Thumb className="stage-slider-thumb" />
+                        </Slider.Track>
+                    </Slider>
+                    <span>{formatDuration(duration)}</span>
+                </div>
+
+                <div className="stage-controls" aria-label="Playback controls">
+                    <ControlButton
+                        label="Shuffle"
+                        active={isShuffling}
+                        onClick={toggleShuffle}
+                    >
+                        <Shuffle className="size-5" />
+                    </ControlButton>
+                    <ControlButton
+                        label="Previous track"
+                        onClick={handlePrevious}
+                    >
+                        <SkipBack className="size-5" />
+                    </ControlButton>
+                    <PlayButton
+                        playing={isPlaying}
+                        progress={sliderValue}
+                        size="lg"
+                        style={{ '--play-button-size': '52px' }}
+                        onClick={handlePlayPause}
+                        label={currentTrack.name || 'track'}
+                        aria-busy={isFetchingTrack || isBuffering}
+                    />
+                    <ControlButton label="Next track" onClick={handleSkip}>
+                        <SkipForward className="size-5" />
+                    </ControlButton>
+                    <ControlButton
+                        label="Repeat track"
+                        active={isLooping}
+                        onClick={() => setIsLooping((current) => !current)}
+                    >
+                        <Repeat className="size-5" />
+                    </ControlButton>
+                </div>
+
+                <div className="stage-extras">
+                    <VolumeSlider
+                        className="min-w-0 flex-1"
+                        defaultValue={volumeValue}
+                        onChange={setVolumeValue}
+                    />
+                    <button
+                        type="button"
+                        aria-label="Toggle playback queue"
+                        aria-pressed={isQueueOpen}
+                        onClick={() => setIsQueueOpen((current) => !current)}
+                        className="stage-queue-toggle"
+                    >
+                        <List className="size-5" />
+                        <QueueBadge count={upcomingTracks.length} />
                     </button>
                 </div>
-            ),
-            isActive: false,
-        },
-        {
-            key: 'next',
-            icon: SkipForward,
-            ariaLabel: 'next',
-            onPress: handleSkip,
-            isActive: false,
-        },
-        {
-            key: 'loop',
-            icon: Repeat,
-            ariaLabel: 'loop',
-            onPress: () => setIsLooping((v) => !v),
-            isActive: isLooping,
-        },
-        {
-            key: 'queue',
-            icon: List,
-            ariaLabel: 'queue',
-            isActive: false, // TODO: finish implementing toggle 
-        },
-    ]
 
-    /* -------------------- */
-    /* RENDER               */
-    /* -------------------- */
+                {isQueueOpen && renderQueue()}
+            </div>
+        )
+    }
 
     return (
-        <div
-            className={`flex w-xs items-end sm:w-sm md:w-lg lg:w-xl ${className}`}
-        >
-            <Card className="w-full rounded-2xl bg-player px-5 py-4 text-player-foreground shadow-card">
-                <Card.Content className="w-full">
-                    <AudioElement
-                        audioRef={audioRef}
-                        audioSrc={audioSrc}
-                        isPlaying={isPlaying}
-                        isLooping={isLooping}
-                        onMetadataLoaded={handleMetadataLoaded}
-                        onTimeUpdate={handleTimeUpdate}
-                        onBufferingStart={() => setIsBuffering(true)}
-                        onBufferingEnd={() => setIsBuffering(false)}
-                        onEnded={() => {
-                            if (isPlaying) handleSkip()
-                        }}
-                    />
+        <>
+            <AudioElement
+                audioRef={audioRef}
+                audioSrc={audioSrc}
+                isPlaying={isPlaying}
+                isLooping={isLooping}
+                onMetadataLoaded={handleMetadataLoaded}
+                onTimeUpdate={handleTimeUpdate}
+                onBufferingStart={() => setIsBuffering(true)}
+                onBufferingEnd={() => setIsBuffering(false)}
+                onEnded={() => {
+                    if (isPlaying) handleSkip()
+                }}
+            />
 
-                    {/* Row 1: Track info + Volume + Options*/}
-                    <div className="flex w-full items-end justify-between gap-4">
-                        <div className="min-w-0">
-                            <p
-                                className={`truncate text-sm font-bold text-player-muted ${isDisabled ? 'opacity-50' : ''}`}
-                            >
-                                {currentTrack?.name || 'Unknown'}
-                            </p>
-                            <p
-                                className={`truncate text-xs text-player-muted ${isDisabled ? 'opacity-50' : ''}`}
-                            >
-                                Artist: {currentTrack?.artist || 'Unknown'}
-                            </p>
-                        </div>
+            <aside className="stage-player" aria-label="Now playing">
+                {renderStageContent()}
+            </aside>
 
-                        <div className="flex items-center gap-2">
-                            <VolumeSlider
-                                className="shrink-0"
-                                defaultValue={volumeValue}
-                                onChange={setVolumeValue}
-                                isDisabled={isDisabled}
-                            />
+            <div className="player-mini-bar">
+                <TrackVisual
+                    track={currentTrack}
+                    creator={currentCreator}
+                    className="size-12 rounded-lg"
+                    avatarClassName="size-2/3"
+                    sizes="48px"
+                />
+                <button
+                    type="button"
+                    onClick={() => setIsSheetOpen(true)}
+                    className="min-w-0 flex-1 text-left focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+                    aria-label="Open full player"
+                >
+                    <span className="block truncate text-sm font-bold text-foreground">
+                        {currentTrack.name || 'Unknown track'}
+                    </span>
+                    <span className="block truncate text-xs text-muted-foreground">
+                        {currentCreator?.username ||
+                            currentTrack.artist ||
+                            'Unknown creator'}
+                    </span>
+                </button>
+                <PlayButton
+                    playing={isPlaying}
+                    progress={sliderValue}
+                    size="sm"
+                    onClick={handlePlayPause}
+                    label={currentTrack.name || 'track'}
+                    aria-busy={isFetchingTrack || isBuffering}
+                />
+                <button
+                    type="button"
+                    aria-label="Open playback queue"
+                    onClick={() => {
+                        setIsQueueOpen(true)
+                        setIsSheetOpen(true)
+                    }}
+                    className="stage-queue-toggle"
+                >
+                    <List className="size-5" />
+                    <QueueBadge count={upcomingTracks.length} />
+                </button>
+            </div>
 
-                            <TrackOptionsDropdown
-                                isDisabled={isDisabled}
-                                track={currentTrack}
-                            />
-                        </div>
-                    </div>
-
-                    {/* Row 2: Progress slider + timestamps */}
-                    <div className="mt-2 w-full space-y-2">
-                        <div
-                            className={`flex w-full justify-between text-xs text-player-muted ${isDisabled ? 'opacity-50' : ''}`}
-                        >
-                            <span>
-                                {formatDuration(sliderValue * duration)}
-                            </span>
-                            <span>{formatDuration(duration)}</span>
-                        </div>
-                        <Slider
-                            aria-label="Track progress"
-                            value={sliderValue}
-                            minValue={0}
-                            maxValue={1}
-                            step={0.001}
-                            onChange={handleSliderChange}
-                            onChangeEnd={handleSliderChangeEnd}
-                            isDisabled={isDisabled}
-                            className="mx-0 flex max-w-full items-center justify-center px-2"
-                        >
-                            <Slider.Track className="h-1 rounded-full border-0 bg-player-line">
-                                <Slider.Fill className="rounded-full bg-player-muted" />
-                                <Slider.Thumb className="size-4 border-2 border-player-muted bg-player-accent" />
-                            </Slider.Track>
-                        </Slider>
-                    </div>
-
-                    {/* Row 3: Transport controls */}
-                    <div className="mt-2 flex w-full items-center justify-center gap-1">
-                        {controls.map(
-                            ({
-                                key,
-                                node,
-                                icon: Icon,
-                                ariaLabel,
-                                onPress,
-                                isActive,
-                            }) =>
-                                node ? (
-                                    <div
-                                        key={key}
-                                        className="flex flex-col items-center gap-0.5"
-                                    >
-                                        {node}
-                                        <ActiveDot isActive={isActive} />
-                                    </div>
-                                ) : (
-                                    <div
-                                        key={key}
-                                        className="flex flex-col items-center gap-0.5"
-                                    >
-                                        <ControlButton
-                                            ariaLabel={ariaLabel}
-                                            onPress={onPress}
-                                            isDisabled={isDisabled}
-                                        >
-                                            <ControlIcon
-                                                Icon={Icon}
-                                                isActive={isActive}
-                                            />
-                                        </ControlButton>
-                                        <ActiveDot isActive={isActive} />
-                                    </div>
-                                )
-                        )}
-                    </div>
-                </Card.Content>
-            </Card>
-        </div>
+            {isSheetOpen && (
+                <section className="player-sheet" aria-label="Full player">
+                    {renderStageContent({ showClose: true })}
+                </section>
+            )}
+        </>
     )
 }

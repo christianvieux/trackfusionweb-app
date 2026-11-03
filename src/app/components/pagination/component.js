@@ -55,7 +55,7 @@ export default function AppPagination({
           <Pagination.Previous
             isDisabled={page === 1}
             onPress={() => goToPage(page - 1)}
-            className="text-foreground"
+            className="size-8 min-w-8 rounded-full text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
           >
             <Pagination.PreviousIcon />
           </Pagination.Previous>
@@ -71,7 +71,11 @@ export default function AppPagination({
               <Pagination.Link
                 isActive={item === page}
                 onPress={() => goToPage(item)}
-                className="text-foreground"
+                className={`size-8 min-w-8 rounded-full border bg-transparent text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white ${
+                  item === page
+                    ? "border-success text-success"
+                    : "border-transparent"
+                }`}
               >
                 {item}
               </Pagination.Link>
@@ -83,7 +87,7 @@ export default function AppPagination({
           <Pagination.Next
             isDisabled={page === total}
             onPress={() => goToPage(page + 1)}
-            className="text-foreground"
+            className="size-8 min-w-8 rounded-full text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
           >
             <Pagination.NextIcon />
           </Pagination.Next>

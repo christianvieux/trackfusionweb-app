@@ -1,34 +1,35 @@
-"use client";
+'use client'
 
-import { useEffect, useState } from "react";
+import { useEffect, useState } from 'react'
 
-import TrackListSection from "../components/TrackListSection";
-import TrackPageLayout from "../components/TrackPageLayout";
-import { fetchRecentTracks } from "../services/trackService";
+import TrackListSection from '../components/TrackListSection'
+import TrackPageLayout from '../components/TrackPageLayout'
+import { fetchRecentTracks } from '../services/trackService'
 
 export default function FeedPage() {
-  const [publicTracks, setPublicTracks] = useState([]);
+    const [publicTracks, setPublicTracks] = useState([])
 
-  useEffect(() => {
-    async function loadTracks() {
-      try {
-        const tracks = await fetchRecentTracks();
-        setPublicTracks(tracks || []);
-      } catch (error) {
-        console.error("Failed to fetch recent tracks:", error);
-      }
-    }
+    useEffect(() => {
+        async function loadTracks() {
+            try {
+                const tracks = await fetchRecentTracks()
+                setPublicTracks(tracks || [])
+            } catch (error) {
+                console.error('Failed to fetch recent tracks:', error)
+            }
+        }
 
-    loadTracks();
-  }, []);
+        loadTracks()
+    }, [])
 
-  return (
-    <TrackPageLayout title="Discover Tracks">
-      <TrackListSection
-        trackList={publicTracks}
-        setTrackList={setPublicTracks}
-        emptyMessage="No recent tracks found"
-      />
-    </TrackPageLayout>
-  );
+    return (
+        <TrackPageLayout>
+            <TrackListSection
+                title="Discover Tracks"
+                trackList={publicTracks}
+                setTrackList={setPublicTracks}
+                emptyMessage="No recent tracks found"
+            />
+        </TrackPageLayout>
+    )
 }

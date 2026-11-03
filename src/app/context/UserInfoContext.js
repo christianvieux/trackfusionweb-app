@@ -26,20 +26,7 @@ export const UserInfoProvider = ({ children }) => {
           const newUserInfo = await fetchPublicUserInfo(user.id);
           if (!isActive) return;
 
-          const timestamp = new Date(newUserInfo.updated_at).getTime();
-          const separator = newUserInfo.profile_picture_url?.includes("?")
-            ? "&"
-            : "?";
-          const canVersionProfilePicture =
-            newUserInfo?.profile_picture_url && Number.isFinite(timestamp);
-          const profilePictureUrlWithVersion = canVersionProfilePicture
-            ? `${newUserInfo.profile_picture_url}${separator}v=${timestamp}`
-            : newUserInfo?.profile_picture_url || null;
-
-          setUserInfo({
-            ...newUserInfo,
-            profile_picture_url: profilePictureUrlWithVersion,
-          });
+          setUserInfo(newUserInfo);
         } catch {
           if (isActive) setUserInfo(null);
         }

@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Menu, X } from "lucide-react";
+import { Plus, X } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 
@@ -64,7 +64,7 @@ export default function NavBar({ LeftContent, className = "", ...props }) {
           </h1>
         </div>
 
-        <div className="hidden items-center gap-4 nav:flex">
+        <div className="desktop-nav-links flex items-center gap-4">
           {navLinks.map(({ label, href }) => (
             <NavLink key={href} href={href}>
               {label}
@@ -77,17 +77,17 @@ export default function NavBar({ LeftContent, className = "", ...props }) {
 
           <button
             type="button"
-            aria-label={isMenuOpen ? "Close menu" : "Open menu"}
+            aria-label={isMenuOpen ? "Close create menu" : "Open create menu"}
             aria-expanded={isMenuOpen}
             onClick={() => setIsMenuOpen((current) => !current)}
-            className="rounded-lg p-2 text-foreground transition hover:bg-secondary nav:hidden"
+            className="compact-create-trigger flex size-10 items-center justify-center rounded-lg text-foreground transition hover:bg-success/10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
           >
-            {isMenuOpen ? <X size={22} /> : <Menu size={22} />}
+            {isMenuOpen ? <X size={22} /> : <Plus size={22} />}
           </button>
         </div>
 
         {isMenuOpen && (
-          <div className="absolute right-4 top-full z-50 mt-2 w-56 rounded-2xl border border-accent/20 bg-secondary p-2 shadow-card backdrop-blur-md nav:hidden">
+          <div className="create-links-popover absolute right-4 top-full z-50 mt-2 w-56 rounded-2xl border border-accent/20 bg-secondary p-2 shadow-card backdrop-blur-md">
             <div className="flex flex-col gap-1">
               {navLinks.map(({ label, href }) => (
                 <NavLink key={href} href={href} onClick={closeMenu}>

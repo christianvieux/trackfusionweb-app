@@ -1,52 +1,96 @@
-import React, { useEffect, useState } from 'react'
-import {
-    Dropdown,
-    DropdownTrigger,
-    DropdownMenu,
-    DropdownItem,
-    Avatar,
-    User,
-} from '@heroui/react'
+'use client'
+
+import { useEffect, useState } from 'react'
 import Link from 'next/link'
+
 import { fetchPublicUserInfo } from '../services/userService'
 import UserPill from './UserPill'
 
-export default function UserCard({ userId, className, UserPillProps = {},...props }) {
+export default function UserCard({
+    userId,
+    className = '',
+    UserPillProps = {},
+    animate = false,
+    onUserInfoLoaded,
+    onPointerEnter,
+    onPointerLeave,
+    onFocus,
+    onBlur,
+    ...props
+}) {
     const [userInfo, setUserInfo] = useState({})
-    const [loading, setLoading] = useState(true)
+    const [loading, setLoading] = useState(Boolean(userId))
+    const [isInteracting, setIsInteracting] = useState(false)
 
-    const profilePictureUrlWithVersion = userInfo.profile_picture_url
-        ? `${userInfo.profile_picture_url}?v=${new Date(userInfo.updated_at).getTime()}`
-        : null
-
-    // Fetch user info
     useEffect(() => {
-        const fetchUserInfo = async () => {
+        let cancelled = false
+
+        setUserInfo({})
+        setLoading(Boolean(userId))
+
+        if (!userId) return undefined
+
+        async function loadUserInfo() {
             try {
                 const response = await fetchPublicUserInfo(userId)
+
+                if (cancelled) return
+
                 setUserInfo(response)
-                setLoading(false)
+                onUserInfoLoaded?.(response)
             } catch (error) {
-                console.error('Error fetching user info:', userId, error)
+                if (!cancelled) {
+                    console.error('Error fetching user info:', userId, error)
+                }
+            } finally {
+                if (!cancelled) setLoading(false)
             }
         }
 
-        fetchUserInfo()
-    }, [userId])
+        loadUserInfo()
+
+        return () => {
+            cancelled = true
+        }
+    }, [onUserInfoLoaded, userId])
+
+    const {
+        animate: userPillAnimate,
+        className: userPillClassName = '',
+        ...restUserPillProps
+    } = UserPillProps
 
     return (
         <Link
-        id="user_card"
+            id="user_card"
             href={userInfo.id ? `/profile/${userInfo.id}` : '#'}
             className={`size-full ${className}`}
+            onPointerEnter={(event) => {
+                setIsInteracting(true)
+                onPointerEnter?.(event)
+            }}
+            onPointerLeave={(event) => {
+                setIsInteracting(false)
+                onPointerLeave?.(event)
+            }}
+            onFocus={(event) => {
+                setIsInteracting(true)
+                onFocus?.(event)
+            }}
+            onBlur={(event) => {
+                setIsInteracting(false)
+                onBlur?.(event)
+            }}
             {...props}
         >
             <UserPill
                 userInfo={userInfo}
+                userId={userId}
                 username={userInfo.username || 'New User'}
-                className={`hover:text-green-light bg-black ${UserPillProps.className}`}
-                avatarClassName="size-10 border-green-light text-green-light"
-                {...UserPillProps}
+                isLoading={loading}
+                animate={userPillAnimate ?? (animate || isInteracting)}
+                className={`hover:text-green-light bg-black ${userPillClassName}`}
+                {...restUserPillProps}
             />
         </Link>
     )

@@ -1,12 +1,17 @@
-export const ROWS_PER_PAGE = 8;
+export const ROWS_PER_PAGE = 6
+
+export const TRACK_LAYOUTS = Object.freeze({
+    ROWS: 'rows',
+    TILES: 'tiles',
+    SPOTLIGHT: 'spotlight',
+})
+
+export const DEFAULT_TRACK_LAYOUT = TRACK_LAYOUTS.ROWS
 
 export const DESKTOP_COLUMNS = [
-    { key: 'name', label: 'NAME' },
-    { key: 'creator', label: 'CREATOR' },
-    { key: 'category', label: 'CATEGORY', className: 'hidden xl:table-cell' },
-    { key: 'genre', label: 'GENRE', className: 'hidden 2xl:table-cell' },
-    { key: 'mood', label: 'MOOD', className: 'hidden 2xl:table-cell' },
-    { key: 'duration', label: 'DURATION' },
+    { key: 'name', label: 'NAME', className: 'w-full' },
+    { key: 'creator', label: 'CREATOR', className: 'min-w-40' },
+    { key: 'duration', label: 'TIME' },
     { key: 'favorite', label: '' },
     { key: 'options', label: '' },
 ]
@@ -19,13 +24,20 @@ export const MOBILE_COLUMNS = [
 ]
 
 export const initialFilters = {
-  filtersList: {},
-  includes: {},
-  excludes: {},
-  searchTerm: "",
-};
+    filtersList: {},
+    includes: {},
+    excludes: {},
+    searchTerm: '',
+}
 
 export const FUSE_OPTIONS = {
-  keys: ["name", "artist", "genre", "mood", "creator"],
-  threshold: 0.3,
-};
+    keys: [
+        'track.name',
+        'track.artist',
+        'track.category',
+        'track.genre',
+        'track.mood',
+        'creator',
+    ],
+    threshold: 0.3,
+}

@@ -1,30 +1,32 @@
 "use client";
 
 import UpdatePasswordForm from "./components/UpdatePasswordForm";
-import UpdateProfilePictureForm from "./components/UpdateProfilePictureForm";
 import { useUserInfo } from "../../context/UserInfoContext";
+import AvatarPicker from "../AvatarPicker";
 
 export default function AccountSettings({ className = "" }) {
   const { userInfo, setUserInfo } = useUserInfo();
 
-  function handleProfilePictureUpdate(newUrl) {
-    const updatedUrl = `${newUrl}?v=${Date.now()}`;
-
+  function handleAvatarUpdate(avatar) {
     setUserInfo((prev) => ({
       ...prev,
-      profile_picture_url: updatedUrl,
+      avatar,
     }));
   }
 
   return (
     <section
       id="Settings"
-      className={`flex w-full flex-wrap items-start justify-center gap-8 overflow-auto p-4 text-foreground ${className}`}
+      className={`flex w-full flex-wrap items-start justify-center gap-8 overflow-auto text-foreground sm:p-4 ${className}`}
     >
-      <UpdateProfilePictureForm
-        className="!self-start"
-        initialProfilePicture={userInfo?.profile_picture_url}
-        onSubmit={handleProfilePictureUpdate}
+      <AvatarPicker
+        userId={userInfo?.id}
+        username={userInfo?.username || ""}
+        initialAvatar={userInfo?.avatar}
+        title="Your avatar"
+        subtitle="Choose a new look. Changes appear everywhere after you save."
+        primaryLabel="Save avatar"
+        onSaved={handleAvatarUpdate}
       />
 
       <UpdatePasswordForm />

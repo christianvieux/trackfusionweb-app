@@ -12,7 +12,7 @@ export default function AudioElement({
   return (
     <audio
       ref={audioRef}
-      className="w-full"
+      className="hidden"
       src={audioSrc}
       autoPlay={isPlaying}
       loop={isLooping}

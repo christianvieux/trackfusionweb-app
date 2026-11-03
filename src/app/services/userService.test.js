@@ -4,10 +4,37 @@ import { apiClient } from "./apiClient";
 import {
   isRegistrationGrantError,
   register,
+  updateAvatar,
 } from "./userService";
 
 afterEach(() => {
   vi.restoreAllMocks();
+});
+
+describe("updateAvatar", () => {
+  const avatar = {
+    shape: "ghost",
+    expression: "neutral",
+    color: "#8B5CF6",
+    seed: "2f",
+  };
+
+  it("returns the saved avatar from the authenticated endpoint", async () => {
+    const put = vi.spyOn(apiClient, "put").mockResolvedValue({
+      data: { avatar },
+    });
+
+    await expect(updateAvatar(avatar)).resolves.toEqual(avatar);
+    expect(put).toHaveBeenCalledWith("/users/avatar", avatar);
+  });
+
+  it("surfaces a retryable save error", async () => {
+    vi.spyOn(apiClient, "put").mockRejectedValue({
+      response: { status: 500, data: { error: "Unable to save avatar" } },
+    });
+
+    await expect(updateAvatar(avatar)).rejects.toThrow(/failed to save your avatar/i);
+  });
 });
 
 describe("register", () => {

@@ -140,6 +140,15 @@ export async function fetchPublicUserInfo(userId) {
   }
 }
 
+export async function updateAvatar(avatar) {
+  try {
+    const response = await apiClient.put("/users/avatar", avatar);
+    return response.data.avatar;
+  } catch (error) {
+    throw toApiError(error, "Failed to save your avatar. Please try again.");
+  }
+}
+
 export async function fetchUserPublicFavoriteTracks(userId) {
   try {
     const response = await apiClient.get(

@@ -1,142 +1,137 @@
-import { Table } from "@heroui/react";
+'use client'
 
-import TrackCard from "../../TrackCard";
-import UserCard from "../../UserCard";
-import FavoriteButton from "../../FavoriteButton";
-import TrackOptionsDropdown from "../../TrackOptionsDropdown";
-import TrackPlayButton from "../../TrackPlayButton";
+import { useState } from 'react'
 
-import { formatDuration } from "../../../utils/audio";
+import TrackCard from '../../TrackCard'
+import FavoriteButton from '../../FavoriteButton'
+import TrackOptionsDropdown from '../../TrackOptionsDropdown'
+import TrackPlayButton from '../../TrackPlayButton'
 
-import AttributeChip from "./AttributeChip";
-import AttributeList from "./AttributeList";
-import { ROWS_PER_PAGE } from "../constants";
-import { getTrackKey } from "../utils";
+import { formatDuration } from '../../../utils/audio'
+import { useTrackManager } from '../../../context/TrackManagerContext'
 
-const CELL_BASE_CLASS = "px-0 py-0 pb-4 border-none bg-transparent";
-
-function TrackCell({
-  position = "middle",
-  children,
-  extraClass = "",
-  colSpan,
-  index,
-  paginatedTracks,
-}) {
-  const isFirstRow = index === 0;
-  const isLastRow = index === paginatedTracks.length - 1;
-
-  const roundedClasses = [];
-
-  if (position === "first" || position === "only") {
-    if (isFirstRow) roundedClasses.push("rounded-tl-lg");
-    if (isLastRow) roundedClasses.push("rounded-bl-lg");
-  }
-
-  if (position === "last" || position === "only") {
-    if (isFirstRow) roundedClasses.push("rounded-tr-lg");
-    if (isLastRow) roundedClasses.push("rounded-br-lg");
-  }
-
-  return (
-    <Table.Cell
-      colSpan={colSpan}
-      className={`w-max ${CELL_BASE_CLASS} ${roundedClasses.join(" ")} ${extraClass}`}
-    >
-      {children}
-    </Table.Cell>
-  );
-}
+import TrackCreatorLink from './TrackCreatorLink'
+import {
+    getCreatorDisplayName,
+    parseAttributes,
+} from '../utils'
 
 export default function TrackRowDesktop({
-  track,
-  index,
-  page,
-  paginatedTracks,
-  className = "",
-  ...props
-}) {
-  const rowKey = getTrackKey(track, index);
-  const rowNumber = (page - 1) * ROWS_PER_PAGE + index + 1;
-
-  const sharedCellProps = {
-    index,
+    track,
     paginatedTracks,
-  };
+    creator,
+    onFilter,
+    className = '',
+    ...props
+}) {
+    const [isOptionsOpen, setIsOptionsOpen] = useState(false)
 
-  return (
-    <Table.Row key={rowKey} className={className} {...props}>
-      <TrackCell position="first" {...sharedCellProps}>
-        <div className="flex w-full items-center justify-between gap-3">
-          <div className="flex min-w-0 items-center gap-3">
-            <span className="text-muted-foreground w-5 shrink-0 text-right text-xs">
-              {rowNumber}
+    const { currentTrack } = useTrackManager()
+    const isCurrentTrack =
+        currentTrack?.id != null &&
+        String(currentTrack.id) === String(track.id)
+    const creatorName = getCreatorDisplayName(
+        { [track.creator_id]: creator },
+        track
+    )
+    const compactSubtitle = [
+        creatorName,
+        parseAttributes(track.genre)[0],
+        formatDuration(track.length),
+    ]
+        .filter(Boolean)
+        .join(' · ')
+    const genre = parseAttributes(track.genre)[0]
+    const mood = parseAttributes(track.mood)[0]
+    const category = parseAttributes(track.category)[0]
+    const mediumSubtitle = ['TrackFusionWeb', genre]
+        .filter(Boolean)
+        .join(' · ')
+
+    const tags = [
+        { type: 'category', value: category },
+        { type: 'genre', value: genre },
+        { type: 'mood', value: mood },
+    ].filter(({ value }) => Boolean(value))
+
+    return (
+        <article
+            role="row"
+            aria-current={isCurrentTrack ? 'true' : undefined}
+            className={`track-row-grid track-row-item ${isCurrentTrack ? 'is-current' : ''} ${className}`}
+            {...props}
+        >
+            <div className="track-row-play flex items-center justify-center">
+                <TrackPlayButton
+                    track={track}
+                    playlist={paginatedTracks}
+                    size="sm"
+                />
+            </div>
+
+            <div className="track-row-title flex min-w-0 items-center gap-2">
+                <TrackCard
+                    className="w-full"
+                    track={track}
+                    creator={creator}
+                    animateAvatar={isOptionsOpen}
+                    subtitle="TrackFusionWeb"
+                    mediumSubtitle={mediumSubtitle}
+                    compactSubtitle={compactSubtitle}
+                />
+
+                {track.is_private && (
+                    <span
+                        className="shrink-0 rounded bg-muted px-1 py-0.5 text-[10px] text-muted-foreground"
+                        title="Private track"
+                    >
+                        🔒
+                    </span>
+                )}
+            </div>
+
+            <div className="track-row-tags flex min-w-0 items-center gap-1 overflow-hidden">
+                {tags.map(({ type, value }) => (
+                    <button
+                        key={`${type}-${value}`}
+                        type="button"
+                        aria-label={`Filter by ${type.charAt(0).toUpperCase() + type.slice(1)}: ${value}`}
+                        onClick={() => onFilter?.(type, value)}
+                        className={`track-attribute-pill track-attribute-pill--${type}`}
+                    >
+                        {value}
+                    </button>
+                ))}
+            </div>
+
+            <div className="track-row-creator min-w-0">
+                <TrackCreatorLink
+                    creator={creator}
+                    userId={track.creator_id}
+                    animate={isOptionsOpen}
+                    className="max-w-full"
+                    nameClassName="text-sm font-semibold"
+                />
+            </div>
+
+            <span className="track-row-time text-sm text-muted-foreground">
+                {formatDuration(track.length)}
             </span>
 
-            <TrackCard
-              className="max-w-[180px] min-w-0 md:max-w-[260px] lg:max-w-[320px]"
-              track={track}
-              playlist={paginatedTracks}
-            />
+            <div className="track-row-like flex items-center justify-center">
+                <FavoriteButton
+                    track={track}
+                    classNames={{ svg: 'h-5 w-5' }}
+                />
+            </div>
 
-            {track.is_private && (
-              <span
-                className="bg-muted text-muted-foreground shrink-0 rounded px-1 py-0.5 text-[10px]"
-                title="Private track"
-              >
-                🔒
-              </span>
-            )}
-          </div>
-
-          <TrackPlayButton
-            track={track}
-            playlist={paginatedTracks}
-            className="shrink-0"
-          />
-        </div>
-      </TrackCell>
-
-      <TrackCell {...sharedCellProps}>
-        <UserCard
-          userId={track.creator_id}
-          UserPillProps={{
-            className: "p-2 lg:p-0 lg:pr-2",
-            classNames: { Username: "hidden lg:block" },
-          }}
-        />
-      </TrackCell>
-
-      <TrackCell extraClass="hidden xl:table-cell" {...sharedCellProps}>
-        <AttributeChip attribute={track.category} />
-      </TrackCell>
-
-      <TrackCell extraClass="hidden 2xl:table-cell" {...sharedCellProps}>
-        <AttributeList attributes={track.genre} />
-      </TrackCell>
-
-      <TrackCell extraClass="hidden 2xl:table-cell" {...sharedCellProps}>
-        <AttributeList attributes={track.mood} />
-      </TrackCell>
-
-      <TrackCell
-        extraClass="text-sm text-muted-foreground"
-        {...sharedCellProps}
-      >
-        {formatDuration(track.length)}
-      </TrackCell>
-
-      <TrackCell {...sharedCellProps}>
-        <FavoriteButton
-          track={track}
-          showLikes
-          classNames={{ svg: "h-5 w-5" }}
-        />
-      </TrackCell>
-
-      <TrackCell position="last" {...sharedCellProps}>
-        <TrackOptionsDropdown track={track} />
-      </TrackCell>
-    </Table.Row>
-  );
+            <div className="track-row-more flex items-center justify-center">
+                <TrackOptionsDropdown
+                    track={track}
+                    creator={creator}
+                    onOpenChange={setIsOptionsOpen}
+                />
+            </div>
+        </article>
+    )
 }
