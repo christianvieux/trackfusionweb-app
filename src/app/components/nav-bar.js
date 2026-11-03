@@ -80,7 +80,7 @@ export default function NavBar({ LeftContent, className = "", ...props }) {
             aria-label={isMenuOpen ? "Close create menu" : "Open create menu"}
             aria-expanded={isMenuOpen}
             onClick={() => setIsMenuOpen((current) => !current)}
-            className="compact-create-trigger flex size-10 items-center justify-center rounded-lg text-foreground transition hover:bg-success/10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+            className="compact-create-trigger size-10 items-center justify-center rounded-lg text-foreground transition hover:bg-success/10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
           >
             {isMenuOpen ? <X size={22} /> : <Plus size={22} />}
           </button>

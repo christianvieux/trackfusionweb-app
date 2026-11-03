@@ -246,7 +246,7 @@ body {
 
     .compact-create-trigger,
     .create-links-popover {
-        display: none;
+        display: none !important;
     }
 
     .stage-player {
@@ -874,11 +874,11 @@ body {
         }
 
         .compact-create-trigger {
-            display: flex;
+            display: flex !important;
         }
 
         .create-links-popover {
-            display: block;
+            display: block !important;
         }
 
         .mobile-tab-bar {
