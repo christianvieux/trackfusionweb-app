@@ -116,6 +116,15 @@ behaviors.
   interpolate between coarse media `timeupdate` events, but transitions must be
   disabled while the user is dragging so seeking remains immediate.
 
+## Settings contract
+
+- Account settings panels use the shared `SettingsCard` surface, heading, and
+  description treatment. Feature components may keep a distinct onboarding
+  presentation, but must opt into the settings appearance when embedded here.
+- Horizontal option pickers keep `min-width: 0` through every flex/grid parent
+  and own their overflow. Adding avatar traits must extend the inner carousel,
+  never the settings card or page width.
+
 ## Required verification
 
 ```bash

@@ -11,11 +11,43 @@ import {
 } from "../../avatar/avatarUtils";
 import { updateAvatar } from "../../services/userService";
 import BlobAvatarDisplay from "../BlobAvatarDisplay";
+import SettingsCard from "../AccountSettings/components/SettingsCard";
 import AvatarCustomizer from "./AvatarCustomizer";
 import {
   avatarPickerReducer,
   createAvatarPickerState,
 } from "./avatarPickerState";
+
+function AvatarPickerCard({ appearance, title, subtitle, className, children }) {
+  if (appearance === "settings") {
+    return (
+      <SettingsCard
+        title={title}
+        description={subtitle}
+        className={`max-w-[30rem] overflow-hidden ${className}`}
+      >
+        {children}
+      </SettingsCard>
+    );
+  }
+
+  return (
+    <section
+      className={`w-full min-w-0 max-w-[30rem] overflow-hidden rounded-2xl border border-accent/45 bg-black/90 p-4 text-foreground shadow-card sm:p-6 ${className}`}
+      aria-labelledby="avatar-picker-heading"
+    >
+      <header className="text-center">
+        <h1 id="avatar-picker-heading" className="text-2xl font-bold text-success sm:text-3xl">
+          {title}
+        </h1>
+        <p className="mx-auto mt-1 max-w-sm text-sm leading-5 text-foreground/80">
+          {subtitle}
+        </p>
+      </header>
+      {children}
+    </section>
+  );
+}
 
 export default function AvatarPicker({
   userId,
@@ -26,6 +58,7 @@ export default function AvatarPicker({
   primaryLabel = "Use this avatar",
   onSaved = async () => {},
   onSkip,
+  appearance = "default",
   className = "",
 }) {
   const resolvedInitial = useMemo(
@@ -89,27 +122,25 @@ export default function AvatarPicker({
 
   if (!userId || !state.selected) {
     return (
-      <div className={`w-full max-w-[30rem] rounded-2xl border border-accent/35 bg-black/80 p-6 ${className}`}>
+      <AvatarPickerCard
+        appearance={appearance}
+        title={title}
+        subtitle={subtitle}
+        className={className}
+      >
         <div className="mx-auto size-36 animate-pulse rounded-full bg-muted" />
         <p className="mt-4 text-center text-sm text-muted-foreground">Loading your avatar…</p>
-      </div>
+      </AvatarPickerCard>
     );
   }
 
   return (
-    <section
-      className={`w-full max-w-[30rem] rounded-2xl border border-accent/45 bg-black/90 p-4 text-foreground shadow-card sm:p-6 ${className}`}
-      aria-labelledby="avatar-picker-heading"
+    <AvatarPickerCard
+      appearance={appearance}
+      title={title}
+      subtitle={subtitle}
+      className={className}
     >
-      <header className="text-center">
-        <h1 id="avatar-picker-heading" className="text-2xl font-bold text-success sm:text-3xl">
-          {title}
-        </h1>
-        <p className="mx-auto mt-1 max-w-sm text-sm leading-5 text-foreground/80">
-          {subtitle}
-        </p>
-      </header>
-
       <div className="mt-4 flex flex-col items-center gap-2 sm:mt-5">
         <BlobAvatarDisplay
           avatar={state.selected}
@@ -133,7 +164,7 @@ export default function AvatarPicker({
       </div>
 
       <div
-        className="avatar-options-scroll mt-2 flex gap-2 overflow-x-auto overscroll-x-contain pb-1"
+        className="avatar-options-scroll mt-2 flex w-full min-w-0 max-w-full gap-2 overflow-x-auto overscroll-x-contain pb-1"
         role="radiogroup"
         aria-label="Suggested avatars"
       >
@@ -213,6 +244,6 @@ export default function AvatarPicker({
           </button>
         )}
       </div>
-    </section>
+    </AvatarPickerCard>
   );
 }

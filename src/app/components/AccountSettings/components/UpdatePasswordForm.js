@@ -69,7 +69,7 @@ export default function UpdatePasswordForm() {
     <SettingsCard
       title="Change password"
       description="Update your account password."
-      className="w-auto"
+      className="max-w-[44rem]"
     >
       <Form
         id="Update_Password_Form"
@@ -77,7 +77,7 @@ export default function UpdatePasswordForm() {
         onSubmit={handleSubmit}
       >
         <div className="flex w-full flex-col gap-4 md:flex-row">
-          <div id="inputs" className="flex w-80 flex-col gap-4">
+          <div id="inputs" className="flex w-full flex-col gap-4 sm:w-80">
             <PasswordField
               name="current-password"
               label="Current Password"
@@ -114,7 +114,7 @@ export default function UpdatePasswordForm() {
             />
           </div>
 
-          <div className="overflow-auto">
+          <div className="min-w-0 overflow-auto">
             <PasswordRequirements requirements={requirements} />
           </div>
         </div>

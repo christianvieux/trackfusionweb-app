@@ -17,7 +17,7 @@ export default function AccountSettings({ className = "" }) {
   return (
     <section
       id="Settings"
-      className={`flex w-full flex-wrap items-start justify-center gap-8 overflow-auto text-foreground sm:p-4 ${className}`}
+      className={`flex w-full min-w-0 flex-wrap items-start justify-center gap-8 overflow-x-hidden overflow-y-auto text-foreground sm:p-4 ${className}`}
     >
       <AvatarPicker
         userId={userInfo?.id}
@@ -26,6 +26,7 @@ export default function AccountSettings({ className = "" }) {
         title="Your avatar"
         subtitle="Choose a new look. Changes appear everywhere after you save."
         primaryLabel="Save avatar"
+        appearance="settings"
         onSaved={handleAvatarUpdate}
       />
 

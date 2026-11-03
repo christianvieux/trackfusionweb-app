@@ -28,10 +28,10 @@ export default function AvatarOptionRow({
   }
 
   return (
-    <section className="flex flex-col gap-2" aria-label={label}>
-      <div className="flex items-center justify-between">
+    <section className="flex min-w-0 max-w-full flex-col gap-2" aria-label={label}>
+      <div className="flex min-w-0 items-center justify-between gap-2">
         <h3 className="text-sm font-semibold text-foreground">{label}</h3>
-        <div className="flex gap-1">
+        <div className="flex shrink-0 gap-1">
           <button
             type="button"
             aria-label={`Previous ${label.toLowerCase()}`}
@@ -56,7 +56,7 @@ export default function AvatarOptionRow({
         role="radiogroup"
         aria-label={label}
         onKeyDown={handleKeyDown}
-        className="avatar-options-scroll flex min-h-12 gap-2 overflow-x-auto overscroll-x-contain pb-1"
+        className="avatar-options-scroll flex min-h-12 w-full min-w-0 max-w-full gap-2 overflow-x-auto overscroll-x-contain pb-1"
       >
         {options.map((option) => {
           const optionValue = getValue(option);

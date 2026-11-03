@@ -8,7 +8,7 @@ import AvatarOptionRow from "./AvatarOptionRow";
 
 export default function AvatarCustomizer({ avatar, onTraitChange }) {
   return (
-    <div className="grid gap-4 border-t border-accent/25 pt-4">
+    <div className="grid min-w-0 max-w-full gap-4 border-t border-accent/25 pt-4">
       <AvatarOptionRow
         label="Shape"
         options={AVATAR_SHAPES}
