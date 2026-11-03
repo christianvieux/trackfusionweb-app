@@ -134,9 +134,7 @@ export default function AudioPlayer({
                 getTrackIdentity(track) === getTrackIdentity(currentTrack)
         )
 
-        return currentIndex === -1
-            ? playlist
-            : playlist.slice(currentIndex + 1)
+        return currentIndex === -1 ? playlist : playlist.slice(currentIndex + 1)
     }, [currentTrack, playlist])
 
     const upcomingTracks = useMemo(
@@ -145,9 +143,7 @@ export default function AudioPlayer({
     )
     const playerTracks = useMemo(
         () =>
-            currentTrack
-                ? [currentTrack, ...upcomingTracks]
-                : upcomingTracks,
+            currentTrack ? [currentTrack, ...upcomingTracks] : upcomingTracks,
         [currentTrack, upcomingTracks]
     )
     const creatorsById = useTrackCreators(playerTracks)
@@ -439,11 +435,11 @@ export default function AudioPlayer({
                         onChange={handleSliderChange}
                         onChangeEnd={handleSliderChangeEnd}
                         isDisabled={!duration}
-                        className="min-w-0"
+                        className="stage-progress-slider min-w-0"
                     >
-                        <Slider.Track className="stage-slider-track">
-                            <Slider.Fill className="stage-slider-fill" />
-                            <Slider.Thumb className="stage-slider-thumb" />
+                        <Slider.Track className="stage-slider-track stage-progress-slider-track">
+                            <Slider.Fill className="stage-slider-fill stage-progress-slider-fill" />
+                            <Slider.Thumb className="stage-slider-thumb stage-progress-slider-thumb" />
                         </Slider.Track>
                     </Slider>
                     <span>{formatDuration(duration)}</span>

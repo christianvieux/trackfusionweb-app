@@ -212,7 +212,12 @@ export default function TrackListTable({
                 onClearFilters={clearFilters}
             />
 
-            <div className="min-h-0 flex-1">
+            <div
+                className="track-list-viewport min-h-0 flex-1 overflow-y-auto overscroll-contain pr-1"
+                role="region"
+                tabIndex={0}
+                aria-label={`${title || 'Tracks'} results`}
+            >
                 {filteredTracks.length === 0 ? (
                     <TrackListEmptyState
                         message={emptyMessage}

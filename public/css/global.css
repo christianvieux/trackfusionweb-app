@@ -237,6 +237,24 @@ body {
         backdrop-filter: blur(14px);
     }
 
+    .topbar-nav {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+        align-items: center;
+    }
+
+    .topbar-brand {
+        justify-self: start;
+    }
+
+    .topbar-primary-actions {
+        justify-self: center;
+    }
+
+    .topbar-account-actions {
+        justify-self: end;
+    }
+
     .desktop-nav-links {
         display: flex;
     }
@@ -541,6 +559,42 @@ body {
         height: 8px;
         border: 1px solid #a7f3d0;
         background: #080816;
+    }
+
+    .stage-progress-slider-fill {
+        transition:
+            left 280ms linear,
+            width 280ms linear;
+        will-change: left, width;
+    }
+
+    .stage-progress-slider-thumb:not([data-dragging='true']) {
+        transition:
+            left 280ms linear,
+            right 280ms linear,
+            transform 250ms var(--ease-out),
+            background-color 250ms var(--ease-smooth),
+            box-shadow 150ms var(--ease-out);
+        will-change: left, right;
+    }
+
+    .stage-progress-slider:has([data-dragging='true'])
+        .stage-progress-slider-fill {
+        transition: none;
+    }
+
+    .stage-volume-slider-track {
+        background: rgb(167 139 250 / 0.16);
+    }
+
+    .stage-volume-slider-fill {
+        background: linear-gradient(90deg, #8b5cf6, #c4b5fd);
+        box-shadow: 0 0 9px rgb(139 92 246 / 0.36);
+    }
+
+    .stage-volume-slider-thumb {
+        border-color: #c4b5fd;
+        box-shadow: 0 0 7px rgb(139 92 246 / 0.3);
     }
 
     .stage-controls {
@@ -1011,6 +1065,15 @@ body {
         container-type: inline-size;
     }
 
+    .track-list-viewport {
+        scrollbar-gutter: stable;
+    }
+
+    .track-list-viewport:focus-visible {
+        outline: 1px solid rgb(74 222 128 / 0.5);
+        outline-offset: 3px;
+    }
+
     .track-search {
         position: relative;
         display: flex;
@@ -1372,6 +1435,10 @@ body {
         .app-sidebar,
         .desktop-nav-links {
             display: none !important;
+        }
+
+        .topbar-nav {
+            grid-template-columns: minmax(0, 1fr) auto;
         }
 
         .collapsed-player {

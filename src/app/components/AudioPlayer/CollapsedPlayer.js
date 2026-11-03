@@ -79,9 +79,7 @@ export default function CollapsedPlayer({
                         {track.name || 'Unknown track'}
                     </p>
                     <p className="truncate text-xs text-[#a7f3d0]/70">
-                        {creator?.username ||
-                            track.artist ||
-                            'Unknown creator'}
+                        {creator?.username || track.artist || 'Unknown creator'}
                     </p>
                 </div>
             </div>
@@ -97,11 +95,11 @@ export default function CollapsedPlayer({
                     onChange={onProgressChange}
                     onChangeEnd={onProgressChangeEnd}
                     isDisabled={!duration}
-                    className="min-w-0"
+                    className="stage-progress-slider min-w-0"
                 >
-                    <Slider.Track className="stage-slider-track">
-                        <Slider.Fill className="stage-slider-fill" />
-                        <Slider.Thumb className="stage-slider-thumb" />
+                    <Slider.Track className="stage-slider-track stage-progress-slider-track">
+                        <Slider.Fill className="stage-slider-fill stage-progress-slider-fill" />
+                        <Slider.Thumb className="stage-slider-thumb stage-progress-slider-thumb" />
                     </Slider.Track>
                 </Slider>
                 <span>{formatDuration(duration)}</span>

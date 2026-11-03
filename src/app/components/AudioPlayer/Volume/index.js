@@ -61,12 +61,12 @@ export default function VolumeSlider({
                 step={0.01}
                 onChange={updateVolume}
                 isDisabled={isDisabled}
-                className="flex min-w-0 flex-1 items-center justify-center"
+                className="stage-volume-slider flex min-w-0 flex-1 items-center justify-center"
                 {...props}
             >
-                <Slider.Track className="stage-slider-track">
-                    <Slider.Fill className="stage-slider-fill" />
-                    <Slider.Thumb className="stage-slider-thumb" />
+                <Slider.Track className="stage-slider-track stage-volume-slider-track">
+                    <Slider.Fill className="stage-slider-fill stage-volume-slider-fill" />
+                    <Slider.Thumb className="stage-slider-thumb stage-volume-slider-thumb" />
                 </Slider.Track>
             </Slider>
         </div>

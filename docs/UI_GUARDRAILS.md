@@ -29,6 +29,10 @@ behaviors.
   subtitle. They must never push actions into an implicit second grid row.
 - Rows, Tiles, and Spotlight must preserve playback, favorite, creator, menu,
   filter, and artwork-fallback behavior.
+- Track pages keep a bounded `min-height: 0` flex chain from the page panel to
+  `.track-list-viewport`. That shared viewport owns vertical overflow for Rows,
+  Tiles, and Spotlight; do not return an ancestor to content-sized `h-max` or
+  move scrolling into three separate layout implementations.
 - Track context menus keep common actions and navigation first, sharing and
   configuration next, and destructive queue or playlist removals last.
 
@@ -101,6 +105,9 @@ behaviors.
 - The desktop Stage player should size to its content and cap itself to the main
   viewport; it must not stretch simply because the adjacent content column is
   taller.
+- Progress and volume sliders remain visually distinct. Playback progress may
+  interpolate between coarse media `timeupdate` events, but transitions must be
+  disabled while the user is dragging so seeking remains immediate.
 
 ## Required verification
 

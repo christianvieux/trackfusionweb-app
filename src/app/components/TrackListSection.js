@@ -8,13 +8,15 @@ export default function TrackListSection({
     className = '',
 }) {
     return (
-        <div className={`h-max min-h-0 overflow-hidden ${className}`}>
+        <div
+            className={`flex h-full min-h-0 flex-col overflow-hidden ${className}`}
+        >
             <TrackList
                 trackList={trackList}
                 setTrackList={setTrackList}
                 title={title}
                 emptyMessage={emptyMessage}
-                className="min-h-0 flex-1"
+                className="h-full min-h-0 flex-1"
             />
         </div>
     )
