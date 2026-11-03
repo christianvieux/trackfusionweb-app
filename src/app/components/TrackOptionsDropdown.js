@@ -231,19 +231,6 @@ export default function TrackOptionsDropdown({
                             />
                         </TrackOptionItem>
 
-                        {isTrackInQueue && (
-                            <TrackOptionItem
-                                id="remove-from-queue"
-                                icon={<RemoveFromQueueIcon />}
-                                iconClassName="size-4 shrink-0 text-danger"
-                                onPress={() =>
-                                    removeTrackFromQueue(trackUniqueId)
-                                }
-                            >
-                                Remove from queue
-                            </TrackOptionItem>
-                        )}
-
                         <TrackOptionItem
                             id="view-track"
                             icon={<TrackFileIcon />}
@@ -275,18 +262,6 @@ export default function TrackOptionsDropdown({
                             </TrackOptionItem>
                         )}
 
-                        {isTrackInPlaylist && (
-                            <TrackOptionItem
-                                id="remove-from-playlist"
-                                icon={<RemoveFromQueueIcon />}
-                                onPress={() =>
-                                    removeTrackFromPlaylist(trackUniqueId)
-                                }
-                            >
-                                Remove from playlist
-                            </TrackOptionItem>
-                        )}
-
                         <TrackOptionItem
                             id="share"
                             icon={<ShareIcon />}
@@ -309,6 +284,32 @@ export default function TrackOptionsDropdown({
                                 className={CONFIGURE_ITEM_CLASS}
                             >
                                 Configure this track
+                            </TrackOptionItem>
+                        )}
+
+                        {isTrackInQueue && (
+                            <TrackOptionItem
+                                id="remove-from-queue"
+                                icon={<RemoveFromQueueIcon />}
+                                iconClassName="size-4 shrink-0 text-danger"
+                                onPress={() =>
+                                    removeTrackFromQueue(trackUniqueId)
+                                }
+                            >
+                                Remove from queue
+                            </TrackOptionItem>
+                        )}
+
+                        {isTrackInPlaylist && (
+                            <TrackOptionItem
+                                id="remove-from-playlist"
+                                icon={<RemoveFromQueueIcon />}
+                                iconClassName="size-4 shrink-0 text-danger"
+                                onPress={() =>
+                                    removeTrackFromPlaylist(trackUniqueId)
+                                }
+                            >
+                                Remove from playlist
                             </TrackOptionItem>
                         )}
                     </Dropdown.Menu>

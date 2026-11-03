@@ -29,6 +29,8 @@ behaviors.
   subtitle. They must never push actions into an implicit second grid row.
 - Rows, Tiles, and Spotlight must preserve playback, favorite, creator, menu,
   filter, and artwork-fallback behavior.
+- Track context menus keep common actions and navigation first, sharing and
+  configuration next, and destructive queue or playlist removals last.
 
 ## Queue contract
 
@@ -54,6 +56,9 @@ behaviors.
 - The desktop compact player must stay above the footer, keep each control group
   on one line, and progressively hide low-priority controls before allowing
   overlap or wrapping. Collapse and expand use the centered top-edge control.
+- Mobile shell rules must explicitly override every desktop player-layout
+  variant; adding a more specific desktop selector must not leave implicit grid
+  columns or rows at the mobile breakpoint.
 - The desktop Stage player should size to its content and cap itself to the main
   viewport; it must not stretch simply because the adjacent content column is
   taller.
