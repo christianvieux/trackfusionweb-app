@@ -44,7 +44,7 @@ export default function QueueTrackItem({
   return (
     <div
       ref={cardRef}
-      className={`relative w-full transition-all duration-200 ${
+      className={`queue-track-item relative w-full transition-all duration-200 ${
         canDrag ? "cursor-grab active:cursor-grabbing" : "cursor-pointer"
       }`}
       onMouseDown={handleMouseDown}
@@ -54,7 +54,7 @@ export default function QueueTrackItem({
     >
       <TrackCardBase
         track={track}
-        className={`hover:bg-muted w-full! rounded-lg p-2 ${
+        className={`queue-track-card w-full! gap-1.5 p-1.5 [&_.track-card-left]:gap-1.5 [&_.track-card-left>div:first-child]:size-9 [&_.track-card-right]:shrink-0 [&_p]:text-sm ${
           classNames.QueueTrackItem || ""
         } ${isDragging ? "opacity-50" : "opacity-100"}`}
         rightContent={rightContent}

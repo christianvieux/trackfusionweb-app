@@ -13,29 +13,15 @@ import UserIcon from './Icons/UserIcon'
 import UserMinusIcon from './Icons/UserMinusIcon'
 import UserAddIcon from './UserAddIcon'
 import UserPill from './UserPill'
-
-function getProfilePicture(userInfo) {
-    if (!userInfo?.profile_picture_url) return null
-
-    const version = userInfo?.updated_at
-        ? new Date(userInfo.updated_at).getTime()
-        : Date.now()
-
-    return `${userInfo.profile_picture_url}?v=${version}`
-}
-
-function getInitial(username) {
-    return username?.charAt(0)?.toUpperCase() || 'N'
-}
+import { GUEST_IDENTITY } from '../avatar/constants'
 
 export default function UserMenu({ className = '', ...props }) {
     const router = useRouter()
-    const { user, setUser } = useSession()
+    const { user, setUser, loading } = useSession()
     const { userInfo, setUserInfo } = useUserInfo()
 
-    const username = user?.username || 'New User'
-    const profilePicture = getProfilePicture(userInfo)
-    const initial = getInitial(username)
+    const username =
+        user?.username || (loading ? 'Loading…' : GUEST_IDENTITY.username)
 
     async function handleAction(key) {
         if (key === 'sign-in') router.push('/login')
@@ -65,7 +51,18 @@ export default function UserMenu({ className = '', ...props }) {
                     className
                 }`}
             >
-                <UserPill userInfo={userInfo} username={username} />
+                <UserPill
+                    userInfo={userInfo}
+                    userId={user?.id}
+                    username={username}
+                    isGuest={!loading && !user}
+                    isLoading={loading}
+                    animate={!loading}
+                    classNames={{
+                        UserAvatar: 'size-7',
+                        Username: 'topbar-account-name text-sm sm:text-base',
+                    }}
+                />
             </Dropdown.Trigger>
 
             <Dropdown.Popover className="rounded-2xl border border-accent bg-surface p-2 shadow-card">
@@ -79,11 +76,13 @@ export default function UserMenu({ className = '', ...props }) {
                             <Dropdown.Item
                                 id="sign-in"
                                 textValue="Sign in"
-                                className="text-foreground hover:text-primary! "
+                                className="text-foreground hover:text-primary!"
                             >
                                 <div className="flex items-center gap-3 rounded-lg px-2 py-1">
                                     <UserIcon />
-                                    <Label className="text-inherit">Sign in</Label>
+                                    <Label className="text-inherit">
+                                        Sign in
+                                    </Label>
                                 </div>
                             </Dropdown.Item>
 
@@ -94,7 +93,9 @@ export default function UserMenu({ className = '', ...props }) {
                             >
                                 <div className="flex items-center gap-3 rounded-lg px-2 py-1">
                                     <UserAddIcon />
-                                    <Label className="text-inherit">Create Account</Label>
+                                    <Label className="text-inherit">
+                                        Create Account
+                                    </Label>
                                 </div>
                             </Dropdown.Item>
                         </>
@@ -109,18 +110,22 @@ export default function UserMenu({ className = '', ...props }) {
                             >
                                 <div className="flex items-center gap-3 rounded-lg px-2 py-1">
                                     <ProfileIcon />
-                                    <Label className="text-inherit">View Profile</Label>
+                                    <Label className="text-inherit">
+                                        View Profile
+                                    </Label>
                                 </div>
                             </Dropdown.Item>
 
                             <Dropdown.Item
                                 id="settings"
                                 textValue="Account Settings"
-                                className="text-foreground hover:text-primary! "
+                                className="text-foreground hover:text-primary!"
                             >
                                 <div className="flex items-center gap-3 rounded-lg px-2 py-1">
                                     <GearIcon />
-                                    <Label className="text-inherit">Account Settings</Label>
+                                    <Label className="text-inherit">
+                                        Account Settings
+                                    </Label>
                                 </div>
                             </Dropdown.Item>
 
@@ -132,7 +137,9 @@ export default function UserMenu({ className = '', ...props }) {
                             >
                                 <div className="flex items-center gap-3 rounded-lg px-2 py-1 text-danger">
                                     <UserMinusIcon />
-                                    <Label className="text-inherit">Log Out</Label>
+                                    <Label className="text-inherit">
+                                        Log Out
+                                    </Label>
                                 </div>
                             </Dropdown.Item>
                         </>

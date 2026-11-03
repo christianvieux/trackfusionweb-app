@@ -1,18 +1,16 @@
-export default function TrackPageLayout({
-  title,
-  children,
-  className = "",
-}) {
-  return (
-    <section
-      id="track_page_layout"
-      className={`h-max flex min-h-0 w-full max-w-6xl flex-col gap-5 self-center rounded-lg border-2 border-foreground/30 bg-secondary p-4 text-foreground shadow-card ${className}`}
-    >
-      <h1 className="shrink-0 whitespace-nowrap text-3xl font-semibold text-foreground">
-        {title}
-      </h1>
+export default function TrackPageLayout({ title, children, className = '' }) {
+    return (
+        <section
+            id="track_page_layout"
+            className={`flex h-full min-h-0 w-full max-w-7xl flex-col gap-3 self-center overflow-hidden rounded-[14px] border border-success/40 bg-[rgba(8,8,22,.6)] p-3 text-foreground backdrop-blur-[6px] sm:p-4 ${className}`}
+        >
+            {title && (
+                <h1 className="shrink-0 text-2xl font-semibold whitespace-nowrap text-foreground sm:text-3xl">
+                    {title}
+                </h1>
+            )}
 
-      {children}
-    </section>
-  );
+            {children}
+        </section>
+    )
 }

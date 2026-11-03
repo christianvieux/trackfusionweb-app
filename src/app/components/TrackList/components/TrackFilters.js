@@ -38,11 +38,24 @@ function FilterModal({
 
     if (!filterType) return null
 
+    const filterLabel = filterType.charAt(0).toUpperCase() + filterType.slice(1)
+    const selectedLabel = selected.length
+        ? `${filterLabel}: ${selected[0]}${selected.length > 1 ? ` +${selected.length - 1}` : ''} ×`
+        : `+ ${filterLabel}`
+
     return (
         <Modal>
             <Modal.Trigger>
-                <Button variant="bordered" size="sm" className="capitalize">
-                    + {filterType}
+                <Button
+                    variant="bordered"
+                    size="sm"
+                    className={`min-h-[38px] rounded-full border-success/25 px-3 capitalize focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white ${
+                        selected.length
+                            ? 'bg-success/10 text-success-hover'
+                            : 'bg-transparent text-foreground'
+                    }`}
+                >
+                    {selectedLabel}
                 </Button>
             </Modal.Trigger>
 
@@ -114,7 +127,14 @@ function FilterModal({
     )
 }
 
-export default function TrackFilters({ filters, setFilters }) {
+export default function TrackFilters({
+    filters,
+    setFilters,
+    onToggleFilter,
+    searchInputRef,
+    onClearSearch,
+    onClearFilters,
+}) {
     const [filterOptions, setFilterOptions] = useState({})
 
     const selectedFilters = useMemo(() => {
@@ -129,29 +149,15 @@ export default function TrackFilters({ filters, setFilters }) {
     }
 
     function clearSearchTerm() {
+        if (onClearSearch) {
+            onClearSearch()
+            return
+        }
+
         setFilters((prev) => ({
             ...prev,
             searchTerm: '',
         }))
-    }
-
-    function toggleFilter(filterType, value) {
-        setFilters((prev) => {
-            const currentValues = prev.includes[filterType] || []
-            const isSelected = currentValues.includes(value)
-
-            const nextValues = isSelected
-                ? currentValues.filter((item) => item !== value)
-                : [...currentValues, value]
-
-            return {
-                ...prev,
-                includes: {
-                    ...prev.includes,
-                    [filterType]: nextValues,
-                },
-            }
-        })
     }
 
     function clearFilterType(filterType) {
@@ -164,24 +170,16 @@ export default function TrackFilters({ filters, setFilters }) {
         }))
     }
 
-    function removeSelectedFilter(filterType, value) {
-        setFilters((prev) => ({
-            ...prev,
-            includes: {
-                ...prev.includes,
-                [filterType]: prev.includes[filterType].filter(
-                    (item) => item !== value
-                ),
-            },
-        }))
-    }
-
     function clearAllFilters() {
+        if (onClearFilters) {
+            onClearFilters()
+            return
+        }
+
         setFilters((prev) => ({
             ...prev,
             includes: {},
             excludes: {},
-            searchTerm: '',
         }))
     }
 
@@ -194,56 +192,42 @@ export default function TrackFilters({ filters, setFilters }) {
     }, [])
 
     return (
-        <div className="flex flex-col gap-2 md:gap-3">
-            <SearchInput
-                className="w-full"
-                value={filters.searchTerm}
-                onChange={updateSearchTerm}
-                onClear={clearSearchTerm}
-            />
+        <div>
+            <div className="flex flex-wrap items-center gap-2">
+                <SearchInput
+                    ref={searchInputRef}
+                    className="min-w-[min(100%,20rem)] flex-[1_1_22rem]"
+                    value={filters.searchTerm}
+                    onChange={updateSearchTerm}
+                    onClear={clearSearchTerm}
+                    placeholder="Search tracks or creators"
+                    enableShortcut
+                />
 
-            <div className="hidden flex-wrap items-center gap-2 md:flex">
-                {FILTER_TYPES.map((filterType) => (
-                    <FilterModal
-                        key={filterType}
-                        filterType={filterType}
-                        options={filterOptions[filterType]?.values || []}
-                        selected={filters.includes[filterType] || []}
-                        onToggle={toggleFilter}
-                        onClear={clearFilterType}
-                    />
-                ))}
-
-                {selectedFilters.length > 0 && (
-                    <Button
-                        variant="bordered"
-                        size="sm"
-                        className="border-danger/50 text-danger"
-                        onPress={clearAllFilters}
-                    >
-                        Clear
-                    </Button>
-                )}
-            </div>
-
-            {selectedFilters.length > 0 && (
-                <div className="flex flex-wrap gap-2">
-                    {selectedFilters.map(({ type, value }) => (
-                        <button
-                            key={`${type}-${value}`}
-                            type="button"
-                            onClick={() => removeSelectedFilter(type, value)}
-                            className="rounded-full"
-                            title={`Remove ${value}`}
-                        >
-                            <AttributeChip
-                                attribute={value}
-                                className="border-foreground/70"
-                            />
-                        </button>
+                <div className="flex flex-wrap items-center gap-2">
+                    {FILTER_TYPES.map((filterType) => (
+                        <FilterModal
+                            key={filterType}
+                            filterType={filterType}
+                            options={filterOptions[filterType]?.values || []}
+                            selected={filters.includes[filterType] || []}
+                            onToggle={onToggleFilter}
+                            onClear={clearFilterType}
+                        />
                     ))}
+
+                    {selectedFilters.length > 0 && (
+                        <Button
+                            variant="light"
+                            size="sm"
+                            className="min-h-[38px] rounded-full px-2 text-danger focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+                            onPress={clearAllFilters}
+                        >
+                            Clear
+                        </Button>
+                    )}
                 </div>
-            )}
+            </div>
         </div>
     )
 }

@@ -1,14 +1,16 @@
-import { Button } from '@heroui/react'
+'use client'
+
+import { useEffect, useRef } from 'react'
 
 import { useTrackManager } from '../context/TrackManagerContext'
 
-import PauseIcon from './Icons/PauseIcon'
-import PlayIcon from './Icons/PlayIcon'
+import PlayButton from './PlayButton'
 
 export default function TrackPlayButton({
     track,
     playlist = [],
     className = '',
+    size = 'md',
 }) {
     const {
         currentTrack,
@@ -20,9 +22,15 @@ export default function TrackPlayButton({
         pauseTrack,
         queue,
         playlist: managerPlaylist,
+        audioRef,
     } = useTrackManager()
 
-    const isCurrentTrack = currentTrack?.id === track.id
+    const buttonRef = useRef(null)
+
+    const isCurrentTrack =
+        currentTrack?.id != null &&
+        track?.id != null &&
+        String(currentTrack.id) === String(track.id)
     const isLoading = isCurrentTrack && !isTrackReadyInPlayer
     const isPlaying = isCurrentTrack && playerIsPlaying
 
@@ -32,14 +40,39 @@ export default function TrackPlayButton({
     )
 
     const isManagedTrack = isInQueue || isInPlaylist
-    const showPauseButton = !isManagedTrack && isPlaying
+    useEffect(() => {
+        const button = buttonRef.current
+        const audio = audioRef.current
 
-    function handlePress() {
-        if (isManagedTrack) {
-            skipToTrack(track.uniqueId)
-            return
+        if (!button) return undefined
+
+        function updateProgress() {
+            const duration = audio?.duration || 0
+            const progress = duration > 0 ? audio.currentTime / duration : 0
+            button.style.setProperty(
+                '--progress',
+                String(Math.min(1, Math.max(0, progress)))
+            )
         }
 
+        if (!isCurrentTrack || !audio) {
+            button.style.setProperty('--progress', '0')
+            return undefined
+        }
+
+        updateProgress()
+        audio.addEventListener('timeupdate', updateProgress)
+        audio.addEventListener('durationchange', updateProgress)
+        audio.addEventListener('loadedmetadata', updateProgress)
+
+        return () => {
+            audio.removeEventListener('timeupdate', updateProgress)
+            audio.removeEventListener('durationchange', updateProgress)
+            audio.removeEventListener('loadedmetadata', updateProgress)
+        }
+    }, [audioRef, isCurrentTrack, isTrackReadyInPlayer])
+
+    function handlePress() {
         if (isCurrentTrack) {
             if (isPlaying) {
                 pauseTrack()
@@ -50,23 +83,23 @@ export default function TrackPlayButton({
             return
         }
 
+        if (isManagedTrack) {
+            skipToTrack(track.uniqueId)
+            return
+        }
+
         startPlaylist(playlist, track)
     }
 
     return (
-        <Button
-            isIconOnly
-            variant="light"
-            isLoading={isLoading}
-            onPress={handlePress}
-            className={`bg-black/70 text-foreground ${className}`}
-            aria-label={showPauseButton ? 'Pause track' : 'Play track'}
-        >
-            {showPauseButton ? (
-                <PauseIcon className="size-1/2" />
-            ) : (
-                <PlayIcon className="size-1/2" />
-            )}
-        </Button>
+        <PlayButton
+            ref={buttonRef}
+            playing={isPlaying}
+            size={size}
+            onClick={handlePress}
+            label={track?.name || 'track'}
+            aria-busy={isLoading}
+            className={className}
+        />
     )
 }

@@ -6,7 +6,7 @@ export default function SettingsCard({
 }) {
   return (
     <section
-      className={`w-80 rounded-xl border-2 border-accent bg-secondary p-4 text-foreground shadow-card ${className}`}
+      className={`w-full min-w-0 rounded-xl border-2 border-accent bg-secondary p-4 text-foreground shadow-card ${className}`}
     >
       {(title || description) && (
         <header className="mb-4 flex flex-col gap-1">

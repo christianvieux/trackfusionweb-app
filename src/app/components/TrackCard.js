@@ -1,54 +1,91 @@
 import { memo } from 'react'
-import Image from 'next/image'
+import Link from 'next/link'
 
-const fallbackArtwork = '/images/6068474.jpg'
+import TrackVisual from './TrackList/components/TrackVisual'
+import { getTrackAttributeSummary } from './TrackList/utils'
 
 function TrackCard({
     track = {},
+    creator,
+    animateAvatar = false,
+    showAttributes = false,
+    subtitle,
+    mediumSubtitle,
+    compactSubtitle,
+    titleHref,
     className = '',
     rightContent,
     ...props
 }) {
+    const attributeSummary = showAttributes
+        ? getTrackAttributeSummary(track)
+        : ''
+    const defaultSubtitle = [track.artist || 'Unknown Artist', attributeSummary]
+        .filter(Boolean)
+        .join(' · ')
+
     return (
         <div
-            id="track-card"
-            className={`relative z-0 flex w-max items-center gap-4 ${className}`}
+            className={`track-card relative z-0 flex min-w-0 items-center gap-2 ${className}`}
             {...props}
         >
             <div
-                id="left_content"
-                className="flex min-w-0 flex-1 items-center gap-2"
+                className="track-card-left flex min-w-0 flex-1 items-center gap-2"
             >
-                <div className="relative flex size-9 shrink-0 items-center justify-center">
-                    <div className="absolute z-0 flex size-full items-center justify-center overflow-hidden rounded-lg">
-                        <Image
-                            src={track.image_url || fallbackArtwork}
-                            alt={track.title || track.name || 'Track cover'}
-                            width={36}
-                            height={36}
-                            className="size-full rounded-lg object-cover"
-                            onError={(event) => {
-                                event.currentTarget.src = fallbackArtwork
-                            }}
-                        />
-                    </div>
-                </div>
+                <TrackVisual
+                    track={track}
+                    creator={creator}
+                    animateAvatar={animateAvatar}
+                    className="size-10"
+                    avatarClassName="size-3/4"
+                    sizes="40px"
+                />
 
                 <div className="max-w-full min-w-0 flex-1 overflow-hidden">
-                    <p className="w-max max-w-full truncate text-left text-base font-bold text-foreground">
-                        {track.name || 'Unknown Track'}
+                    <p className="track-card-title w-max max-w-full truncate text-left text-base font-bold text-foreground">
+                        {titleHref ? (
+                            <Link
+                                href={titleHref}
+                                className="transition-colors hover:text-primary focus-visible:rounded-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+                                title={track.name || 'Unknown Track'}
+                            >
+                                {track.name || 'Unknown Track'}
+                            </Link>
+                        ) : (
+                            track.name || 'Unknown Track'
+                        )}
                     </p>
 
-                    <p className="truncate text-left text-sm text-muted-foreground">
-                        {track.artist || 'Unknown Artist'}
+                    <p
+                        className="track-card-subtitle truncate text-left text-xs text-muted-foreground"
+                        title={subtitle || defaultSubtitle}
+                    >
+                        {subtitle || defaultSubtitle}
                     </p>
+
+                    {compactSubtitle && (
+                        <p
+                            className="track-card-compact-subtitle hidden truncate text-left text-xs text-muted-foreground"
+                            title={compactSubtitle}
+                        >
+                            {compactSubtitle}
+                        </p>
+                    )}
+
+                    {mediumSubtitle && (
+                        <p
+                            className="track-card-medium-subtitle hidden truncate text-left text-xs text-muted-foreground"
+                            title={mediumSubtitle}
+                        >
+                            {mediumSubtitle}
+                        </p>
+                    )}
                 </div>
             </div>
 
             {rightContent && (
                 <div
-                    id="right_content"
-                    className="flex items-center justify-center"
+                    className="track-card-right flex items-center justify-center"
                 >
                     {rightContent}
                 </div>

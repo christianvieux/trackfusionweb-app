@@ -1,4 +1,4 @@
-import TrackAttributeChip from "../../TrackAttribute_Chip";
+import AttributeChip from "../../TrackList/components/AttributeChip";
 import { parseAttributeValues } from "../utils";
 
 export default function AttributeList({ attribute = "", values = [] }) {
@@ -9,14 +9,14 @@ export default function AttributeList({ attribute = "", values = [] }) {
   const label = attribute.charAt(0).toUpperCase() + attribute.slice(1);
 
   return (
-    <div className="flex w-full gap-4">
-      <p className="w-16 shrink-0 font-bold text-muted-foreground">
+    <div className="grid min-w-0 gap-1.5 sm:grid-cols-[5rem_minmax(0,1fr)] sm:items-start sm:gap-3">
+      <p className="text-sm font-semibold text-muted-foreground">
         {label}:
       </p>
 
-      <div className="flex w-3/4 gap-2 overflow-x-auto pb-3">
+      <div className="flex min-w-0 flex-wrap gap-2">
         {parsedValues.map((value) => (
-          <TrackAttributeChip variant="dot" key={value} attribute={value} />
+          <AttributeChip key={value} attribute={value} />
         ))}
       </div>
     </div>

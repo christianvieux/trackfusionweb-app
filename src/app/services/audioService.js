@@ -16,6 +16,16 @@ function delay(duration) {
   return new Promise((resolve) => setTimeout(resolve, duration));
 }
 
+export function getAnalysisTrackReference(presignedUpload) {
+  const key = presignedUpload?.key?.trim();
+
+  if (!key) {
+    throw new Error("The upload service did not return a storage object key.");
+  }
+
+  return { key };
+}
+
 export async function analyzeAudio(
   file,
   bpmRange,
@@ -37,7 +47,7 @@ export async function analyzeAudio(
     onUploadProgress(0);
 
     const { data } = await apiClient.post("/audio/analyze", {
-      trackUrl,
+      trackUrl: getAnalysisTrackReference(trackUrl),
       bpmRange,
     });
     const encodedJobId = encodeURIComponent(String(data.jobId));

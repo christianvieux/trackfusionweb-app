@@ -7,3 +7,10 @@ This version has breaking changes — APIs, conventions, and file structure may 
 This block is written and re-added by `next dev` — verify at `node_modules/next/dist/server/lib/generate-agent-files.js`. Removing it from a diff only re-creates the uncommitted change; committing it with your work keeps the tree clean.
 
 <!-- END:nextjs-agent-rules -->
+
+## TrackFusionWeb interaction guardrails
+
+Before changing the track browser, playback Stage, or queue, read
+`docs/UI_GUARDRAILS.md`. These interaction contracts are part of the feature,
+not optional visual details. Preserve them unless the user explicitly asks to
+remove or replace one.

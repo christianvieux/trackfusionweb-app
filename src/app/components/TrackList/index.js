@@ -1,1 +1,1 @@
-export { default } from "./components/TrackListTable";
+export { default } from './components/TrackListTable'

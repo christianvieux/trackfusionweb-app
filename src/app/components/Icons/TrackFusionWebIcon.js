@@ -1,8 +1,8 @@
-// src/app/components/TrackFusionIconWebIcon.js
+// src/app/components/Icons/TrackFusionWebIcon.js
 
 import React from "react";
 
-export default function TrackFusionIconWeb({ className = "", ...rest }) {
+export default function TrackFusionWebIcon({ className = "", ...rest }) {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
