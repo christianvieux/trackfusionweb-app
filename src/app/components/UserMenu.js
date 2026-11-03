@@ -60,7 +60,7 @@ export default function UserMenu({ className = '', ...props }) {
                     animate={!loading}
                     classNames={{
                         UserAvatar: 'size-7',
-                        Username: 'text-sm sm:text-base',
+                        Username: 'topbar-account-name text-sm sm:text-base',
                     }}
                 />
             </Dropdown.Trigger>

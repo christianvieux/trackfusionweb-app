@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import Fuse from 'fuse.js'
 
 import Pagination from '../../pagination/component'
@@ -21,6 +21,7 @@ import useTrackCreators from '../hooks/useTrackCreators'
 
 import TrackFilters from './TrackFilters'
 import TrackLayoutSwitcher from './TrackLayoutSwitcher'
+import TrackListEmptyState from './TrackListEmptyState'
 import TrackRowsView from './TrackRowsView'
 import TrackSpotlightView from './TrackSpotlightView'
 import TrackTilesView from './TrackTilesView'
@@ -58,6 +59,7 @@ export default function TrackListTable({
     const [filters, setFilters] = useState(initialFilters)
     const [page, setPage] = useState(1)
     const [layout, setLayout] = useState(DEFAULT_TRACK_LAYOUT)
+    const searchInputRef = useRef(null)
 
     const toggleFilter = useCallback((filterType, value) => {
         setFilters((current) => {
@@ -79,6 +81,7 @@ export default function TrackListTable({
     const creatorsById = useTrackCreators(tracks)
 
     const debouncedSearch = useDebounce(filters.searchTerm, 300)
+    const effectiveSearch = filters.searchTerm ? debouncedSearch : ''
 
     const searchableTracks = useMemo(
         () =>
@@ -94,12 +97,21 @@ export default function TrackListTable({
     }, [searchableTracks])
 
     const searchedTracks = useMemo(() => {
-        return getSearchedTracks(tracks, debouncedSearch, fuse)
-    }, [tracks, debouncedSearch, fuse])
+        return getSearchedTracks(tracks, effectiveSearch, fuse)
+    }, [tracks, effectiveSearch, fuse])
 
     const filteredTracks = useMemo(() => {
-        return getFilteredTracks(searchedTracks, filters)
-    }, [searchedTracks, filters])
+        return getFilteredTracks(searchedTracks, {
+            includes: filters.includes,
+            excludes: filters.excludes,
+        })
+    }, [searchedTracks, filters.excludes, filters.includes])
+
+    const hasActiveFilters = useMemo(() => {
+        return [filters.includes, filters.excludes].some((filterGroup) =>
+            Object.values(filterGroup).some((values = []) => values.length > 0)
+        )
+    }, [filters.excludes, filters.includes])
 
     const totalPages = useMemo(() => {
         return getTotalPages(filteredTracks.length)
@@ -136,6 +148,19 @@ export default function TrackListTable({
         },
         [setTrackList]
     )
+
+    const clearSearch = useCallback(() => {
+        setFilters((current) => ({ ...current, searchTerm: '' }))
+        requestAnimationFrame(() => searchInputRef.current?.focus())
+    }, [])
+
+    const clearFilters = useCallback(() => {
+        setFilters((current) => ({
+            ...current,
+            includes: {},
+            excludes: {},
+        }))
+    }, [])
 
     useEffect(() => {
         if (!lastUpdatedTrack?.track) return
@@ -182,10 +207,23 @@ export default function TrackListTable({
                 filters={filters}
                 setFilters={setFilters}
                 onToggleFilter={toggleFilter}
+                searchInputRef={searchInputRef}
+                onClearSearch={clearSearch}
+                onClearFilters={clearFilters}
             />
 
             <div className="min-h-0 flex-1">
-                {layout === TRACK_LAYOUTS.ROWS && (
+                {filteredTracks.length === 0 ? (
+                    <TrackListEmptyState
+                        message={emptyMessage}
+                        query={effectiveSearch}
+                        hasActiveFilters={hasActiveFilters}
+                        onClearSearch={clearSearch}
+                        onClearFilters={clearFilters}
+                    />
+                ) : null}
+
+                {filteredTracks.length > 0 && layout === TRACK_LAYOUTS.ROWS && (
                     <TrackRowsView
                         tracks={paginatedTracks}
                         creatorsById={creatorsById}
@@ -194,26 +232,37 @@ export default function TrackListTable({
                     />
                 )}
 
-                {layout === TRACK_LAYOUTS.TILES && (
-                    <TrackTilesView
-                        tracks={paginatedTracks}
-                        creatorsById={creatorsById}
-                        emptyMessage={emptyMessage}
-                    />
-                )}
+                {filteredTracks.length > 0 &&
+                    layout === TRACK_LAYOUTS.TILES && (
+                        <TrackTilesView
+                            tracks={paginatedTracks}
+                            creatorsById={creatorsById}
+                            emptyMessage={emptyMessage}
+                        />
+                    )}
 
-                {layout === TRACK_LAYOUTS.SPOTLIGHT && (
-                    <TrackSpotlightView
-                        tracks={paginatedTracks}
-                        creatorsById={creatorsById}
-                        emptyMessage={emptyMessage}
-                    />
-                )}
+                {filteredTracks.length > 0 &&
+                    layout === TRACK_LAYOUTS.SPOTLIGHT && (
+                        <TrackSpotlightView
+                            tracks={paginatedTracks}
+                            creatorsById={creatorsById}
+                            emptyMessage={emptyMessage}
+                        />
+                    )}
             </div>
 
-            <div id="Pagination" className="flex shrink-0 justify-center pt-2">
-                <Pagination page={page} total={totalPages} onChange={setPage} />
-            </div>
+            {filteredTracks.length > 0 && (
+                <div
+                    id="Pagination"
+                    className="flex shrink-0 justify-center pt-2"
+                >
+                    <Pagination
+                        page={page}
+                        total={totalPages}
+                        onChange={setPage}
+                    />
+                </div>
+            )}
         </div>
     )
 }

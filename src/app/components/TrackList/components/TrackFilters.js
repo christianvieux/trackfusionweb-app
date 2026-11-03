@@ -38,8 +38,7 @@ function FilterModal({
 
     if (!filterType) return null
 
-    const filterLabel =
-        filterType.charAt(0).toUpperCase() + filterType.slice(1)
+    const filterLabel = filterType.charAt(0).toUpperCase() + filterType.slice(1)
     const selectedLabel = selected.length
         ? `${filterLabel}: ${selected[0]}${selected.length > 1 ? ` +${selected.length - 1}` : ''} ×`
         : `+ ${filterLabel}`
@@ -132,6 +131,9 @@ export default function TrackFilters({
     filters,
     setFilters,
     onToggleFilter,
+    searchInputRef,
+    onClearSearch,
+    onClearFilters,
 }) {
     const [filterOptions, setFilterOptions] = useState({})
 
@@ -147,6 +149,11 @@ export default function TrackFilters({
     }
 
     function clearSearchTerm() {
+        if (onClearSearch) {
+            onClearSearch()
+            return
+        }
+
         setFilters((prev) => ({
             ...prev,
             searchTerm: '',
@@ -164,11 +171,15 @@ export default function TrackFilters({
     }
 
     function clearAllFilters() {
+        if (onClearFilters) {
+            onClearFilters()
+            return
+        }
+
         setFilters((prev) => ({
             ...prev,
             includes: {},
             excludes: {},
-            searchTerm: '',
         }))
     }
 
@@ -184,11 +195,13 @@ export default function TrackFilters({
         <div>
             <div className="flex flex-wrap items-center gap-2">
                 <SearchInput
+                    ref={searchInputRef}
                     className="min-w-[min(100%,20rem)] flex-[1_1_22rem]"
                     value={filters.searchTerm}
                     onChange={updateSearchTerm}
                     onClear={clearSearchTerm}
-                    placeholder="Search tracks or creators..."
+                    placeholder="Search tracks or creators"
+                    enableShortcut
                 />
 
                 <div className="flex flex-wrap items-center gap-2">
@@ -215,7 +228,6 @@ export default function TrackFilters({
                     )}
                 </div>
             </div>
-
         </div>
     )
 }

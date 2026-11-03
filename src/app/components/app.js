@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { Heart, Home, ListTodo, Music } from 'lucide-react'
 import { usePathname } from 'next/navigation'
@@ -11,9 +11,7 @@ import NavBar from './nav-bar'
 import Sidebar from './Sidebar'
 
 import AudioPlayer from './AudioPlayer/AudioPlayer'
-import {
-    PLAYER_LAYOUTS,
-} from './AudioPlayer/playerLayout'
+import { PLAYER_LAYOUTS } from './AudioPlayer/playerLayout'
 import usePlayerLayout from './AudioPlayer/usePlayerLayout'
 import VideoBackground from './VideoBackground'
 
@@ -48,6 +46,8 @@ const MOBILE_NAV_ITEMS = [
     { label: 'Favorites', icon: Heart, href: '/myFavoriteTracks' },
 ]
 
+const SIDEBAR_COLLAPSED_STORAGE_KEY = 'trackfusionweb:sidebar-collapsed'
+
 function MobileTabBar() {
     const pathname = usePathname()
 
@@ -81,8 +81,36 @@ function AppShell({ children }) {
     const { currentTrack } = useTrackManager()
     const { canShowPlayback } = usePlayback()
     const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false)
+    const [hasLoadedSidebarPreference, setHasLoadedSidebarPreference] =
+        useState(false)
     const [playerLayout, setPlayerLayout] = usePlayerLayout()
     const showPlayer = canShowPlayback && Boolean(currentTrack)
+
+    useEffect(() => {
+        try {
+            setIsSidebarCollapsed(
+                window.localStorage.getItem(SIDEBAR_COLLAPSED_STORAGE_KEY) ===
+                    'true'
+            )
+        } catch {
+            // The sidebar still works when storage is unavailable.
+        } finally {
+            setHasLoadedSidebarPreference(true)
+        }
+    }, [])
+
+    useEffect(() => {
+        if (!hasLoadedSidebarPreference) return
+
+        try {
+            window.localStorage.setItem(
+                SIDEBAR_COLLAPSED_STORAGE_KEY,
+                String(isSidebarCollapsed)
+            )
+        } catch {
+            // Ignore unavailable or blocked local storage.
+        }
+    }, [hasLoadedSidebarPreference, isSidebarCollapsed])
 
     return (
         <div
