@@ -119,8 +119,9 @@ behaviors.
 - Progress and volume sliders remain visually distinct. Playback progress may
   interpolate between coarse media `timeupdate` events, but transitions must be
   disabled while the user is dragging so seeking remains immediate.
-- Slider rails and fills remain compact three-pixel lines while their owning slider
-  components retain the larger accessible pointer/touch target.
+- Slider rails and fills remain compact four-pixel lines with clearly visible
+  unplayed rails, while their owning slider components retain the larger
+  accessible pointer/touch target.
 
 ## Settings contract
 

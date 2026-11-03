@@ -54,7 +54,7 @@ export default function QueueTrackItem({
     >
       <TrackCardBase
         track={track}
-        className={`queue-track-card w-full! gap-1.5 p-1.5 [&_#left_content]:gap-1.5 [&_#left_content>div:first-child]:size-9 [&_#right_content]:shrink-0 [&_p]:text-sm ${
+        className={`queue-track-card w-full! gap-1.5 p-1.5 [&_.track-card-left]:gap-1.5 [&_.track-card-left>div:first-child]:size-9 [&_.track-card-right]:shrink-0 [&_p]:text-sm ${
           classNames.QueueTrackItem || ""
         } ${isDragging ? "opacity-50" : "opacity-100"}`}
         rightContent={rightContent}

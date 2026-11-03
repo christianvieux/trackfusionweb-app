@@ -26,13 +26,11 @@ function TrackCard({
 
     return (
         <div
-            id="track-card"
             className={`track-card relative z-0 flex min-w-0 items-center gap-2 ${className}`}
             {...props}
         >
             <div
-                id="left_content"
-                className="flex min-w-0 flex-1 items-center gap-2"
+                className="track-card-left flex min-w-0 flex-1 items-center gap-2"
             >
                 <TrackVisual
                     track={track}
@@ -87,8 +85,7 @@ function TrackCard({
 
             {rightContent && (
                 <div
-                    id="right_content"
-                    className="flex items-center justify-center"
+                    className="track-card-right flex items-center justify-center"
                 >
                     {rightContent}
                 </div>

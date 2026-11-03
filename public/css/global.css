@@ -542,21 +542,21 @@ body {
     }
 
     .stage-slider-track {
-        height: 3px !important;
-        min-height: 3px !important;
-        max-height: 3px !important;
+        height: 4px !important;
+        min-height: 4px !important;
+        max-height: 4px !important;
         padding-block: 0 !important;
         border: 0;
         border-radius: 2px;
-        background: rgb(255 255 255 / 0.1);
+        background: rgb(91 122 121 / 0.52) !important;
     }
 
     .stage-slider-fill {
-        height: 3px !important;
-        min-height: 3px !important;
-        max-height: 3px !important;
+        height: 4px !important;
+        min-height: 4px !important;
+        max-height: 4px !important;
         border-radius: 2px;
-        background: linear-gradient(90deg, #34d399, #a7f3d0);
+        background: linear-gradient(90deg, #34d399, #a7f3d0) !important;
         box-shadow: 0 0 10px rgb(52 211 153 / 0.42);
     }
 
@@ -596,11 +596,11 @@ body {
     }
 
     .stage-volume-slider-track {
-        background: rgb(167 139 250 / 0.16);
+        background: rgb(92 78 128 / 0.58) !important;
     }
 
     .stage-volume-slider-fill {
-        background: linear-gradient(90deg, #8b5cf6, #c4b5fd);
+        background: linear-gradient(90deg, #8b5cf6, #c4b5fd) !important;
         box-shadow: 0 0 9px rgb(139 92 246 / 0.36);
     }
 
@@ -1710,8 +1710,18 @@ body {
         .topbar-account-chip {
             width: 42px;
             min-width: 42px;
+            height: 42px;
+            min-height: 42px;
             justify-content: center;
-            padding: 5px !important;
+            gap: 0;
+            padding: 6px !important;
+        }
+
+        .topbar-account-chip > div {
+            width: 100%;
+            justify-content: center;
+            gap: 0;
+            padding-right: 0;
         }
 
         .topbar-account-name {
