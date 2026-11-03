@@ -4,11 +4,11 @@ import { memo, useEffect, useMemo, useState } from 'react'
 
 import BlobAvatarDisplay from '../../BlobAvatarDisplay'
 import TrackArtwork from '../../TrackArtwork'
-import { getTrackVisualPalette } from '../utils'
-
-function hasArtwork(track) {
-    return typeof track?.image_url === 'string' && track.image_url.trim() !== ''
-}
+import {
+    getTrackVisualPalette,
+    hasTrackArtwork,
+    shouldUseTrackAvatarFallback,
+} from '../utils'
 
 function TrackVisual({
     track,
@@ -20,16 +20,16 @@ function TrackVisual({
     sizes = '40px',
     background: backgroundOverride,
     avatarAura = false,
-    alwaysShowAvatar = false,
 }) {
-    const artworkUrl = hasArtwork(track) ? track.image_url : null
+    const artworkUrl = hasTrackArtwork(track) ? track.image_url : null
     const [artworkFailed, setArtworkFailed] = useState(false)
 
     useEffect(() => {
         setArtworkFailed(false)
     }, [artworkUrl])
 
-    const showArtwork = Boolean(artworkUrl) && !artworkFailed
+    const showAvatar = shouldUseTrackAvatarFallback(track, artworkFailed)
+    const showArtwork = !showAvatar
     const creatorName = creator?.username || 'Creator'
     const background = useMemo(() => {
         if (backgroundOverride) return backgroundOverride
@@ -55,7 +55,7 @@ function TrackVisual({
                 />
             ) : null}
 
-            {(!showArtwork || alwaysShowAvatar) && avatarAura && (
+            {showAvatar && avatarAura && (
                 <span
                     aria-hidden="true"
                     className="absolute inset-[22%] z-[1] rounded-full opacity-60 blur-[34px]"
@@ -63,7 +63,7 @@ function TrackVisual({
                 />
             )}
 
-            {(!showArtwork || alwaysShowAvatar) && (
+            {showAvatar && (
                 <BlobAvatarDisplay
                     avatar={creator?.avatar}
                     userId={track?.creator_id}

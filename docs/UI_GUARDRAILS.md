@@ -77,6 +77,9 @@ behaviors.
 - A track without uploaded artwork uses a deterministic palette derived from
   its persisted track ID. Repeated instances of the same track must render the
   same palette; metadata is the fallback identity only when no ID exists.
+- Uploaded artwork and the creator-avatar fallback are mutually exclusive. The
+  avatar appears only when artwork is absent or fails to load; it must never be
+  layered over a valid track cover in the player or track layouts.
 - List rendering must not create one perpetual SVG animation per dormant play
   button. Expensive animated effects belong only to the active playback item.
 - Shared creator lookups should be deduplicated across list views and concurrent

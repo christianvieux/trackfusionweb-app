@@ -40,6 +40,19 @@ export function getTrackKey(track, fallbackKey) {
     return track.uniqueId ?? track.id ?? fallbackKey
 }
 
+export function hasTrackArtwork(track = {}) {
+    return (
+        typeof track.image_url === 'string' && track.image_url.trim() !== ''
+    )
+}
+
+export function shouldUseTrackAvatarFallback(
+    track = {},
+    artworkFailed = false
+) {
+    return !hasTrackArtwork(track) || artworkFailed
+}
+
 export function parseAttributes(attributes = '') {
     return String(attributes)
         .replace(/[{}]/g, '')
