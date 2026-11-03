@@ -5,6 +5,8 @@ import {
     getCreatorForTrack,
     getTrackAttributeSummary,
     getTrackVisualPalette,
+    hasTrackArtwork,
+    shouldUseTrackAvatarFallback,
     trackMatchesFilters,
 } from './utils'
 
@@ -30,6 +32,18 @@ describe('track list utilities', () => {
         expect(getTrackAttributeSummary(track)).toBe(
             'Music · Pop · Electronic · Happy'
         )
+    })
+
+    it('uses creator avatars only when artwork is absent or fails', () => {
+        const trackWithArtwork = {
+            image_url: 'https://images.example/cover.jpg',
+        }
+
+        expect(hasTrackArtwork(trackWithArtwork)).toBe(true)
+        expect(shouldUseTrackAvatarFallback(trackWithArtwork)).toBe(false)
+        expect(shouldUseTrackAvatarFallback(trackWithArtwork, true)).toBe(true)
+        expect(shouldUseTrackAvatarFallback({ image_url: '  ' })).toBe(true)
+        expect(shouldUseTrackAvatarFallback({})).toBe(true)
     })
 
     it('retains the existing include and exclude filter behavior', () => {

@@ -68,7 +68,6 @@ function StageArtwork({ track, creator, compact = false, animate = false }) {
             animateAvatar={animate}
             background={getStageVisualBackground(track)}
             avatarAura
-            alwaysShowAvatar
             className={
                 compact
                     ? 'size-[72px] rounded-xl'
