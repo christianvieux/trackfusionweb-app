@@ -51,6 +51,12 @@ behaviors.
   queue count, and mobile player access must survive layout changes.
 - Persist user presentation preferences locally for guests as well as signed-in
   users, and respect reduced-motion settings.
+- The desktop compact player must stay above the footer, keep each control group
+  on one line, and progressively hide low-priority controls before allowing
+  overlap or wrapping. Collapse and expand use the centered top-edge control.
+- The desktop Stage player should size to its content and cap itself to the main
+  viewport; it must not stretch simply because the adjacent content column is
+  taller.
 
 ## Required verification
 

@@ -1,6 +1,6 @@
 'use client'
 
-import { List, Maximize2, SkipBack, SkipForward } from 'lucide-react'
+import { ChevronsUp, List, SkipBack, SkipForward } from 'lucide-react'
 import { Slider } from '@heroui/react'
 
 import FavoriteButton from '../FavoriteButton'
@@ -54,22 +54,36 @@ export default function CollapsedPlayer({
 }) {
     return (
         <aside className="collapsed-player" aria-label="Collapsed player">
-            <TrackVisual
-                track={track}
-                creator={creator}
-                animateAvatar={isPlaying}
-                className="collapsed-player-art size-11 rounded-xl"
-                avatarClassName="size-2/3"
-                sizes="44px"
-            />
+            <button
+                type="button"
+                aria-label="Expand player"
+                title="Expand player"
+                onClick={onExpand}
+                className="player-edge-toggle collapsed-player-expand"
+            >
+                <ChevronsUp className="size-4" />
+            </button>
 
-            <div className="collapsed-player-meta min-w-0">
-                <p className="truncate text-sm font-bold text-foreground">
-                    {track.name || 'Unknown track'}
-                </p>
-                <p className="truncate text-xs text-[var(--stage-accent-light)]/70">
-                    {creator?.username || track.artist || 'Unknown creator'}
-                </p>
+            <div className="collapsed-player-track">
+                <TrackVisual
+                    track={track}
+                    creator={creator}
+                    animateAvatar={isPlaying}
+                    className="collapsed-player-art size-10 rounded-lg"
+                    avatarClassName="size-2/3"
+                    sizes="40px"
+                />
+
+                <div className="collapsed-player-meta min-w-0">
+                    <p className="truncate text-sm font-bold text-foreground">
+                        {track.name || 'Unknown track'}
+                    </p>
+                    <p className="truncate text-xs text-[#a7f3d0]/70">
+                        {creator?.username ||
+                            track.artist ||
+                            'Unknown creator'}
+                    </p>
+                </div>
             </div>
 
             <div className="collapsed-player-progress">
@@ -110,42 +124,34 @@ export default function CollapsedPlayer({
                 </TransportButton>
             </div>
 
-            <VolumeSlider
-                className="collapsed-player-volume"
-                defaultValue={volume}
-                onChange={onVolumeChange}
-            />
+            <div className="collapsed-player-actions">
+                <VolumeSlider
+                    className="collapsed-player-volume"
+                    defaultValue={volume}
+                    onChange={onVolumeChange}
+                />
 
-            <FavoriteButton
-                track={track}
-                className="collapsed-player-secondary-action"
-                classNames={{ svg: 'size-[18px]' }}
-            />
-            <TrackOptionsDropdown
-                track={track}
-                creator={creator}
-                className="collapsed-player-secondary-action"
-                triggerClassName="size-9 rounded-lg text-[var(--stage-accent-light)] hover:bg-[rgb(52_211_153_/_0.1)]"
-            />
-            <button
-                type="button"
-                aria-label="Open playback queue"
-                onClick={onOpenQueue}
-                className="collapsed-player-icon-button relative"
-            >
-                <List className="size-5" />
-                <QueueBadge count={queueCount} />
-            </button>
-            <button
-                type="button"
-                aria-label="Expand player"
-                title="Expand player"
-                onClick={onExpand}
-                className="collapsed-player-expand"
-            >
-                <Maximize2 className="size-4" />
-                <span>Expand</span>
-            </button>
+                <FavoriteButton
+                    track={track}
+                    className="collapsed-player-secondary-action"
+                    classNames={{ svg: 'size-[18px]' }}
+                />
+                <TrackOptionsDropdown
+                    track={track}
+                    creator={creator}
+                    className="collapsed-player-secondary-action"
+                    triggerClassName="size-9 rounded-lg text-[var(--stage-accent-light)] hover:bg-[rgb(52_211_153_/_0.1)]"
+                />
+                <button
+                    type="button"
+                    aria-label="Open playback queue"
+                    onClick={onOpenQueue}
+                    className="collapsed-player-icon-button relative"
+                >
+                    <List className="size-5" />
+                    <QueueBadge count={queueCount} />
+                </button>
+            </div>
         </aside>
     )
 }

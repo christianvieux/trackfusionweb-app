@@ -5,7 +5,7 @@ import { Slider } from '@heroui/react'
 import {
     ChevronDown,
     List,
-    PanelBottomClose,
+    ChevronsDown,
     Repeat,
     Shuffle,
     SkipBack,
@@ -401,10 +401,9 @@ export default function AudioPlayer({
                         aria-label="Collapse player to the bottom"
                         title="Collapse player to the bottom"
                         onClick={() => onCollapsedChange(true)}
-                        className="stage-collapse-toggle"
+                        className="player-edge-toggle stage-collapse-toggle"
                     >
-                        <PanelBottomClose className="size-4" />
-                        <span>Collapse</span>
+                        <ChevronsDown className="size-4" />
                     </button>
                 )}
 
