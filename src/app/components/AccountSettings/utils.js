@@ -1,11 +1,3 @@
-import { ALLOWED_IMAGE_TYPES } from "../../utils/fileTypes";
-
-export { ALLOWED_IMAGE_TYPES };
-
-export function getAllowedImageExtensions() {
-  return ALLOWED_IMAGE_TYPES.map((type) => `.${type.split("/")[1]}`).join(", ");
-}
-
 export function getPasswordRequirements(newPassword, currentPassword) {
   return {
     minLength: newPassword.length >= 8,
