@@ -1,7 +1,7 @@
 import Link from 'next/link'
 
 import FavoriteButton from '../../FavoriteButton'
-import PlayPauseButton from '../../PlayPause_Button'
+import TrackPlayButton from '../../TrackPlayButton'
 import TrackOptionsDropdown from '../../TrackOptionsDropdown'
 import TrackVisual from '../../TrackList/components/TrackVisual'
 
@@ -22,8 +22,9 @@ export default function TrackCoverCard({ track, creator, onFavoritesChanged }) {
                 />
 
                 <div className="absolute bottom-3 left-3 z-20 flex rounded-full bg-black/65 backdrop-blur-sm">
-                    <PlayPauseButton
+                    <TrackPlayButton
                         track={track}
+                        playlist={[track]}
                         size="lg"
                     />
                 </div>
