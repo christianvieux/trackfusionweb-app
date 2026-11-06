@@ -1,12 +1,24 @@
 'use client'
 
+import { useEffect } from 'react'
+
 import TrackListSection from '../components/TrackListSection'
 import TrackPageLayout from '../components/TrackPageLayout'
 import { useFavoriteTracks } from '../context/FavoriteTracksContext'
 import withAuth from '../hoc/withAuth'
 
 function MyFavoriteTracksPage() {
-    const { favoriteTracks, setFavoriteTracks } = useFavoriteTracks()
+    const {
+        favoriteTracks,
+        setFavoriteTracks,
+        ensureLoaded,
+        hasLoaded,
+        loading,
+    } = useFavoriteTracks()
+
+    useEffect(() => {
+        ensureLoaded()
+    }, [ensureLoaded])
 
     return (
         <TrackPageLayout>
@@ -14,7 +26,11 @@ function MyFavoriteTracksPage() {
                 title="Favorite Tracks"
                 trackList={favoriteTracks}
                 setTrackList={setFavoriteTracks}
-                emptyMessage="No favorite tracks yet"
+                emptyMessage={
+                    loading || !hasLoaded
+                        ? 'Loading favorite tracks...'
+                        : 'No favorite tracks yet'
+                }
             />
         </TrackPageLayout>
     )
