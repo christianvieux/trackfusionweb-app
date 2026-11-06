@@ -1,11 +1,24 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 
 import { fetchPublicUserInfo } from '../../../services/userService'
 
 function getCreatorKey(userId) {
     return userId == null ? null : String(userId)
+}
+
+export function getEmbeddedTrackCreators(tracks = []) {
+    return Object.fromEntries(
+        tracks.flatMap((track) => {
+            const creatorId = getCreatorKey(
+                track?.creator?.id ?? track?.creator_id
+            )
+            return creatorId && track?.creator && typeof track.creator === 'object'
+                ? [[creatorId, track.creator]]
+                : []
+        })
+    )
 }
 
 const creatorCache = new Map()
@@ -33,6 +46,14 @@ function loadCreator(creatorId) {
 export default function useTrackCreators(tracks = []) {
     const [creatorsById, setCreatorsById] = useState({})
     const isMounted = useRef(true)
+    const embeddedCreators = useMemo(
+        () => getEmbeddedTrackCreators(tracks),
+        [tracks]
+    )
+    const availableCreators = useMemo(
+        () => ({ ...creatorsById, ...embeddedCreators }),
+        [creatorsById, embeddedCreators]
+    )
 
     useEffect(() => {
         isMounted.current = true
@@ -49,7 +70,7 @@ export default function useTrackCreators(tracks = []) {
                     .map((track) => getCreatorKey(track?.creator_id))
                     .filter(Boolean)
             ),
-        ].filter((creatorId) => !creatorsById[creatorId])
+        ].filter((creatorId) => !availableCreators[creatorId])
 
         if (creatorIds.length === 0) return
 
@@ -74,7 +95,7 @@ export default function useTrackCreators(tracks = []) {
                 ...loadedCreators,
             }))
         })
-    }, [creatorsById, tracks])
+    }, [availableCreators, tracks])
 
-    return creatorsById
+    return availableCreators
 }

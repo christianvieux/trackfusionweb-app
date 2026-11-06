@@ -28,6 +28,20 @@ export async function fetchRecentTracks() {
   }
 }
 
+export async function fetchRecentTrackPage(page, limit) {
+  try {
+    const response = await apiClient.get("/tracks/public", {
+      params: { paginated: true, page, limit },
+    });
+    return response.data;
+  } catch (error) {
+    throw toApiError(
+      error,
+      "Failed to fetch recent tracks. Please try again.",
+    );
+  }
+}
+
 export async function updateTrack(trackId, updatedData) {
   try {
     const response = await apiClient.put(

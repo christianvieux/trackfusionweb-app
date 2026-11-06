@@ -53,6 +53,7 @@ export default function TrackListTable({
     title,
     emptyMessage = 'No tracks found',
     className = '',
+    collectionPagination,
 }) {
     const { lastUpdatedTrack, lastDeletedTrackId } = useTrackEvents()
 
@@ -60,6 +61,16 @@ export default function TrackListTable({
     const [page, setPage] = useState(1)
     const [layout, setLayout] = useState(DEFAULT_TRACK_LAYOUT)
     const searchInputRef = useRef(null)
+    const {
+        error: collectionError,
+        isComplete: isCollectionComplete = false,
+        loading: isCollectionLoading = false,
+        onPageChange,
+        onRequireFullCollection,
+        page: collectionPage = 1,
+        totalCount: collectionTotalCount = 0,
+        totalPages: collectionTotalPages = 1,
+    } = collectionPagination || {}
 
     const toggleFilter = useCallback((filterType, value) => {
         setFilters((current) => {
@@ -113,13 +124,37 @@ export default function TrackListTable({
         )
     }, [filters.excludes, filters.includes])
 
-    const totalPages = useMemo(() => {
+    const hasActiveCollectionQuery =
+        Boolean(filters.searchTerm) || hasActiveFilters
+    const requiresFullCollection = Boolean(
+        collectionPagination &&
+            !isCollectionComplete &&
+            hasActiveCollectionQuery
+    )
+    const usesRemotePage = Boolean(
+        collectionPagination &&
+            !isCollectionComplete &&
+            !hasActiveCollectionQuery
+    )
+
+    const localTotalPages = useMemo(() => {
         return getTotalPages(filteredTracks.length)
     }, [filteredTracks.length])
 
     const paginatedTracks = useMemo(() => {
+        if (usesRemotePage) return filteredTracks
         return getPaginatedTracks(filteredTracks, page)
-    }, [filteredTracks, page])
+    }, [filteredTracks, page, usesRemotePage])
+
+    const displayedTrackCount = usesRemotePage
+        ? Number(collectionTotalCount || 0)
+        : filteredTracks.length
+    const activePage = usesRemotePage
+        ? Number(collectionPage || 1)
+        : page
+    const activeTotalPages = usesRemotePage
+        ? Number(collectionTotalPages || 1)
+        : localTotalPages
 
     const updateTrackInList = useCallback(
         (updatedTrack) => {
@@ -178,6 +213,24 @@ export default function TrackListTable({
         setPage(1)
     }, [debouncedSearch, filters.includes, filters.excludes, tracks])
 
+    useEffect(() => {
+        if (requiresFullCollection) {
+            onRequireFullCollection?.()
+        }
+    }, [onRequireFullCollection, requiresFullCollection])
+
+    const changePage = useCallback(
+        (nextPage) => {
+            if (usesRemotePage) {
+                if (isCollectionLoading) return
+                onPageChange?.(nextPage)
+                return
+            }
+            setPage(nextPage)
+        },
+        [isCollectionLoading, onPageChange, usesRemotePage]
+    )
+
     return (
         <div
             id="Track_List_Table"
@@ -194,8 +247,8 @@ export default function TrackListTable({
                             {title}
                         </h1>
                         <span className="shrink-0 text-xs text-muted-foreground sm:text-sm">
-                            {filteredTracks.length}{' '}
-                            {filteredTracks.length === 1 ? 'track' : 'tracks'}
+                            {displayedTrackCount}{' '}
+                            {displayedTrackCount === 1 ? 'track' : 'tracks'}
                         </span>
                     </div>
                 )}
@@ -218,7 +271,12 @@ export default function TrackListTable({
                 tabIndex={0}
                 aria-label={`${title || 'Tracks'} results`}
             >
-                {filteredTracks.length === 0 ? (
+                {requiresFullCollection ? (
+                    <div className="flex min-h-40 items-center justify-center rounded-xl border border-dashed border-accent/50 px-4 text-center text-muted-foreground">
+                        {collectionError ||
+                            'Loading tracks for search and filters...'}
+                    </div>
+                ) : filteredTracks.length === 0 ? (
                     <TrackListEmptyState
                         message={emptyMessage}
                         query={effectiveSearch}
@@ -228,7 +286,9 @@ export default function TrackListTable({
                     />
                 ) : null}
 
-                {filteredTracks.length > 0 && layout === TRACK_LAYOUTS.ROWS && (
+                {!requiresFullCollection &&
+                    filteredTracks.length > 0 &&
+                    layout === TRACK_LAYOUTS.ROWS && (
                     <TrackRowsView
                         tracks={paginatedTracks}
                         creatorsById={creatorsById}
@@ -237,7 +297,8 @@ export default function TrackListTable({
                     />
                 )}
 
-                {filteredTracks.length > 0 &&
+                {!requiresFullCollection &&
+                    filteredTracks.length > 0 &&
                     layout === TRACK_LAYOUTS.TILES && (
                         <TrackTilesView
                             tracks={paginatedTracks}
@@ -247,7 +308,8 @@ export default function TrackListTable({
                         />
                     )}
 
-                {filteredTracks.length > 0 &&
+                {!requiresFullCollection &&
+                    filteredTracks.length > 0 &&
                     layout === TRACK_LAYOUTS.SPOTLIGHT && (
                         <TrackSpotlightView
                             tracks={paginatedTracks}
@@ -258,15 +320,15 @@ export default function TrackListTable({
                     )}
             </div>
 
-            {filteredTracks.length > 0 && (
+            {!requiresFullCollection && filteredTracks.length > 0 && (
                 <div
                     id="Pagination"
                     className="flex shrink-0 justify-center pt-2"
                 >
                     <Pagination
-                        page={page}
-                        total={totalPages}
-                        onChange={setPage}
+                        page={activePage}
+                        total={activeTotalPages}
+                        onChange={changePage}
                     />
                 </div>
             )}
