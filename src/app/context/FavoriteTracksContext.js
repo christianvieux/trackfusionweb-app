@@ -6,6 +6,7 @@ import React, {
     useContext,
     useEffect,
     useMemo,
+    useRef,
     useState,
 } from 'react'
 
@@ -16,6 +17,8 @@ const FavoriteTracksContext = createContext({
     favoriteTracks: [],
     setFavoriteTracks: () => {},
     refresh: () => {},
+    ensureLoaded: () => {},
+    hasLoaded: false,
     loading: false,
 })
 
@@ -25,33 +28,90 @@ export function FavoriteTracksProvider({ children }) {
 
     const [favoriteTracks, setFavoriteTracks] = useState([])
     const [loading, setLoading] = useState(false)
+    const [hasLoaded, setHasLoaded] = useState(false)
+    const requestRef = useRef(null)
+    const userIdRef = useRef(userId)
 
-    const refresh = useCallback(async () => {
+    const loadFavorites = useCallback(async ({ force = false } = {}) => {
         if (!userId) {
             setFavoriteTracks([])
-            return
+            setHasLoaded(false)
+            return []
         }
 
-        try {
-            setLoading(true)
-
-            const tracks = await fetchFavoriteTracks(userId)
-            setFavoriteTracks(tracks || [])
-        } catch (error) {
-            console.error('Error fetching favorite tracks:', error)
-            setFavoriteTracks([])
-        } finally {
-            setLoading(false)
+        const activeRequest = requestRef.current
+        if (!force && activeRequest?.userId === userId) {
+            return activeRequest.promise
         }
+
+        setLoading(true)
+
+        const promise = fetchFavoriteTracks(userId)
+            .then((tracks) => {
+                const nextTracks = tracks || []
+                if (
+                    userIdRef.current === userId &&
+                    requestRef.current?.promise === promise
+                ) {
+                    setFavoriteTracks(nextTracks)
+                    setHasLoaded(true)
+                }
+                return nextTracks
+            })
+            .catch((error) => {
+                console.error('Error fetching favorite tracks:', error)
+                if (
+                    userIdRef.current === userId &&
+                    requestRef.current?.promise === promise
+                ) {
+                    setFavoriteTracks([])
+                    setHasLoaded(true)
+                }
+                return []
+            })
+            .finally(() => {
+                const isCurrentRequest =
+                    requestRef.current?.promise === promise
+                if (isCurrentRequest) {
+                    requestRef.current = null
+                }
+                if (isCurrentRequest && userIdRef.current === userId) {
+                    setLoading(false)
+                }
+            })
+
+        requestRef.current = { userId, promise }
+        return promise
     }, [userId])
 
+    const ensureLoaded = useCallback(() => {
+        if (hasLoaded) return Promise.resolve(favoriteTracks)
+        return loadFavorites()
+    }, [favoriteTracks, hasLoaded, loadFavorites])
+
+    const refresh = useCallback(
+        () => loadFavorites({ force: true }),
+        [loadFavorites]
+    )
+
     useEffect(() => {
-        refresh()
-    }, [refresh])
+        userIdRef.current = userId
+        requestRef.current = null
+        setFavoriteTracks([])
+        setHasLoaded(false)
+        setLoading(false)
+    }, [userId])
 
     const value = useMemo(
-        () => ({ favoriteTracks, setFavoriteTracks, refresh, loading }),
-        [favoriteTracks, loading, refresh]
+        () => ({
+            favoriteTracks,
+            setFavoriteTracks,
+            refresh,
+            ensureLoaded,
+            hasLoaded,
+            loading,
+        }),
+        [ensureLoaded, favoriteTracks, hasLoaded, loading, refresh]
     )
 
     return (

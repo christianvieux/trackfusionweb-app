@@ -1,6 +1,6 @@
 // src/app/components/favoriteButton.js
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@heroui/react";
 
 import { useSession } from "../context/SessionContext";
@@ -24,12 +24,21 @@ function FavoriteButton({
 }) {
   const { user } = useSession();
   const { setTrackList } = useTrackList();
-  const { favoriteTracks, setFavoriteTracks } = useFavoriteTracks();
+  const {
+    favoriteTracks,
+    setFavoriteTracks,
+    ensureLoaded,
+    hasLoaded,
+  } = useFavoriteTracks();
 
   const [isHovered, setIsHovered] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
   const trackId = trackObject?.id;
+
+  useEffect(() => {
+    if (user?.id) ensureLoaded();
+  }, [ensureLoaded, user?.id]);
 
   const isFavorite =
     trackId && favoriteTracks.some((track) => track.id === trackId);
@@ -148,6 +157,7 @@ function FavoriteButton({
       onMouseLeave={() => setIsHovered(false)}
       onClick={handleFavoriteClick}
       isLoading={isLoading}
+      isDisabled={Boolean(user?.id) && !hasLoaded}
       {...props}
     >
       <div className="flex h-full w-full items-center gap-2">
