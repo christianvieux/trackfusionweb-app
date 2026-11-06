@@ -6,6 +6,7 @@ export default function TrackListSection({
     title,
     emptyMessage,
     className = '',
+    collectionPagination,
 }) {
     return (
         <div
@@ -16,6 +17,7 @@ export default function TrackListSection({
                 setTrackList={setTrackList}
                 title={title}
                 emptyMessage={emptyMessage}
+                collectionPagination={collectionPagination}
                 className="h-full min-h-0 flex-1"
             />
         </div>
