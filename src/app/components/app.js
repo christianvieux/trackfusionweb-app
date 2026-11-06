@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import dynamic from 'next/dynamic'
 import Link from 'next/link'
 import { Heart, Home, ListTodo, Music } from 'lucide-react'
 import { usePathname } from 'next/navigation'
@@ -10,7 +11,6 @@ import Footer from './Footer'
 import NavBar from './nav-bar'
 import Sidebar from './Sidebar'
 
-import AudioPlayer from './AudioPlayer/AudioPlayer'
 import { PLAYER_LAYOUTS } from './AudioPlayer/playerLayout'
 import usePlayerLayout from './AudioPlayer/usePlayerLayout'
 import VideoBackground from './VideoBackground'
@@ -22,6 +22,10 @@ import {
     TrackManagerProvider,
     useTrackManager,
 } from '../context/TrackManagerContext'
+
+const AudioPlayer = dynamic(() => import('./AudioPlayer/AudioPlayer'), {
+    ssr: false,
+})
 
 /* -------------------- */
 /* PROVIDERS */
