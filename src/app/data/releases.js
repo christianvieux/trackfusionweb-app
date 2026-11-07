@@ -31,10 +31,6 @@ export const RELEASES = [
                 type: 'improved',
                 text: 'The home page now gives you a clear path to more detailed help.',
             },
-            {
-                type: 'fixed',
-                text: 'Release details remain easy to reach on phones and with a keyboard.',
-            },
         ],
     },
 ]
