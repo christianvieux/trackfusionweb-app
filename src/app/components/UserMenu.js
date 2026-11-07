@@ -1,11 +1,13 @@
 'use client'
 
 import { Dropdown, Label } from '@heroui/react'
+import { BookOpenText } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 
 import { useSession } from '../context/SessionContext'
 import { useUserInfo } from '../context/UserInfoContext'
 import { logoutUser } from '../services/authService'
+import useReleaseStatus from '../hooks/useReleaseStatus'
 
 import GearIcon from './Icons/GearIcon'
 import ProfileIcon from './Icons/ProfileIcon'
@@ -19,6 +21,7 @@ export default function UserMenu({ className = '', ...props }) {
     const router = useRouter()
     const { user, setUser, loading } = useSession()
     const { userInfo, setUserInfo } = useUserInfo()
+    const { hasUnreadRelease, markLatestReleaseViewed } = useReleaseStatus()
 
     const username =
         user?.username || (loading ? 'Loading…' : GUEST_IDENTITY.username)
@@ -28,6 +31,10 @@ export default function UserMenu({ className = '', ...props }) {
         if (key === 'sign-up') router.push('/signup')
         if (key === 'profile') router.push(`/profile/${user.id}`)
         if (key === 'settings') router.push('/settings')
+        if (key === 'whats-new') {
+            markLatestReleaseViewed()
+            router.push('/changelog')
+        }
 
         if (key === 'logout') {
             try {
@@ -71,6 +78,23 @@ export default function UserMenu({ className = '', ...props }) {
                     onAction={handleAction}
                     className="min-w-48"
                 >
+                    <Dropdown.Item
+                        id="whats-new"
+                        textValue="What's New"
+                        className="text-foreground hover:text-primary!"
+                    >
+                        <div className="flex items-center gap-3 rounded-lg px-2 py-1">
+                            <BookOpenText aria-hidden="true" className="size-5" />
+                            <Label className="text-inherit">What&apos;s New</Label>
+                            {hasUnreadRelease && (
+                                <span
+                                    aria-label="New release notes"
+                                    className="ml-auto size-2 rounded-full bg-success"
+                                />
+                            )}
+                        </div>
+                    </Dropdown.Item>
+
                     {!user && (
                         <>
                             <Dropdown.Item
