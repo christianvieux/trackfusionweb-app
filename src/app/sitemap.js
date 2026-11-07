@@ -5,6 +5,8 @@ const publicRoutes = [
   "/home",
   "/feed",
   "/about",
+  "/changelog",
+  "/how-it-works",
   "/contact",
   "/privacy",
   "/terms",

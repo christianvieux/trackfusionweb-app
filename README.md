@@ -236,6 +236,24 @@ This one command runs all three project checks:
 
 GitHub Actions runs the same checks on pushes and pull requests.
 
+## Preparing an App release
+
+`package.json` is the authoritative source for the version shown in the App.
+Use semantic versions and change the version only when preparing a frontend
+release—not for every commit or pull request.
+
+1. Choose the next release version and update `package.json` plus
+   `package-lock.json` (for example, `npm version 1.1.0 --no-git-tag-version`).
+2. In `src/app/data/releases.js`, change the outgoing current entry to its
+   literal version, then add the new release first with `APP_VERSION`, its
+   release date, a short user-facing title, and a few Added, Improved, or Fixed
+   notes.
+3. Add links only when they point to a working App route and help the reader
+   take a next step. Set `highlight` only for a meaningful user-facing release.
+4. Run `npm run lint`, `npm test`, and `npm run build -- --webpack` before the
+   release is merged. The badge and changelog will then use the same data in
+   the deployed frontend build.
+
 ## Advanced configuration and deployment
 
 > Most contributors should keep the `.env.example` defaults. This section is

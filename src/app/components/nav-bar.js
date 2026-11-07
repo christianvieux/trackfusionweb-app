@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { Activity, Plus } from 'lucide-react'
 
 import TrackFusionWebIcon from './Icons/TrackFusionWebIcon'
+import ReleaseBadge from './Releases/ReleaseBadge'
 import UploadIcon from './Icons/UploadIcon'
 import UserMenu from './UserMenu'
 
@@ -64,13 +65,17 @@ export default function NavBar({ className = '', ...props }) {
                 className="topbar-nav h-full min-h-14 w-full gap-3 px-3 sm:px-4"
                 aria-label="Primary"
             >
-                <Link
-                    href="/home"
-                    aria-label="TrackFusionWeb home"
-                    className="topbar-brand min-w-0 shrink"
-                >
-                    <TrackFusionWebIcon className="h-5 max-w-[min(47vw,190px)] text-foreground sm:h-6" />
-                </Link>
+                <div className="topbar-brand flex min-w-0 items-center gap-2">
+                    <Link
+                        href="/home"
+                        aria-label="TrackFusionWeb home"
+                        className="min-w-0 shrink"
+                    >
+                        <TrackFusionWebIcon className="topbar-logo h-5 max-w-[min(47vw,190px)] text-foreground sm:h-6" />
+                    </Link>
+
+                    <ReleaseBadge />
+                </div>
 
                 <div className="desktop-nav-links topbar-primary-actions items-center gap-2">
                     <CreateLink

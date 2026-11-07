@@ -191,6 +191,13 @@ function HowItWorksSlide() {
             </SlideCard>
           ))}
         </div>
+
+        <Link
+          href="/how-it-works"
+          className="mx-auto shrink-0 rounded-lg border border-primary/70 px-4 py-2 text-sm font-semibold text-primary transition hover:bg-primary/10"
+        >
+          View the complete guide
+        </Link>
       </SlideLayout>
     </SlideBackdrop>
   )
