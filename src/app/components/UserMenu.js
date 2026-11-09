@@ -54,7 +54,7 @@ export default function UserMenu({ className = '', ...props }) {
         <Dropdown {...props}>
             <Dropdown.Trigger
                 aria-label="Open user menu"
-                className={`flex cursor-pointer items-center gap-2 rounded-full p-2 text-foreground transition ${
+                className={`flex cursor-pointer items-center justify-center gap-2 rounded-full p-2 text-foreground transition ${
                     className
                 }`}
             >
