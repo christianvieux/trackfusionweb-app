@@ -11,3 +11,8 @@ export function isPresignedArtworkUrl(value) {
     return false;
   }
 }
+
+export function getTrackArtworkSource(src, fallbackSrc, failedSrc = null) {
+  const requestedSrc = src || fallbackSrc;
+  return requestedSrc === failedSrc ? fallbackSrc : requestedSrc;
+}

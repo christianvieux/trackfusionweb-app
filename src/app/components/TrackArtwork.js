@@ -1,9 +1,12 @@
 'use client'
 
 import Image from 'next/image'
-import { memo, useEffect, useState } from 'react'
+import { memo, useState } from 'react'
 
-import { isPresignedArtworkUrl } from './trackArtworkUtils'
+import {
+    getTrackArtworkSource,
+    isPresignedArtworkUrl,
+} from './trackArtworkUtils'
 
 export const DEFAULT_TRACK_ARTWORK = '/images/6068474.jpg'
 
@@ -14,18 +17,13 @@ function TrackArtwork({
     onError,
     ...imageProps
 }) {
-    const initialSrc = src || fallbackSrc
-    const [activeSrc, setActiveSrc] = useState(initialSrc)
-
-    useEffect(() => {
-        setActiveSrc(src || fallbackSrc)
-    }, [fallbackSrc, src])
+    const requestedSrc = src || fallbackSrc
+    const [failedSrc, setFailedSrc] = useState(null)
+    const activeSrc = getTrackArtworkSource(src, fallbackSrc, failedSrc)
 
     function handleError(event) {
         onError?.(event)
-        setActiveSrc((current) =>
-            current === fallbackSrc ? current : fallbackSrc
-        )
+        if (activeSrc !== fallbackSrc) setFailedSrc(requestedSrc)
     }
 
     return (
