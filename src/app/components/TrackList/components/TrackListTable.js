@@ -54,12 +54,26 @@ export default function TrackListTable({
     emptyMessage = 'No tracks found',
     className = '',
     collectionPagination,
+    viewState,
+    onViewStateChange,
 }) {
     const { lastUpdatedTrack, lastDeletedTrackId } = useTrackEvents()
 
-    const [filters, setFilters] = useState(initialFilters)
-    const [page, setPage] = useState(1)
-    const [layout, setLayout] = useState(DEFAULT_TRACK_LAYOUT)
+    const [localFilters, setLocalFilters] = useState(initialFilters)
+    const [localPage, setLocalPage] = useState(1)
+    const [localLayout, setLocalLayout] = useState(DEFAULT_TRACK_LAYOUT)
+    const hasControlledViewState = Boolean(viewState && onViewStateChange)
+    const filters = useMemo(() => {
+        if (!hasControlledViewState) return localFilters
+
+        return {
+            ...initialFilters,
+            searchTerm: viewState.searchTerm || '',
+            includes: viewState.includes || {},
+        }
+    }, [hasControlledViewState, localFilters, viewState])
+    const page = hasControlledViewState ? viewState.page : localPage
+    const layout = hasControlledViewState ? viewState.layout : localLayout
     const searchInputRef = useRef(null)
     const {
         error: collectionError,
@@ -73,7 +87,7 @@ export default function TrackListTable({
     } = collectionPagination || {}
 
     const toggleFilter = useCallback((filterType, value) => {
-        setFilters((current) => {
+        const updateFilters = (current) => {
             const currentValues = current.includes[filterType] || []
             const nextValues = currentValues.includes(value)
                 ? currentValues.filter((item) => item !== value)
@@ -86,8 +100,16 @@ export default function TrackListTable({
                     [filterType]: nextValues,
                 },
             }
-        })
-    }, [])
+        }
+
+        if (hasControlledViewState) {
+            const nextFilters = updateFilters(filters)
+            onViewStateChange({ includes: nextFilters.includes, page: 1 })
+            return
+        }
+
+        setLocalFilters(updateFilters)
+    }, [filters, hasControlledViewState, onViewStateChange])
 
     const creatorsById = useTrackCreators(tracks)
 
@@ -185,17 +207,83 @@ export default function TrackListTable({
     )
 
     const clearSearch = useCallback(() => {
-        setFilters((current) => ({ ...current, searchTerm: '' }))
+        if (hasControlledViewState) {
+            onViewStateChange(
+                { searchTerm: '', page: 1 },
+                { replace: true }
+            )
+        } else {
+            setLocalFilters((current) => ({
+                ...current,
+                searchTerm: '',
+            }))
+        }
         requestAnimationFrame(() => searchInputRef.current?.focus())
-    }, [])
+    }, [hasControlledViewState, onViewStateChange])
+
+    const changeSearchTerm = useCallback(
+        (searchTerm) => {
+            if (hasControlledViewState) {
+                onViewStateChange(
+                    { searchTerm, page: 1 },
+                    { replace: true }
+                )
+                return
+            }
+
+            setLocalFilters((current) => ({ ...current, searchTerm }))
+        },
+        [hasControlledViewState, onViewStateChange]
+    )
+
+    const clearFilterType = useCallback(
+        (filterType) => {
+            if (hasControlledViewState) {
+                onViewStateChange({
+                    includes: {
+                        ...filters.includes,
+                        [filterType]: [],
+                    },
+                    page: 1,
+                })
+                return
+            }
+
+            setLocalFilters((current) => ({
+                ...current,
+                includes: {
+                    ...current.includes,
+                    [filterType]: [],
+                },
+            }))
+        },
+        [filters.includes, hasControlledViewState, onViewStateChange]
+    )
 
     const clearFilters = useCallback(() => {
-        setFilters((current) => ({
+        if (hasControlledViewState) {
+            onViewStateChange({ includes: {}, page: 1 })
+            return
+        }
+
+        setLocalFilters((current) => ({
             ...current,
             includes: {},
             excludes: {},
         }))
-    }, [])
+    }, [hasControlledViewState, onViewStateChange])
+
+    const changeLayout = useCallback(
+        (nextLayout) => {
+            if (hasControlledViewState) {
+                onViewStateChange({ layout: nextLayout })
+                return
+            }
+
+            setLocalLayout(nextLayout)
+        },
+        [hasControlledViewState, onViewStateChange]
+    )
 
     useEffect(() => {
         if (!lastUpdatedTrack?.track) return
@@ -210,8 +298,14 @@ export default function TrackListTable({
     }, [lastDeletedTrackId, removeTrackFromList])
 
     useEffect(() => {
-        setPage(1)
-    }, [debouncedSearch, filters.includes, filters.excludes, tracks])
+        if (!hasControlledViewState) setLocalPage(1)
+    }, [
+        debouncedSearch,
+        filters.excludes,
+        filters.includes,
+        hasControlledViewState,
+        tracks,
+    ])
 
     useEffect(() => {
         if (requiresFullCollection) {
@@ -221,15 +315,50 @@ export default function TrackListTable({
 
     const changePage = useCallback(
         (nextPage) => {
+            if (hasControlledViewState) {
+                if (usesRemotePage && isCollectionLoading) return
+                onViewStateChange({ page: nextPage })
+                return
+            }
+
             if (usesRemotePage) {
                 if (isCollectionLoading) return
                 onPageChange?.(nextPage)
                 return
             }
-            setPage(nextPage)
+            setLocalPage(nextPage)
         },
-        [isCollectionLoading, onPageChange, usesRemotePage]
+        [
+            hasControlledViewState,
+            isCollectionLoading,
+            onPageChange,
+            onViewStateChange,
+            usesRemotePage,
+        ]
     )
+
+    useEffect(() => {
+        if (
+            !hasControlledViewState ||
+            isCollectionLoading ||
+            requiresFullCollection ||
+            page <= activeTotalPages
+        ) {
+            return
+        }
+
+        onViewStateChange(
+            { page: Math.max(1, activeTotalPages) },
+            { replace: true }
+        )
+    }, [
+        activeTotalPages,
+        hasControlledViewState,
+        isCollectionLoading,
+        onViewStateChange,
+        page,
+        requiresFullCollection,
+    ])
 
     return (
         <div
@@ -253,15 +382,17 @@ export default function TrackListTable({
                     </div>
                 )}
 
-                <TrackLayoutSwitcher layout={layout} onChange={setLayout} />
+                <TrackLayoutSwitcher layout={layout} onChange={changeLayout} />
             </div>
 
             <TrackFilters
                 filters={filters}
-                setFilters={setFilters}
+                setFilters={setLocalFilters}
                 onToggleFilter={toggleFilter}
                 searchInputRef={searchInputRef}
+                onSearchChange={changeSearchTerm}
                 onClearSearch={clearSearch}
+                onClearFilterType={clearFilterType}
                 onClearFilters={clearFilters}
             />
 

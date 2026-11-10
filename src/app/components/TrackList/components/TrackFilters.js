@@ -132,7 +132,9 @@ export default function TrackFilters({
     setFilters,
     onToggleFilter,
     searchInputRef,
+    onSearchChange,
     onClearSearch,
+    onClearFilterType,
     onClearFilters,
 }) {
     const [filterOptions, setFilterOptions] = useState({})
@@ -142,6 +144,11 @@ export default function TrackFilters({
     }, [filters])
 
     function updateSearchTerm(event) {
+        if (onSearchChange) {
+            onSearchChange(event.target.value)
+            return
+        }
+
         setFilters((prev) => ({
             ...prev,
             searchTerm: event.target.value,
@@ -161,6 +168,11 @@ export default function TrackFilters({
     }
 
     function clearFilterType(filterType) {
+        if (onClearFilterType) {
+            onClearFilterType(filterType)
+            return
+        }
+
         setFilters((prev) => ({
             ...prev,
             includes: {
