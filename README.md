@@ -19,7 +19,6 @@ portfolio application, with future changes focused on maintenance and
 selective improvements. The catalog is for user-contributed and otherwise
 authorized audio; this is not a licensed mainstream music streaming service.
 
-
 ## What the App does
 
 - Provides account registration, sign-in, and profile management.
