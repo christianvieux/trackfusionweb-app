@@ -26,6 +26,7 @@ import {
 import VolumeSlider from './Volume'
 import AudioElement from './AudioElement'
 import CollapsedPlayer from './CollapsedPlayer'
+import { supportsBrowserVolumeControl } from './mediaCapabilities'
 
 import { usePlayback } from '../../context/PlaybackContext'
 import { useTrackManager } from '../../context/TrackManagerContext'
@@ -124,6 +125,10 @@ export default function AudioPlayer({
     const [isTrackReady, setIsTrackReady] = useState(false)
     const [isQueueOpen, setIsQueueOpen] = useState(false)
     const [isSheetOpen, setIsSheetOpen] = useState(false)
+    const canControlVolume = useMemo(
+        () => supportsBrowserVolumeControl(navigator),
+        []
+    )
 
     const upcomingPlaylistTracks = useMemo(() => {
         if (!currentTrack) return playlist
@@ -306,8 +311,10 @@ export default function AudioPlayer({
     ])
 
     useEffect(() => {
-        if (audioRef.current) audioRef.current.volume = volumeValue
-    }, [audioRef, volumeValue])
+        if (canControlVolume && audioRef.current) {
+            audioRef.current.volume = volumeValue
+        }
+    }, [audioRef, canControlVolume, volumeValue])
 
     useEffect(() => {
         if (!('mediaSession' in navigator)) return undefined
@@ -483,17 +490,19 @@ export default function AudioPlayer({
                 </div>
 
                 <div className="stage-extras">
-                    <VolumeSlider
-                        className="min-w-0 flex-1"
-                        defaultValue={volumeValue}
-                        onChange={setVolumeValue}
-                    />
+                    {canControlVolume && (
+                        <VolumeSlider
+                            className="min-w-0 flex-1"
+                            defaultValue={volumeValue}
+                            onChange={setVolumeValue}
+                        />
+                    )}
                     <button
                         type="button"
                         aria-label="Toggle playback queue"
                         aria-pressed={isQueueOpen}
                         onClick={() => setIsQueueOpen((current) => !current)}
-                        className="stage-queue-toggle"
+                        className={`stage-queue-toggle ${canControlVolume ? '' : 'ml-auto'}`}
                     >
                         <List className="size-5" />
                         <QueueBadge count={upcomingTracks.length} />
@@ -534,6 +543,7 @@ export default function AudioPlayer({
                     onProgressChange={handleSliderChange}
                     onProgressChangeEnd={handleSliderChangeEnd}
                     onVolumeChange={setVolumeValue}
+                    canControlVolume={canControlVolume}
                     onPlayPause={handlePlayPause}
                     onPrevious={handlePrevious}
                     onNext={handleSkip}

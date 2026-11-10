@@ -7,6 +7,8 @@ export default function TrackListSection({
     emptyMessage,
     className = '',
     collectionPagination,
+    viewState,
+    onViewStateChange,
 }) {
     return (
         <div
@@ -18,6 +20,8 @@ export default function TrackListSection({
                 title={title}
                 emptyMessage={emptyMessage}
                 collectionPagination={collectionPagination}
+                viewState={viewState}
+                onViewStateChange={onViewStateChange}
                 className="h-full min-h-0 flex-1"
             />
         </div>
