@@ -81,7 +81,6 @@ function MobileTabBar() {
 /* -------------------- */
 
 function AppShell({ children }) {
-    const pathname = usePathname()
     const { currentTrack } = useTrackManager()
     const { canShowPlayback } = usePlayback()
     const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false)
@@ -125,7 +124,7 @@ function AppShell({ children }) {
             data-sidebar-collapsed={isSidebarCollapsed ? 'true' : 'false'}
             className="app-shell relative isolate h-dvh min-h-0 overflow-hidden text-foreground"
         >
-            <VideoBackground playVideo={pathname === '/home'} />
+            <VideoBackground />
 
             <Toaster position="bottom-center" />
 

@@ -17,17 +17,17 @@ const carouselSettings = { autoPlay: false };
 /* -------------------- */
 
 const features = [
-  { title: "Audio Upload",  description: "WAV, MP3 and more",            icon: "🎵" },
-  { title: "Smart Search",  description: "Filter by genre and mood",      icon: "🔍" },
-  { title: "Content Mgmt",  description: "Tags, collections, playlists",  icon: "📂" },
-  { title: "Community",     description: "Share and collaborate",          icon: "👥" },
+  { title: "Upload Audio", description: "Add supported audio, cover art, and track details", icon: "🎵" },
+  { title: "Search & Filter", description: "Find public tracks by name, creator, category, genre, or mood", icon: "🔍" },
+  { title: "Play & Queue", description: "Listen in the shared player and arrange what plays next", icon: "🎧" },
+  { title: "Save & Share", description: "Favorite tracks and copy direct links to share", icon: "❤️" },
 ];
 
 const steps = [
-  { title: "Create Account",  description: "Sign up and get started instantly.", image: "/illustrations/Signup.png"       },
-  { title: "Upload",          description: "Upload your audio files.",           image: "/illustrations/Upload-cuate.png" },
-  { title: "Browse & Listen", description: "Explore tracks from others.",        image: "/illustrations/Listen.png"       },
-  { title: "Save & Share",    description: "Save and share your favorites.",     image: "/illustrations/Share.png"        },
+  { title: "Create an Account", description: "Verify your email, then choose a username and password.", image: "/illustrations/Signup.png" },
+  { title: "Upload a Track", description: "Add audio, optional artwork, details, and visibility.", image: "/illustrations/Upload-cuate.png" },
+  { title: "Browse and Listen", description: "Search or filter public tracks, then play or queue them.", image: "/illustrations/Listen.png" },
+  { title: "Save and Share", description: "Favorite tracks or copy a direct link for someone else.", image: "/illustrations/Share.png" },
 ];
 
 /* -------------------- */
@@ -92,18 +92,18 @@ function HeroSlide() {
       <section className="flex h-full w-full items-center gap-8 px-4 py-8 sm:px-10 sm:py-10 md:px-16">
         <div className="space-y-6 gap-4 min-w-0">
           <p className="text-xs font-semibold uppercase tracking-widest text-accent">
-            Your audio platform
+            Upload, discover, and play
           </p>
 
           <h1 className="text-2xl font-semibold leading-tight text-primary sm:text-3xl md:text-4xl lg:text-5xl">
-            Discover and Share Your Soundtrack
+            Your Audio, Ready to Share and Explore
           </h1>
 
-          <p className="text-sm text-accent sm:text-base">Upload · Explore · Enjoy</p>
+          <p className="text-sm text-accent sm:text-base">Upload · Search · Play</p>
 
           <p className="text-sm text-muted-foreground sm:text-base">
-            TrackFusionWeb is your creative audio hub. Share music, vocals,
-            sound effects, and more.
+            Add your own tracks, browse public uploads by category, genre, or
+            mood, and save favorites to your account.
           </p>
 
           <div className="flex flex-wrap gap-3 pt-1">
@@ -232,7 +232,7 @@ export default function Home() {
           className="night "
           style={{ minHeight: "100%" }}
         >
-          {Array.from({ length: 20 }).map((_, i) => (
+          {Array.from({ length: 8 }).map((_, i) => (
             <div key={i} className="shooting_star" />
           ))}
         </div>
