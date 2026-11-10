@@ -30,7 +30,7 @@ import { supportsBrowserVolumeControl } from './mediaCapabilities'
 
 import { usePlayback } from '../../context/PlaybackContext'
 import { useTrackManager } from '../../context/TrackManagerContext'
-import { fetchAuthorizedUrl } from '../../services/trackService'
+import { fetchPlaybackUrl } from '../../services/trackService'
 import { formatDuration } from '../../utils/audio'
 
 const QUEUE_STORAGE_KEY = 'trackfusionweb-stage-queue-open'
@@ -176,10 +176,10 @@ export default function AudioPlayer({
             try {
                 setCurrentTrackInPlayer(track)
                 setIsFetchingTrack(true)
-                const { url } = await fetchAuthorizedUrl(track.id)
+                const { url } = await fetchPlaybackUrl(track)
                 setAudioSrc(url)
             } catch (error) {
-                console.error('Failed to fetch authorized URL:', error)
+                console.error('Failed to prepare track playback:', error)
                 setAudioSrc(null)
             } finally {
                 setIsFetchingTrack(false)

@@ -10,6 +10,7 @@ export const uploadStates = {
 
 const MAX_UPLOAD_STATUS_CHECKS = 60;
 const UPLOAD_STATUS_INTERVAL_MS = 5_000;
+const AUDIUS_API_BASE = "https://api.audius.co/v1";
 
 function encodePathSegment(value) {
   return encodeURIComponent(String(value));
@@ -153,6 +154,16 @@ export async function fetchAuthorizedUrl(trackId) {
       "Failed to prepare this track for playback. Please try again.",
     );
   }
+}
+
+export async function fetchPlaybackUrl(track) {
+  if (track?.source === "audius" && track.sourceId) {
+    return {
+      url: `${AUDIUS_API_BASE}/tracks/${encodePathSegment(track.sourceId)}/stream`,
+    };
+  }
+
+  return fetchAuthorizedUrl(track?.id);
 }
 
 export async function fetchTrack(trackId) {
