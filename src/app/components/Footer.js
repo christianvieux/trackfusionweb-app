@@ -1,8 +1,6 @@
 import React from 'react'
 import Link from 'next/link'
 
-import { APP_VERSION, formatReleaseVersion } from '../data/releases'
-
 const footerLinks = [
     { label: 'Home', href: '/home' },
     { label: 'About', href: '/about' },
@@ -35,13 +33,6 @@ export default function Footer() {
                     ))}
                 </ul>
 
-                <Link
-                    href="/changelog"
-                    aria-label={`View release history for version ${APP_VERSION}`}
-                    className="rounded-full border border-accent/60 px-2 py-0.5 font-mono text-[11px] text-green-light hover:border-primary hover:text-primary"
-                >
-                    {formatReleaseVersion(APP_VERSION)}
-                </Link>
             </div>
         </footer>
     )
