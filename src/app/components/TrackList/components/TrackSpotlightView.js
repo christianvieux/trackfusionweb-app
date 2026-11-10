@@ -96,7 +96,7 @@ function TrackSpotlightView({ tracks, creatorsById, emptyMessage, onFilter }) {
                         className="track-spotlight-tags mt-2 flex flex-wrap gap-1"
                     />
 
-                    <div className="mt-3 flex items-center gap-3">
+                    <div className="track-spotlight-actions mt-3 flex items-center gap-3">
                         <TrackPlayButton
                             track={selectedTrack}
                             playlist={tracks}
@@ -105,7 +105,7 @@ function TrackSpotlightView({ tracks, creatorsById, emptyMessage, onFilter }) {
                         <FavoriteButton
                             track={selectedTrack}
                             showLikes
-                            className="h-8 min-w-8"
+                            className="track-spotlight-favorite h-8 min-w-8"
                             classNames={{ svg: 'size-5' }}
                         />
                         <TrackOptionsDropdown
@@ -162,10 +162,14 @@ function TrackSpotlightView({ tracks, creatorsById, emptyMessage, onFilter }) {
                                 </span>
                                 <span className="block truncate text-xs text-muted-foreground">
                                     {creatorName || 'Unknown creator'}
+                                    <span className="track-spotlight-row-mobile-duration">
+                                        {' · '}
+                                        {formatDuration(track.length)}
+                                    </span>
                                 </span>
                             </span>
 
-                            <span className="text-xs text-muted-foreground">
+                            <span className="track-spotlight-row-duration text-xs text-muted-foreground">
                                 {formatDuration(track.length)}
                             </span>
                         </button>

@@ -1,6 +1,6 @@
 'use client'
 
-import { memo, useEffect, useMemo, useState } from 'react'
+import { memo, useMemo, useState } from 'react'
 
 import BlobAvatarDisplay from '../../BlobAvatarDisplay'
 import TrackArtwork from '../../TrackArtwork'
@@ -22,11 +22,9 @@ function TrackVisual({
     avatarAura = false,
 }) {
     const artworkUrl = hasTrackArtwork(track) ? track.image_url : null
-    const [artworkFailed, setArtworkFailed] = useState(false)
-
-    useEffect(() => {
-        setArtworkFailed(false)
-    }, [artworkUrl])
+    const [failedArtworkUrl, setFailedArtworkUrl] = useState(null)
+    const artworkFailed =
+        Boolean(artworkUrl) && failedArtworkUrl === artworkUrl
 
     const showAvatar = shouldUseTrackAvatarFallback(track, artworkFailed)
     const showArtwork = !showAvatar
@@ -51,7 +49,7 @@ function TrackVisual({
                     fill
                     sizes={sizes}
                     className={imageClassName}
-                    onError={() => setArtworkFailed(true)}
+                    onError={() => setFailedArtworkUrl(artworkUrl)}
                 />
             ) : null}
 
