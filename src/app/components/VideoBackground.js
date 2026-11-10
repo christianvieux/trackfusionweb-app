@@ -1,7 +1,7 @@
 import Image from 'next/image'
 import { memo } from 'react'
 
-function VideoBackground({ playVideo = false }) {
+function VideoBackground() {
     return (
         <>
             <div className="fixed inset-0 -z-30">
@@ -14,22 +14,6 @@ function VideoBackground({ playVideo = false }) {
                     className="object-cover"
                 />
             </div>
-
-            {playVideo && (
-                <video
-                    className="fixed inset-0 -z-20 h-full w-full object-cover"
-                    autoPlay
-                    muted
-                    loop
-                    playsInline
-                    preload="metadata"
-                >
-                    <source
-                        src="https://christianvieux-trackfusionweb-storage-bucket.s3.us-east-1.amazonaws.com/videos/Background.mp4"
-                        type="video/mp4"
-                    />
-                </video>
-            )}
 
             <div className="fixed inset-0 -z-10 bg-secondary/60" />
         </>
