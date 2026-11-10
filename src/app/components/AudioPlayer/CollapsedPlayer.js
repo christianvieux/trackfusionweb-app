@@ -51,6 +51,7 @@ export default function CollapsedPlayer({
     onNext,
     onOpenQueue,
     onExpand,
+    canControlVolume = true,
 }) {
     return (
         <aside className="collapsed-player" aria-label="Collapsed player">
@@ -123,11 +124,13 @@ export default function CollapsedPlayer({
             </div>
 
             <div className="collapsed-player-actions">
-                <VolumeSlider
-                    className="collapsed-player-volume"
-                    defaultValue={volume}
-                    onChange={onVolumeChange}
-                />
+                {canControlVolume && (
+                    <VolumeSlider
+                        className="collapsed-player-volume"
+                        defaultValue={volume}
+                        onChange={onVolumeChange}
+                    />
+                )}
 
                 <FavoriteButton
                     track={track}
