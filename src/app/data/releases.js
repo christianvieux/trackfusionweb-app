@@ -7,9 +7,41 @@ export const RELEASE_NOTE_TYPES = ['added', 'improved', 'fixed']
 export const RELEASES = [
     {
         version: APP_VERSION,
+        date: '2026-11-10',
+        title: 'A smoother listening experience',
+        highlight: true,
+        notes: [
+            {
+                type: 'improved',
+                text: 'Browse a cleaner Feed with better track artwork and layouts on smaller screens.',
+                link: {
+                    label: 'Explore the Feed',
+                    href: '/feed',
+                },
+            },
+            {
+                type: 'improved',
+                text: 'Keep your Feed search, filters, and view preferences while navigating and using browser Back.',
+            },
+            {
+                type: 'fixed',
+                text: 'Mobile player controls now avoid volume and queue drag actions unsupported by the browser.',
+            },
+            {
+                type: 'improved',
+                text: 'Enjoy lighter home page animations and clearer explanations of available features.',
+            },
+            {
+                type: 'fixed',
+                text: 'The guest avatar and release navigation are cleaner and better aligned.',
+            },
+        ],
+    },
+    {
+        version: '1.0.0',
         date: '2026-11-06',
         title: 'Versioning and helpful guides',
-        highlight: true,
+        highlight: false,
         notes: [
             {
                 type: 'added',

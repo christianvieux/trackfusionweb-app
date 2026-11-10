@@ -12,6 +12,13 @@ discovering, organizing, and analyzing tracks.
 These are the current production addresses for TrackFusionWeb. Local `.env`
 changes do not change these hosted links.
 
+## Project status
+
+TrackFusionWeb's main development phase is complete. It is maintained as a
+portfolio application, with future changes focused on maintenance and
+selective improvements. The catalog is for user-contributed and otherwise
+authorized audio; this is not a licensed mainstream music streaming service.
+
 ## What the App does
 
 - Provides account registration, sign-in, and profile management.
