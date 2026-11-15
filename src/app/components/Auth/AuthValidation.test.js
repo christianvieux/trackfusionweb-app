@@ -5,6 +5,7 @@ import {
   validatePassword,
   validatePasswordsMatch,
   validateRequired,
+  validateUsername,
   validateVerificationCode,
 } from "./AuthValidation";
 import { normalizeEmailAddress } from "../../utils/registrationAvailability";
@@ -45,5 +46,16 @@ describe("Auth validation", () => {
       "Verification code must be exactly 6 digits",
     );
     expect(validateVerificationCode("012345")).toBeNull();
+  });
+
+  it("matches the backend username rules and identifies unsupported characters", () => {
+    expect(validateUsername("music_fan-7")).toBeNull();
+    expect(validateUsername("7music")).toBe("Username must start with a letter");
+    expect(validateUsername("music fan!")).toBe(
+      "Username cannot contain spaces, “!”. Use letters, numbers, hyphens, or underscores.",
+    );
+    expect(validateUsername("music__fan")).toBe(
+      "Username cannot contain consecutive hyphens or underscores",
+    );
   });
 });

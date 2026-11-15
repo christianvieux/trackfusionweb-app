@@ -1,11 +1,12 @@
 "use client";
 
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button, Input, TextArea } from "@heroui/react";
 import ImageIcon from "../components/Icons/ImageIcon";
 import IsTrackPublicCheckbox from "../components/isTrackPublic_Checkbox";
 import UploadIcon from "../components/Icons/UploadIcon";
+import FeedbackDialog from "../components/FeedbackDialog";
 
 import {
   FileUploadField,
@@ -16,16 +17,22 @@ import {
 
 import withAuth from "../hoc/withAuth";
 import { fetchTrackAttributes } from "../services/enumService";
-import { uploadTrack } from "../services/trackService";
-import { ALLOWED_AUDIO_TYPES, ALLOWED_IMAGE_TYPES } from "../utils/fileTypes";
+import { fetchUploadConstraints, uploadTrack } from "../services/trackService";
 
 import {
   DEFAULT_TRACK_METADATA,
+  DEFAULT_UPLOAD_CONSTRAINTS,
   UPLOAD_PROGRESS,
+  formatFileSize,
   getFileExtensions,
   removeFileExtension,
-  validateTrackName,
+  validateUploadFile,
+  validateUploadValues,
 } from "../components/Upload/utils";
+import {
+  replaceArtworkPreviewUrl,
+  revokeArtworkPreviewUrl,
+} from "../components/Upload/artworkPreview";
 
 function UploadPage() {
   const router = useRouter();
@@ -36,6 +43,8 @@ function UploadPage() {
 
   const [trackFile, setTrackFile] = useState(null);
   const [imageFile, setImageFile] = useState(null);
+  const [artworkPreviewUrl, setArtworkPreviewUrl] = useState(null);
+  const artworkPreviewUrlRef = useRef(null);
 
   const [trackName, setTrackName] = useState("");
   const [trackNameError, setTrackNameError] = useState(null);
@@ -44,8 +53,14 @@ function UploadPage() {
 
   const [trackMetadata, setTrackMetadata] = useState(DEFAULT_TRACK_METADATA);
   const [trackAttributesList, setTrackAttributesList] = useState({});
+  const [uploadConstraints, setUploadConstraints] = useState(
+    DEFAULT_UPLOAD_CONSTRAINTS,
+  );
+  const [requirementsReady, setRequirementsReady] = useState(false);
+  const [fieldErrors, setFieldErrors] = useState({});
 
   const [error, setError] = useState(null);
+  const [isErrorReportOpen, setIsErrorReportOpen] = useState(false);
   const [successMessage, setSuccessMessage] = useState(null);
 
   const sortedAttributeKeys = useMemo(() => {
@@ -62,25 +77,54 @@ function UploadPage() {
     trackMetadata.category === "Remix";
 
   const canSubmit =
-    trackFile && trackName.trim() && !trackNameError && !isUploading;
+    requirementsReady &&
+    trackFile &&
+    trackName.trim() &&
+    !trackNameError &&
+    !isUploading;
+
+  function clearFieldError(field) {
+    setFieldErrors((currentErrors) => {
+      if (!currentErrors[field]) return currentErrors;
+      const nextErrors = { ...currentErrors };
+      delete nextErrors[field];
+      return nextErrors;
+    });
+  }
 
   function resetForm() {
     setTrackFile(null);
     setImageFile(null);
+    updateArtworkPreview(null);
     setTrackName("");
     setTrackNameError(null);
     setTrackDescription("");
     setIsPublic(false);
     setTrackMetadata(DEFAULT_TRACK_METADATA);
+    setFieldErrors({});
     setError(null);
     setSuccessMessage(null);
   }
 
+  function updateArtworkPreview(file) {
+    const nextUrl = replaceArtworkPreviewUrl(
+      artworkPreviewUrlRef.current,
+      file,
+    );
+    artworkPreviewUrlRef.current = nextUrl;
+    setArtworkPreviewUrl(nextUrl);
+  }
+
   function handleTrackNameChange(nextName) {
     setTrackName(nextName);
-
-    const validation = validateTrackName(nextName);
-    setTrackNameError(validation.isValid ? null : validation.error);
+    clearFieldError("trackName");
+    if (nextName.length > uploadConstraints.metadata.nameMaxLength) {
+      setTrackNameError(
+        `Track title cannot exceed ${uploadConstraints.metadata.nameMaxLength} characters.`,
+      );
+      return;
+    }
+    setTrackNameError(null);
   }
 
   function handleFileChange(event, type) {
@@ -92,19 +136,30 @@ function UploadPage() {
     if (!file) return;
 
     const isTrackFile = type === "track";
-    const allowedTypes = isTrackFile
-      ? ALLOWED_AUDIO_TYPES
-      : ALLOWED_IMAGE_TYPES;
+    const rules = isTrackFile
+      ? uploadConstraints.audio
+      : uploadConstraints.image;
+    const field = isTrackFile ? "trackFile" : "imageFile";
+    const validationError = validateUploadFile(
+      file,
+      rules,
+      isTrackFile ? "Audio file" : "Cover image",
+    );
 
-    if (!allowedTypes.includes(file.type)) {
-      setError(
-        `Please upload a valid ${
-          isTrackFile ? "audio" : "image"
-        } file: ${getFileExtensions(allowedTypes)}`,
-      );
-
+    if (validationError) {
+      if (isTrackFile) setTrackFile(null);
+      else {
+        setImageFile(null);
+        updateArtworkPreview(null);
+      }
+      setFieldErrors((currentErrors) => ({
+        ...currentErrors,
+        [field]: validationError,
+      }));
       return;
     }
+
+    clearFieldError(field);
 
     if (isTrackFile) {
       setTrackFile(file);
@@ -113,6 +168,7 @@ function UploadPage() {
     }
 
     setImageFile(file);
+    updateArtworkPreview(file);
   }
 
   function removeFile(type) {
@@ -120,10 +176,13 @@ function UploadPage() {
       setTrackFile(null);
       setTrackName("");
       setTrackNameError(null);
+      clearFieldError("trackFile");
       return;
     }
 
     setImageFile(null);
+    updateArtworkPreview(null);
+    clearFieldError("imageFile");
   }
 
   function buildFormData() {
@@ -153,34 +212,43 @@ function UploadPage() {
 
   async function handleUpload(event) {
     event.preventDefault();
+    if (isUploading) return;
 
     setError(null);
     setSuccessMessage(null);
 
-    if (!trackFile || !trackName.trim()) {
-      setError("Please select a track file and enter a track name.");
-      return;
-    }
+    const nextFieldErrors = validateUploadValues(
+      {
+        trackFile,
+        imageFile,
+        trackName,
+        trackDescription,
+        trackMetadata,
+      },
+      uploadConstraints,
+    );
+    setFieldErrors(nextFieldErrors);
+    setTrackNameError(nextFieldErrors.trackName || null);
 
-    const validation = validateTrackName(trackName);
-
-    if (!validation.isValid) {
-      setError(validation.error);
+    if (Object.keys(nextFieldErrors).length > 0) {
+      setError({
+        message: "Review the highlighted fields and try again.",
+      });
       return;
     }
 
     setIsUploading(true);
 
     try {
-      await uploadTrack(buildFormData(), (state) => {
+      await uploadTrack(buildFormData(), (state, progress) => {
         setUploadState(state);
-        setUploadProgress(UPLOAD_PROGRESS[state] || 0);
+        setUploadProgress(progress ?? UPLOAD_PROGRESS[state] ?? 0);
       });
 
       setSuccessMessage("Track uploaded successfully.");
       router.push("/myTracks");
     } catch (error) {
-      setError(error?.message || String(error));
+      setError(error instanceof Error ? error : { message: String(error) });
     } finally {
       setIsUploading(false);
       setUploadState(null);
@@ -189,104 +257,164 @@ function UploadPage() {
   }
 
   useEffect(() => {
-    async function loadAttributes() {
+    async function loadUploadForm() {
       try {
-        const attributes = await fetchTrackAttributes();
+        const [attributes, constraints] = await Promise.all([
+          fetchTrackAttributes(),
+          fetchUploadConstraints(),
+        ]);
         setTrackAttributesList(attributes);
+        setUploadConstraints(constraints);
+        setRequirementsReady(true);
       } catch {
-        setError("Failed to fetch track attributes. Please try again.");
+        setRequirementsReady(false);
+        setError({
+          message: "Failed to load upload requirements. Refresh and try again.",
+        });
       }
     }
 
-    loadAttributes();
+    loadUploadForm();
+  }, []);
+
+  useEffect(() => {
+    return () => revokeArtworkPreviewUrl(artworkPreviewUrlRef.current);
   }, []);
 
   return (
-    <main className="bg-background text-foreground mx-auto min-h-screen max-w-2xl p-4">
+    <main className="bg-background text-foreground mx-auto h-fit w-full min-w-0 max-w-[44rem] shrink-0 py-2 sm:py-4">
       <form
         encType="multipart/form-data"
         onSubmit={handleUpload}
-        className="border-accent bg-secondary shadow-card space-y-6 rounded-lg border-2 p-6"
+        className="border-accent bg-secondary shadow-card min-w-0 space-y-5 rounded-lg border-2 p-4 sm:p-6"
       >
         <div className="space-y-4">
           <FileUploadField
             type="track"
             file={trackFile}
             label="Upload Track"
-            allowedTypes={ALLOWED_AUDIO_TYPES}
+            allowedTypes={uploadConstraints.audio.allowedTypes}
             icon={<UploadIcon className="size-6" />}
             onFileChange={(event) => handleFileChange(event, "track")}
             onRemove={() => removeFile("track")}
             isDisabled={isUploading}
+            error={fieldErrors.trackFile}
+            description={`Accepted: ${getFileExtensions(uploadConstraints.audio.allowedTypes)} · up to ${formatFileSize(uploadConstraints.audio.maxBytes)}`}
           />
 
           <FileUploadField
             type="image"
             file={imageFile}
             label="Upload Cover Image Optional"
-            allowedTypes={ALLOWED_IMAGE_TYPES}
+            allowedTypes={uploadConstraints.image.allowedTypes}
             icon={<ImageIcon className="size-6" />}
             onFileChange={(event) => handleFileChange(event, "image")}
             onRemove={() => removeFile("image")}
+            previewUrl={artworkPreviewUrl}
             isDisabled={isUploading}
+            error={fieldErrors.imageFile}
+            description={`Accepted: ${getFileExtensions(uploadConstraints.image.allowedTypes)} · up to ${formatFileSize(uploadConstraints.image.maxBytes)}`}
           />
         </div>
 
         <div className="space-y-4">
           <Input
             name="trackName"
-            className="w-full"
-            placeholder="Track name"
+            className="min-w-0 w-full"
+            aria-label="Track title"
+            aria-describedby="track-name-help track-name-error"
+            placeholder="Track title"
             value={trackName}
             onChange={(event) => handleTrackNameChange(event.target.value)}
             disabled={isUploading}
             aria-invalid={Boolean(trackNameError)}
+            maxLength={uploadConstraints.metadata.nameMaxLength + 1}
           />
 
-          {trackNameError && (
-            <p className="text-danger text-xs">{trackNameError}</p>
-          )}
+          <div className="-mt-3 flex min-h-5 items-start justify-between gap-3 text-xs">
+            <p id="track-name-error" className="text-danger">
+              {trackNameError}
+            </p>
+            <p id="track-name-help" className="shrink-0 text-muted-foreground">
+              {trackName.length}/{uploadConstraints.metadata.nameMaxLength}
+            </p>
+          </div>
 
           <TextArea
             aria-label="Track description"
-            className="h-32 w-full"
+            className="min-h-32 min-w-0 w-full"
+            aria-describedby="track-description-help track-description-error"
             placeholder="Add a short description optional"
             value={trackDescription}
-            onChange={(event) => setTrackDescription(event.target.value)}
+            onChange={(event) => {
+              setTrackDescription(event.target.value);
+              clearFieldError("trackDescription");
+            }}
             disabled={isUploading}
+            maxLength={uploadConstraints.metadata.descriptionMaxLength + 1}
           />
 
-          {sortedAttributeKeys.map((attributeKey) => {
-            const attribute = trackAttributesList[attributeKey];
+          <div className="-mt-3 flex min-h-5 items-start justify-between gap-3 text-xs">
+            <p id="track-description-error" className="text-danger">
+              {fieldErrors.trackDescription}
+            </p>
+            <p
+              id="track-description-help"
+              className="shrink-0 text-muted-foreground"
+            >
+              {trackDescription.length}/
+              {uploadConstraints.metadata.descriptionMaxLength}
+            </p>
+          </div>
 
-            return (
-              <TrackMetadataSelect
-                key={attributeKey}
-                name={attributeKey}
-                options={attribute.values}
-                allowMultiple={attribute.allowMultiple}
-                isRequired={["category", "genre", "mood"].includes(
-                  attributeKey,
-                )}
-                isDisabled={isUploading}
-                setTrackMetadata={setTrackMetadata}
-              />
-            );
-          })}
+          <div className="grid min-w-0 gap-x-4 gap-y-1 sm:grid-cols-2">
+            {sortedAttributeKeys.map((attributeKey) => {
+              const attribute = trackAttributesList[attributeKey];
+
+              return (
+                <TrackMetadataSelect
+                  key={attributeKey}
+                  name={attributeKey}
+                  options={attribute.values}
+                  allowMultiple={attribute.allowMultiple}
+                  isRequired={uploadConstraints.metadata.required.includes(
+                    attributeKey,
+                  )}
+                  isDisabled={isUploading}
+                  value={trackMetadata[attributeKey]}
+                  error={fieldErrors[attributeKey]}
+                  setTrackMetadata={(update) => {
+                    setTrackMetadata(update);
+                    clearFieldError(attributeKey);
+                  }}
+                />
+              );
+            })}
+          </div>
 
           {canShowBpm && (
             <Input
               variant="faded"
               label="BPM Optional"
+              inputMode="numeric"
+              aria-describedby="bpm-error"
+              aria-invalid={Boolean(fieldErrors.bpm)}
               value={trackMetadata.bpm}
-              onChange={(event) =>
+              onChange={(event) => {
                 setTrackMetadata((currentMetadata) => ({
                   ...currentMetadata,
                   bpm: event.target.value,
-                }))
-              }
+                }));
+                clearFieldError("bpm");
+              }}
               isDisabled={isUploading}
             />
+          )}
+
+          {canShowBpm && (
+            <div className="-mt-3 min-h-5 text-sm text-danger" id="bpm-error">
+              {fieldErrors.bpm}
+            </div>
           )}
 
           <div className="pt-2">
@@ -301,9 +429,22 @@ function UploadPage() {
         <UploadProgress state={uploadState} progress={uploadProgress} />
 
         <FormMessage type="success">{successMessage}</FormMessage>
-        <FormMessage type="error">{error}</FormMessage>
+        <FormMessage type="error">{error?.message}</FormMessage>
 
-        <div className="flex gap-4 pt-4">
+        {error?.reportable && error?.referenceId && (
+          <div className="-mt-3 text-center text-xs text-muted-foreground">
+            <p className="break-all">Reference: {error.referenceId}</p>
+            <button
+              type="button"
+              className="mt-1 text-primary underline underline-offset-2"
+              onClick={() => setIsErrorReportOpen(true)}
+            >
+              Report this error
+            </button>
+          </div>
+        )}
+
+        <div className="flex flex-col gap-3 pt-4 sm:flex-row sm:gap-4">
           <Button
             className="flex-1"
             color="primary"
@@ -327,6 +468,12 @@ function UploadPage() {
           </Button>
         </div>
       </form>
+
+      <FeedbackDialog
+        isOpen={isErrorReportOpen}
+        onOpenChange={setIsErrorReportOpen}
+        errorContext={error}
+      />
     </main>
   );
 }

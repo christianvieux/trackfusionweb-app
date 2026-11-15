@@ -13,7 +13,7 @@ import TrackInfoPanel from "./TrackInfoPanel";
 
 function TrackDetailsShell({ children }) {
   return (
-    <main className="mx-auto flex w-full max-w-5xl justify-center px-3 py-4 sm:px-4 sm:py-6">
+    <main className="mx-auto flex w-full max-w-5xl min-w-0 justify-center px-3 py-4 sm:px-4 sm:py-6">
       {children}
     </main>
   );
@@ -50,9 +50,7 @@ export default function TrackDetailsPage() {
           throw new Error("Track not found");
         }
 
-        const creatorData = await fetchPublicUserInfo(
-          trackData.creator_id
-        );
+        const creatorData = await fetchPublicUserInfo(trackData.creator_id);
 
         if (!isMounted) return;
 
@@ -100,7 +98,7 @@ export default function TrackDetailsPage() {
       <article className="w-full min-w-0 rounded-[14px] border border-success/35 bg-[rgba(8,8,22,.72)] p-3 text-foreground shadow-card backdrop-blur-[6px] sm:p-5">
         <div
           id="Main_Container"
-          className="grid min-w-0 grid-cols-1 gap-5 md:grid-cols-[minmax(260px,320px)_minmax(0,1fr)] md:gap-6"
+          className="track-details-grid grid min-w-0 gap-5 md:gap-6"
         >
           <TrackCoverCard
             track={track}

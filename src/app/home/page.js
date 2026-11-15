@@ -53,7 +53,7 @@ function SlideLayout({ children, className = "" }) {
   return (
     <section
     id="slide_layout"
-      className={`gap-6 px-4 py-6 max-h-full ${className}`}
+      className={`gap-6 px-4 py-6 ${className}`}
     >
       {children}
     </section>
@@ -62,7 +62,7 @@ function SlideLayout({ children, className = "" }) {
 
 function SlideHeading({ className = "", children }) {
   return (
-    <h2 id="slide_heading" className={`text-2xl mb-10 w-max mx-auto font-semibold text-primary sm:text-3xl md:text-4xl ${className}`}>
+    <h2 id="slide_heading" className={`text-2xl mb-10 max-w-full text-center mx-auto font-semibold text-primary sm:text-3xl md:text-4xl ${className}`}>
       {children}
     </h2>
   );
@@ -217,14 +217,7 @@ export default function Home() {
   return (
     <main
       id="home"
-      className="relative overflow-hidden text-foreground"
-      style={{
-        // 100dvh = actual visible viewport (respects mobile browser chrome)
-        // Subtract your navbar + footer heights. Set these vars in global CSS:
-        //   --navbar-height: 56px;
-        //   --footer-height: 48px;
-        height: "calc(100dvh - var(--navbar-height, 56px) - var(--footer-height, 48px))",
-      }}
+      className="home-page relative w-full text-foreground"
     >
       {/* Shooting stars */}
       <div id="shooting-stars" className="flex justify-center pointer-events-none absolute inset-0 z-0 overflow-hidden">
@@ -238,13 +231,12 @@ export default function Home() {
         </div>
       </div>
 
-      {/* Carousel fills the full height of <main> */}
-      <div className="relative z-10 h-full">
+      {/* The carousel grows with its content; the app main owns page scrolling. */}
+      <div className="relative z-10">
         <EmblaCarousel
           slides={slides}
           options={carouselOptions}
           custom_settings={carouselSettings}
-          className="h-full"
         />
       </div>
     </main>

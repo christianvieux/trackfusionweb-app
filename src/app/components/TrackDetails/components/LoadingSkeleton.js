@@ -7,7 +7,7 @@ function SkeletonLine({ className = "" }) {
 export default function LoadingSkeleton() {
   return (
     <div className="w-full rounded-[14px] border border-success/25 bg-[rgba(8,8,22,.72)] p-3 text-foreground shadow-card sm:p-5">
-      <div className="grid min-w-0 grid-cols-1 gap-5 md:grid-cols-[minmax(260px,320px)_minmax(0,1fr)] md:gap-6">
+      <div className="track-details-grid grid min-w-0 gap-5 md:gap-6">
         <div className="flex flex-col gap-3">
           <Skeleton className="aspect-square w-full rounded-xl" />
 

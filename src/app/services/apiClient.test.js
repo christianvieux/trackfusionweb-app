@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { getApiErrorMessage, getUserFacingErrorMessage } from "./apiClient";
+import { getApiErrorMessage, getUserFacingErrorMessage, toApiError } from "./apiClient";
 
 describe("getApiErrorMessage", () => {
   it("prefers a safe API error response", () => {
@@ -76,5 +76,31 @@ describe("getApiErrorMessage", () => {
     expect(getApiErrorMessage(error, "Fallback")).toBe(
       "Too many requests. Please wait a moment and try again.",
     );
+  });
+
+  it("keeps only safe structured diagnostics for reportable failures", () => {
+    const error = toApiError(
+      {
+        response: {
+          status: 503,
+          data: {
+            error: {
+              code: "UPLOAD_STATUS_UNAVAILABLE",
+              message: "private provider detail",
+              referenceId: "req_123",
+            },
+          },
+        },
+      },
+      "Upload status is temporarily unavailable.",
+    );
+
+    expect(error).toMatchObject({
+      message: "Upload status is temporarily unavailable.",
+      code: "UPLOAD_STATUS_UNAVAILABLE",
+      referenceId: "req_123",
+      status: 503,
+      reportable: true,
+    });
   });
 });

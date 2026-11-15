@@ -7,14 +7,14 @@ export default function ContactItem({
   isExternal = false,
 }) {
   return (
-    <div className="flex items-center space-x-4">
-      <Icon className="h-6 w-6 text-primary" />
+    <div className="flex min-w-0 items-start gap-3 sm:items-center sm:gap-4">
+      <Icon className="h-6 w-6 shrink-0 text-primary" />
 
       <a
         href={href}
         target={isExternal ? "_blank" : undefined}
         rel={isExternal ? "noopener noreferrer" : undefined}
-        className="transition hover:text-primary"
+        className="min-w-0 flex-1 break-words [overflow-wrap:anywhere] transition hover:text-primary"
       >
         {label}
       </a>

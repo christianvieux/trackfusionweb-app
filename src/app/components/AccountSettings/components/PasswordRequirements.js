@@ -1,15 +1,10 @@
-const REQUIREMENTS = [
-  { key: "minLength", label: "Minimum 8 characters" },
-  { key: "hasLowercase", label: "At least one lowercase character" },
-  { key: "hasUppercase", label: "At least one uppercase character" },
-  { key: "notSameAsCurrent", label: "Can't be the same as the previous password" },
-];
+const REQUIREMENTS = [{ key: "minLength", label: "Minimum 8 characters" }];
 
 export default function PasswordRequirements({ requirements }) {
   return (
     <aside
       id="Requirements"
-      className="w-80 rounded-lg bg-muted p-4"
+      className="w-full min-w-0 max-w-80 rounded-lg bg-muted p-4"
     >
       <h3 className="mb-2 font-bold text-primary">Password requirements</h3>
       <p className="mb-4 text-sm text-muted-foreground">

@@ -1,5 +1,6 @@
 'use client'
 
+import { useState } from 'react'
 import { Dropdown, Label } from '@heroui/react'
 import { useRouter } from 'next/navigation'
 
@@ -19,11 +20,14 @@ export default function UserMenu({ className = '', ...props }) {
     const router = useRouter()
     const { user, setUser, loading } = useSession()
     const { userInfo, setUserInfo } = useUserInfo()
+    const [isLoggingOut, setIsLoggingOut] = useState(false)
 
     const username =
         user?.username || (loading ? 'Loading…' : GUEST_IDENTITY.username)
 
     async function handleAction(key) {
+        if (isLoggingOut) return
+
         if (key === 'sign-in') router.push('/login')
         if (key === 'sign-up') router.push('/signup')
         if (key === 'profile') router.push(`/profile/${user.id}`)
@@ -31,6 +35,7 @@ export default function UserMenu({ className = '', ...props }) {
 
         if (key === 'logout') {
             try {
+                setIsLoggingOut(true)
                 const success = await logoutUser()
                 if (!success) return
 
@@ -39,6 +44,8 @@ export default function UserMenu({ className = '', ...props }) {
                 router.push('/home')
             } catch (error) {
                 console.error('Failed to log out:', error)
+            } finally {
+                setIsLoggingOut(false)
             }
         }
     }
@@ -131,14 +138,19 @@ export default function UserMenu({ className = '', ...props }) {
 
                             <Dropdown.Item
                                 id="logout"
-                                textValue="Log Out"
+                                textValue={
+                                    isLoggingOut ? 'Logging out' : 'Log Out'
+                                }
                                 variant="danger"
+                                isDisabled={isLoggingOut}
                                 className="text-danger hover:text-danger data-[hover=true]:text-danger"
                             >
                                 <div className="flex items-center gap-3 rounded-lg px-2 py-1 text-danger">
                                     <UserMinusIcon />
                                     <Label className="text-inherit">
-                                        Log Out
+                                        {isLoggingOut
+                                            ? 'Logging out…'
+                                            : 'Log Out'}
                                     </Label>
                                 </div>
                             </Dropdown.Item>

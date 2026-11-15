@@ -12,7 +12,25 @@ export function isPresignedArtworkUrl(value) {
   }
 }
 
+export function isRenderableArtworkSource(value) {
+  if (typeof value !== "string") return false;
+
+  const source = value.trim();
+  if (!source) return false;
+
+  // A leading slash is a Next.js public asset path. Bare paths such as
+  // "covers/36/file.webp" are private storage keys, not browser URLs.
+  if (source.startsWith("/") && !source.startsWith("//")) return true;
+
+  try {
+    const url = new URL(source);
+    return url.protocol === "http:" || url.protocol === "https:";
+  } catch {
+    return false;
+  }
+}
+
 export function getTrackArtworkSource(src, fallbackSrc, failedSrc = null) {
-  const requestedSrc = src || fallbackSrc;
+  const requestedSrc = isRenderableArtworkSource(src) ? src.trim() : fallbackSrc;
   return requestedSrc === failedSrc ? fallbackSrc : requestedSrc;
 }

@@ -7,9 +7,11 @@ export default function StaticPageCard({
   className = "",
 }) {
   return (
-    <section className={`rounded-lg bg-muted p-6 shadow-inner ${className}`}>
+    <section
+      className={`min-w-0 rounded-lg bg-muted p-4 shadow-inner sm:p-6 ${className}`}
+    >
       {title && (
-        <h2 className={`mb-4 font-semibold ${titleClassName}`}>
+        <h2 className={`mb-4 break-words font-semibold ${titleClassName}`}>
           {title}
         </h2>
       )}

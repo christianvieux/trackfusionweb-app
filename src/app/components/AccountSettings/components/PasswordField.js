@@ -23,11 +23,11 @@ export default function PasswordField({
       onChange={onChange}
       isDisabled={isDisabled}
       isInvalid={Boolean(error)}
-      className="flex flex-col gap-1"
+      className="flex min-w-0 flex-col gap-1"
     >
       <Label className="text-sm text-muted-foreground">{label}</Label>
 
-      <div className="relative">
+      <div className="relative min-w-0">
         <Input
           placeholder={placeholder}
           autoComplete={autoComplete}
@@ -50,7 +50,9 @@ export default function PasswordField({
         )}
       </div>
 
-      <FieldError className="text-sm text-danger">{error}</FieldError>
+      <div className="min-h-5">
+        <FieldError className="text-sm text-danger">{error}</FieldError>
+      </div>
     </TextField>
   );
 }

@@ -1,4 +1,5 @@
 import { getColorForAttribute } from '../../../config/Colors'
+import { isRenderableArtworkSource } from '../trackArtworkUtils'
 
 function getStableTrackIdentity(track = {}) {
     const persistedId = track.trackId ?? track.id
@@ -41,9 +42,7 @@ export function getTrackKey(track, fallbackKey) {
 }
 
 export function hasTrackArtwork(track = {}) {
-    return (
-        typeof track.image_url === 'string' && track.image_url.trim() !== ''
-    )
+    return isRenderableArtworkSource(track.image_url)
 }
 
 export function shouldUseTrackAvatarFallback(

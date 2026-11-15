@@ -1,3 +1,5 @@
+import { createTrackInstance } from "../../context/trackManagerUtils";
+
 export const DRAG_THRESHOLD = 5;
 
 export function getQueueItemId(track) {
@@ -9,16 +11,7 @@ export function getAudioTrackId(track) {
 }
 
 export function createQueueTrack(track) {
-  const audioTrackId = getAudioTrackId(track);
-
-  return {
-    ...track,
-    trackId: audioTrackId,
-    uniqueId:
-      typeof crypto !== "undefined" && crypto.randomUUID
-        ? crypto.randomUUID()
-        : `${audioTrackId}-${Date.now()}-${Math.random().toString(36).slice(2)}`,
-  };
+  return createTrackInstance(track);
 }
 
 export function isSameQueueItem(trackA, trackB) {

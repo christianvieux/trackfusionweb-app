@@ -10,6 +10,7 @@ export const uploadStates = {
 
 const MAX_UPLOAD_STATUS_CHECKS = 60;
 const UPLOAD_STATUS_INTERVAL_MS = 5_000;
+const MAX_CONSECUTIVE_STATUS_ERRORS = 3;
 
 function encodePathSegment(value) {
   return encodeURIComponent(String(value));
@@ -56,28 +57,64 @@ export async function updateTrack(trackId, updatedData) {
 
 async function pollUploadStatus(jobId, onProgressChange) {
   const encodedJobId = encodePathSegment(jobId);
+  let consecutiveErrors = 0;
 
   for (let attempt = 0; attempt < MAX_UPLOAD_STATUS_CHECKS; attempt += 1) {
-    const { data: status } = await apiClient.get(
-      `/upload/track-status/${encodedJobId}`,
-    );
+    let status;
+    try {
+      ({ data: status } = await apiClient.get(
+        `/upload/track-status/${encodedJobId}`,
+      ));
+      consecutiveErrors = 0;
+    } catch (error) {
+      consecutiveErrors += 1;
+      if (
+        error?.response?.status === 401 ||
+        error?.response?.status === 404 ||
+        consecutiveErrors >= MAX_CONSECUTIVE_STATUS_ERRORS
+      ) {
+        throw new Error(
+          "We lost contact while processing this track. Check My Tracks before retrying.",
+        );
+      }
+      await delay(UPLOAD_STATUS_INTERVAL_MS);
+      continue;
+    }
 
     if (status.state === "completed") return status.result;
 
     if (status.state === "failed") {
-      throw new Error(
-        "We couldn't process this track. Check the files and try again.",
+      const uploadError = new Error(
+        status.error || "We couldn't process this track. Please try again.",
       );
+      uploadError.code = status.code;
+      uploadError.referenceId = status.referenceId;
+      uploadError.reportable = status.code === "PROCESSING_FAILED";
+      throw uploadError;
     }
 
-    if (status.state === "active") {
-      onProgressChange?.(uploadStates.PROCESSING, status.progress);
-    }
+    onProgressChange?.(
+      uploadStates.PROCESSING,
+      getProcessingProgress(status.state, status.progress),
+    );
 
     await delay(UPLOAD_STATUS_INTERVAL_MS);
   }
 
   throw new Error("Upload processing timed out");
+}
+
+export function getProcessingProgress(state, workerProgress) {
+  if (state === "waiting" || state === "delayed") return 72;
+  const progress = String(workerProgress || "").toLowerCase();
+  if (progress.includes("download")) return 76;
+  if (progress.includes("validat")) return 80;
+  if (progress.includes("analyz")) return 84;
+  if (progress.includes("metadata")) return 88;
+  if (progress.includes("database") || progress.includes("saving")) return 92;
+  if (progress.includes("final")) return 96;
+  if (progress.includes("complete")) return 99;
+  return 74;
 }
 
 async function createPresignedUpload(file, type) {
@@ -87,14 +124,30 @@ async function createPresignedUpload(file, type) {
     fileName: file.name,
     contentType: file.type,
     type,
+    size: file.size,
   });
 
   return data;
 }
 
+export async function fetchUploadConstraints() {
+  try {
+    const { data } = await apiClient.get("/upload/constraints");
+    return data;
+  } catch (error) {
+    throw toApiError(error, "Failed to load upload requirements. Please try again.");
+  }
+}
+
+export function getQueuedUploadReference(upload) {
+  const key = upload?.key?.trim();
+  if (!key) throw new Error("The upload service did not return a storage key.");
+  return { key };
+}
+
 export async function uploadTrack(formData, onProgressChange) {
   try {
-    onProgressChange?.(uploadStates.PREPARING);
+    onProgressChange?.(uploadStates.PREPARING, 10);
 
     const trackFile = formData.get("trackFile");
     const imageFile = formData.get("imageFile");
@@ -110,18 +163,35 @@ export async function uploadTrack(formData, onProgressChange) {
         : undefined,
     ]);
 
-    onProgressChange?.(uploadStates.UPLOADING);
+    onProgressChange?.(uploadStates.UPLOADING, 15);
+    let trackProgress = 0;
+    let imageProgress = imageFile instanceof File ? 0 : 100;
+    const reportTransferProgress = () => {
+      const weightedProgress = imageFile instanceof File
+        ? trackProgress * 0.85 + imageProgress * 0.15
+        : trackProgress;
+      onProgressChange?.(
+        uploadStates.UPLOADING,
+        Math.round(15 + weightedProgress * 0.55),
+      );
+    };
     await Promise.all([
-      awsUploadService.uploadToS3(trackUrl.uploadUrl, trackFile),
+      awsUploadService.uploadToS3(trackUrl.uploadUrl, trackFile, (progress) => {
+        trackProgress = progress;
+        reportTransferProgress();
+      }),
       imageFile instanceof File
-        ? awsUploadService.uploadToS3(imageUrl.uploadUrl, imageFile)
+        ? awsUploadService.uploadToS3(imageUrl.uploadUrl, imageFile, (progress) => {
+            imageProgress = progress;
+            reportTransferProgress();
+          })
         : undefined,
     ]);
 
-    onProgressChange?.(uploadStates.PROCESSING);
+    onProgressChange?.(uploadStates.PROCESSING, 72);
     const { data } = await apiClient.post("/upload/track", {
-      trackUrl,
-      imageUrl,
+      trackUrl: getQueuedUploadReference(trackUrl),
+      imageUrl: imageUrl ? getQueuedUploadReference(imageUrl) : undefined,
       name: formData.get("name"),
       artist: formData.get("artist"),
       description: formData.get("description"),
@@ -133,10 +203,17 @@ export async function uploadTrack(formData, onProgressChange) {
     });
 
     const track = await pollUploadStatus(data.jobId, onProgressChange);
-    onProgressChange?.(uploadStates.COMPLETED);
+    onProgressChange?.(uploadStates.COMPLETED, 100);
 
     return track;
   } catch (error) {
+    if (
+      error?.response?.status === 403 &&
+      String(error?.config?.method || "").toLowerCase() === "put"
+    ) {
+      throw new Error("The upload link expired. Select the files and try again.");
+    }
+    if (error?.referenceId || error?.code === "PROCESSING_FAILED") throw error;
     throw toApiError(error, "Failed to upload track. Please try again.");
   }
 }

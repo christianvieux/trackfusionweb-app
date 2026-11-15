@@ -9,6 +9,7 @@ import React, {
 } from "react";
 
 import { useTrackEvents } from "./TrackEventsContext";
+import { assignUniqueIdsTo, createTrackInstance } from "./trackManagerUtils";
 
 const TrackManagerContext = createContext(undefined);
 
@@ -25,18 +26,6 @@ export function TrackManagerProvider({ children }) {
   const [isTrackReadyInPlayer, setIsTrackReadyInPlayer] = useState(false);
 
   const audioRef = React.useRef(null);
-
-  function generateUniqueId() {
-    return crypto.randomUUID();
-  }
-
-  function assignUniqueIdsTo(tracks = []) {
-    return tracks.map((track) => ({
-      ...track,
-      trackId: track.trackId ?? track.id,
-      uniqueId: track.uniqueId || generateUniqueId(),
-    }));
-  }
 
   function updateTrackCollection(currentTracks = [], updatedTrack) {
     return currentTracks.map((track) =>
@@ -239,14 +228,6 @@ export function TrackManagerProvider({ children }) {
 
     console.error(`Track with uniqueId ${uniqueId} was not found.`);
     return null;
-  }
-
-  function createTrackInstance(track) {
-    return {
-      ...track,
-      trackId: track.trackId ?? track.id,
-      uniqueId: generateUniqueId(),
-    };
   }
 
   function addTrackInstance(track, setCollection) {

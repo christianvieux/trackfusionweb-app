@@ -1,5 +1,39 @@
+import { isIP } from "node:net";
+
 const HTTP_PROTOCOLS = new Set(["http:", "https:"]);
 const LOCAL_IMAGE_HOSTS = new Set(["127.0.0.1", "[::1]", "localhost"]);
+
+function isPrivateNetworkHost(hostname) {
+  if (LOCAL_IMAGE_HOSTS.has(hostname)) return true;
+
+  const unwrappedHostname = hostname.replace(/^\[|\]$/g, "");
+  const addressFamily = isIP(unwrappedHostname);
+
+  if (addressFamily === 4) {
+    const [first, second] = unwrappedHostname
+      .split(".")
+      .map((part) => Number.parseInt(part, 10));
+
+    return (
+      first === 10 ||
+      first === 127 ||
+      (first === 169 && second === 254) ||
+      (first === 172 && second >= 16 && second <= 31) ||
+      (first === 192 && second === 168)
+    );
+  }
+
+  if (addressFamily === 6) {
+    const normalizedHostname = unwrappedHostname.toLowerCase();
+    return (
+      normalizedHostname === "::1" ||
+      /^f[cd]/.test(normalizedHostname) ||
+      /^fe[89ab]/.test(normalizedHostname)
+    );
+  }
+
+  return false;
+}
 
 function entries(value) {
   return String(value || "")
@@ -70,15 +104,16 @@ export function resolveRemoteImageConfig(environment = process.env) {
     pathname: "/**",
   }));
 
-  const includesLocalOrigin = origins.some((url) =>
-    LOCAL_IMAGE_HOSTS.has(url.hostname),
+  const includesPrivateNetworkOrigin = origins.some((url) =>
+    isPrivateNetworkHost(url.hostname),
   );
 
   return {
     remotePatterns,
     // Next.js 16 blocks optimizer requests to loopback addresses by default.
-    // This exception is intentionally impossible to enable in production.
+    // Exact LAN storage origins need the same opt-in. This exception is
+    // intentionally impossible to enable in production.
     dangerouslyAllowLocalIP:
-      environment.NODE_ENV !== "production" && includesLocalOrigin,
+      environment.NODE_ENV !== "production" && includesPrivateNetworkOrigin,
   };
 }

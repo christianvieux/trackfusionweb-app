@@ -28,8 +28,7 @@ export default function IsTrackPublicCheckbox({
         </Label>
 
         <p className="mt-1 text-xs text-muted-foreground">
-          This track will be{" "}
-          {isPublic ? "visible to other users" : "hidden from other users"}.
+          Other users can discover and play this track when enabled.
         </p>
       </Checkbox.Content>
     </Checkbox>

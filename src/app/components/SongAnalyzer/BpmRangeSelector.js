@@ -14,25 +14,26 @@ export default function BpmRangeSelector({
                 Select BPM range
             </h2>
 
-            <div className="flex flex-wrap gap-3">
+            <div className="analyzer-bpm-options">
                 {BPM_RANGES.map((range) => {
                     const isSelected = bpmRange === range.value
 
                     return (
                         <Button
-    key={range.value}
-    type="button"
-    variant="outline"
-    disabled={isDisabled}
-    onClick={() => setBpmRange(range.value)}
-    className={`min-w-fit border-accent transition ${
-        isSelected
-            ? 'bg-primary text-background shadow-card'
-            : 'bg-transparent text-primary hover:bg-secondary-hover'
-    }`}
->
-    {range.label}
-</Button>
+                            key={range.value}
+                            type="button"
+                            variant="outline"
+                            isDisabled={isDisabled}
+                            aria-pressed={isSelected}
+                            onPress={() => setBpmRange(range.value)}
+                            className={`w-full min-w-0 border-accent px-2 transition ${
+                                isSelected
+                                    ? 'bg-primary text-background shadow-card'
+                                    : 'bg-transparent text-primary hover:bg-secondary-hover'
+                            }`}
+                        >
+                            {range.label}
+                        </Button>
                     )
                 })}
             </div>

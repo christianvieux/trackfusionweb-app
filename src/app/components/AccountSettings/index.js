@@ -17,7 +17,7 @@ export default function AccountSettings({ className = "" }) {
   return (
     <section
       id="Settings"
-      className={`flex w-full min-w-0 flex-wrap items-start justify-center gap-8 overflow-x-hidden overflow-y-auto text-foreground sm:p-4 ${className}`}
+      className={`flex w-full min-w-0 flex-wrap items-start justify-center gap-8 text-foreground sm:p-4 ${className}`}
     >
       <AvatarPicker
         userId={userInfo?.id}

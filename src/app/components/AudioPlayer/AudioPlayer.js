@@ -1,7 +1,6 @@
 'use client'
 
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { Slider } from '@heroui/react'
 import {
     ChevronDown,
     List,
@@ -27,11 +26,11 @@ import VolumeSlider from './Volume'
 import AudioElement from './AudioElement'
 import CollapsedPlayer from './CollapsedPlayer'
 import { supportsBrowserVolumeControl } from './mediaCapabilities'
+import ProgressSlider from './ProgressSlider'
 
 import { usePlayback } from '../../context/PlaybackContext'
 import { useTrackManager } from '../../context/TrackManagerContext'
 import { fetchAuthorizedUrl } from '../../services/trackService'
-import { formatDuration } from '../../utils/audio'
 
 const QUEUE_STORAGE_KEY = 'trackfusionweb-stage-queue-open'
 
@@ -116,7 +115,6 @@ export default function AudioPlayer({
     const [currentTime, setCurrentTime] = useState(0)
     const [sliderValue, setSliderValue] = useState(0)
     const [volumeValue, setVolumeValue] = useState(0.8)
-    const [isSliderDragging, setIsSliderDragging] = useState(false)
     const [isLooping, setIsLooping] = useState(false)
     const [isShuffling, setIsShuffling] = useState(false)
     const [isBuffering, setIsBuffering] = useState(false)
@@ -214,15 +212,11 @@ export default function AudioPlayer({
         playPreviousTrack()
     }, [playPreviousTrack])
 
-    function handleSliderChange(value) {
+    function handleSeek(value) {
         setSliderValue(value)
-        setIsSliderDragging(true)
-    }
-
-    function handleSliderChangeEnd(value) {
+        setCurrentTime(value * duration)
         if (!audioRef.current || !duration) return
         audioRef.current.currentTime = value * duration
-        setIsSliderDragging(false)
     }
 
     function handleMetadataLoaded(event) {
@@ -234,9 +228,7 @@ export default function AudioPlayer({
         const { currentTime: nextTime, duration: nextDuration } =
             event.currentTarget
         setCurrentTime(nextTime)
-        if (!isSliderDragging) {
-            setSliderValue(nextDuration > 0 ? nextTime / nextDuration : 0)
-        }
+        setSliderValue(nextDuration > 0 ? nextTime / nextDuration : 0)
     }
 
     function toggleShuffle() {
@@ -433,26 +425,12 @@ export default function AudioPlayer({
                     </>
                 )}
 
-                <div className="stage-progress-grid stage-progress-panel">
-                    <span>{formatDuration(sliderValue * duration)}</span>
-                    <Slider
-                        aria-label="Track progress"
-                        value={sliderValue}
-                        minValue={0}
-                        maxValue={1}
-                        step={0.001}
-                        onChange={handleSliderChange}
-                        onChangeEnd={handleSliderChangeEnd}
-                        isDisabled={!duration}
-                        className="stage-progress-slider min-w-0"
-                    >
-                        <Slider.Track className="stage-slider-track stage-progress-slider-track">
-                            <Slider.Fill className="stage-slider-fill stage-progress-slider-fill" />
-                            <Slider.Thumb className="stage-slider-thumb stage-progress-slider-thumb" />
-                        </Slider.Track>
-                    </Slider>
-                    <span>{formatDuration(duration)}</span>
-                </div>
+                <ProgressSlider
+                    progress={sliderValue}
+                    duration={duration}
+                    onSeek={handleSeek}
+                    className="stage-progress-grid stage-progress-panel"
+                />
 
                 <div className="stage-controls" aria-label="Playback controls">
                     <ControlButton
@@ -540,8 +518,7 @@ export default function AudioPlayer({
                     volume={volumeValue}
                     queueCount={upcomingTracks.length}
                     isBusy={isFetchingTrack || isBuffering}
-                    onProgressChange={handleSliderChange}
-                    onProgressChangeEnd={handleSliderChangeEnd}
+                    onSeek={handleSeek}
                     onVolumeChange={setVolumeValue}
                     canControlVolume={canControlVolume}
                     onPlayPause={handlePlayPause}

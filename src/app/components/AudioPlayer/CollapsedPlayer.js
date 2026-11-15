@@ -1,15 +1,14 @@
 'use client'
 
 import { ChevronsUp, List, SkipBack, SkipForward } from 'lucide-react'
-import { Slider } from '@heroui/react'
 
 import FavoriteButton from '../FavoriteButton'
 import PlayButton from '../PlayButton'
 import TrackOptionsDropdown from '../TrackOptionsDropdown'
 import TrackVisual from '../TrackList/components/TrackVisual'
-import { formatDuration } from '../../utils/audio'
 
 import VolumeSlider from './Volume'
+import ProgressSlider from './ProgressSlider'
 
 function QueueBadge({ count }) {
     if (!count) return null
@@ -43,8 +42,7 @@ export default function CollapsedPlayer({
     volume,
     queueCount,
     isBusy,
-    onProgressChange,
-    onProgressChangeEnd,
+    onSeek,
     onVolumeChange,
     onPlayPause,
     onPrevious,
@@ -85,26 +83,12 @@ export default function CollapsedPlayer({
                 </div>
             </div>
 
-            <div className="collapsed-player-progress">
-                <span>{formatDuration(progress * duration)}</span>
-                <Slider
-                    aria-label="Track progress"
-                    value={progress}
-                    minValue={0}
-                    maxValue={1}
-                    step={0.001}
-                    onChange={onProgressChange}
-                    onChangeEnd={onProgressChangeEnd}
-                    isDisabled={!duration}
-                    className="stage-progress-slider min-w-0"
-                >
-                    <Slider.Track className="stage-slider-track stage-progress-slider-track">
-                        <Slider.Fill className="stage-slider-fill stage-progress-slider-fill" />
-                        <Slider.Thumb className="stage-slider-thumb stage-progress-slider-thumb" />
-                    </Slider.Track>
-                </Slider>
-                <span>{formatDuration(duration)}</span>
-            </div>
+            <ProgressSlider
+                progress={progress}
+                duration={duration}
+                onSeek={onSeek}
+                className="collapsed-player-progress"
+            />
 
             <div className="collapsed-player-transport">
                 <TransportButton label="Previous track" onClick={onPrevious}>

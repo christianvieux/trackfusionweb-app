@@ -66,6 +66,21 @@ describe('release status', () => {
         ).toBe(false)
     })
 
+    it('does not publish or persist an unreleased version', () => {
+        const storage = createStorage({
+            [RELEASE_VIEW_STORAGE_KEY]: '1.0.1',
+        })
+
+        expect(
+            initializeReleaseStatus(storage, {
+                ...release,
+                status: 'unreleased',
+                date: null,
+            })
+        ).toBe(false)
+        expect(storage.getItem(RELEASE_VIEW_STORAGE_KEY)).toBe('1.0.1')
+    })
+
     it('persists the viewed release', () => {
         const storage = createStorage()
 

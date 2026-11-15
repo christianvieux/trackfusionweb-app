@@ -26,8 +26,8 @@ export default function UpdatePasswordForm() {
 
   const requirements = useMemo(
     () =>
-      getPasswordRequirements(formData.newPassword, formData.currentPassword),
-    [formData.newPassword, formData.currentPassword],
+      getPasswordRequirements(formData.newPassword),
+    [formData.newPassword],
   );
 
   const isSubmitDisabled =
@@ -46,6 +46,8 @@ export default function UpdatePasswordForm() {
 
   async function handleSubmit(event) {
     event.preventDefault();
+    if (isLoading) return;
+
     const nextErrors = validatePasswordForm(formData);
     setErrors(nextErrors);
     if (Object.keys(nextErrors).length > 0) return;
@@ -76,8 +78,11 @@ export default function UpdatePasswordForm() {
         className="flex flex-col items-center justify-center gap-4"
         onSubmit={handleSubmit}
       >
-        <div className="flex w-full flex-col gap-4 md:flex-row">
-          <div id="inputs" className="flex w-full flex-col gap-4 sm:w-80">
+        <div className="flex w-full min-w-0 flex-wrap justify-center gap-4">
+          <div
+            id="inputs"
+            className="flex w-full min-w-0 max-w-80 flex-1 basis-72 flex-col gap-4"
+          >
             <PasswordField
               name="current-password"
               label="Current Password"
@@ -114,7 +119,7 @@ export default function UpdatePasswordForm() {
             />
           </div>
 
-          <div className="min-w-0 overflow-auto">
+          <div className="w-full min-w-0 max-w-80 flex-1 basis-72 overflow-auto">
             <PasswordRequirements requirements={requirements} />
           </div>
         </div>

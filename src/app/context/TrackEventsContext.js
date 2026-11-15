@@ -2,6 +2,8 @@
 
 import { createContext, useContext, useMemo, useState } from "react";
 
+import { createUuid } from "../utils/createUuid";
+
 const TrackEventsContext = createContext(null);
 
 export function TrackEventsProvider({ children }) {
@@ -11,14 +13,14 @@ export function TrackEventsProvider({ children }) {
   function notifyTrackUpdated(track) {
     setLastUpdatedTrack({
       track,
-      eventId: crypto.randomUUID(),
+      eventId: createUuid(),
     });
   }
 
   function notifyTrackDeleted(trackId) {
     setLastDeletedTrackId({
       trackId: Number(trackId),
-      eventId: crypto.randomUUID(),
+      eventId: createUuid(),
     });
   }
 

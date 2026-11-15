@@ -14,7 +14,7 @@ import {
   validateEmail,
   validatePassword,
   validatePasswordsMatch,
-  validateRequired,
+  validateUsername,
   validateVerificationCode,
 } from "../components/Auth/AuthValidation";
 
@@ -85,7 +85,7 @@ export default function SignUpPage() {
     }
 
     return (
-      validateRequired(form.username, "Username") === null &&
+      validateUsername(form.username) === null &&
       validatePassword(form.password) === null &&
       validatePasswordsMatch(form.password, form.confirmPassword) === null &&
       form.agreementChecked
@@ -280,6 +280,8 @@ export default function SignUpPage() {
   }
 
   async function handleResendCode() {
+    if (isBusy) return;
+
     if (!registrationEnabled) {
       setError(
         "Registration is temporarily unavailable. Please try again later.",
@@ -335,6 +337,8 @@ export default function SignUpPage() {
 
   async function handleSubmit(event) {
     event.preventDefault();
+    if (isBusy) return;
+
     setError("");
     setSuccess("");
 
@@ -375,7 +379,7 @@ export default function SignUpPage() {
   }, [isLoggedIn, router]);
 
   return (
-    <main className="flex size-full items-center justify-center p-4">
+    <main className="auth-page flex w-full flex-1 items-center justify-center py-4 sm:px-4">
       <AuthCard
         title="Create Your Music Account"
         footer={
@@ -468,7 +472,9 @@ export default function SignUpPage() {
                 placeholder="Enter your username"
                 value={form.username}
                 onChange={updateField}
-                validate={(value) => validateRequired(value, "Username")}
+                validate={validateUsername}
+                minLength={3}
+                maxLength={20}
                 isDisabled={isBusy || !registrationEnabled}
               />
 

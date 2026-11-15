@@ -25,6 +25,8 @@ export default function LoginPage() {
 
   async function handleSubmit(event) {
     event.preventDefault();
+    if (sessionLoading) return;
+
     setError("");
 
     const formData = new FormData(event.currentTarget);
@@ -50,7 +52,7 @@ export default function LoginPage() {
   return (
     <main
       id="login"
-      className="flex size-full items-center justify-center p-4"
+      className="auth-page flex w-full flex-1 items-center justify-center py-4 sm:px-4"
     >
       <AuthCard
         title="User Login"
@@ -74,6 +76,7 @@ export default function LoginPage() {
             placeholder="Enter your email"
             autoComplete="email"
             validate={validateEmail}
+            isDisabled={sessionLoading}
           />
 
           <AuthPasswordField
@@ -81,6 +84,7 @@ export default function LoginPage() {
             name="password"
             label="Password"
             placeholder="Enter your password"
+            isDisabled={sessionLoading}
           />
 
           <Link
@@ -94,6 +98,8 @@ export default function LoginPage() {
             type="submit"
             className="w-full bg-foreground text-background hover:bg-foreground/80"
             isLoading={sessionLoading}
+            isDisabled={sessionLoading}
+            aria-busy={sessionLoading}
           >
             Login
           </Button>

@@ -58,9 +58,9 @@ export default function ShareModal({
       onOpenChange={handleOpenChange}
       className="bg-backdrop"
     >
-      <Modal.Container>
+      <Modal.Container className="p-3 sm:p-4">
         <Modal.Dialog
-          className={`border-accent bg-surface text-surface-foreground shadow-card rounded-2xl border-2 ${className}`}
+          className={`border-accent bg-surface text-surface-foreground shadow-card w-full min-w-0 max-w-md rounded-2xl border-2 ${className}`}
         >
           <Modal.CloseTrigger
             className="bg-muted text-foreground"
@@ -76,7 +76,7 @@ export default function ShareModal({
             </Modal.Heading>
           </Modal.Header>
 
-          <Modal.Body className="">
+          <Modal.Body className="min-w-0">
             {description && (
               <p className="text-muted-foreground mb-4 text-sm">
                 {description}
@@ -84,8 +84,8 @@ export default function ShareModal({
             )}
 
             <div className="space-y-3">
-              <div className="flex w-full items-center gap-2">
-                <div className="bg-muted flex-1 overflow-hidden rounded-lg p-3">
+              <div className="flex w-full min-w-0 items-center gap-2">
+                <div className="bg-muted min-w-0 flex-1 overflow-hidden rounded-lg p-3">
                   <div className="flex items-center gap-2">
                     <LinkIcon className="text-primary size-4 shrink-0" />
 
@@ -97,7 +97,7 @@ export default function ShareModal({
                   isIconOnly
                   variant="flat"
                   aria-label={copied ? "Copied" : "Copy link"}
-                  className="text-primary"
+                  className="shrink-0 text-primary"
                   onPress={handleCopy}
                 >
                   {copied ? (
