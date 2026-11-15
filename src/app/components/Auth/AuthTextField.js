@@ -33,10 +33,11 @@ export default function AuthTextField({
       isRequired={isRequired}
       minLength={minLength}
       isDisabled={isDisabled}
+      className="min-w-0"
     >
       <Label className="text-foreground text-sm">{label}</Label>
 
-      <div className="relative">
+      <div className="relative min-w-0">
         <Input
           placeholder={placeholder}
           autoComplete={autoComplete}
@@ -59,7 +60,9 @@ export default function AuthTextField({
         </Description>
       )}
 
-      <FieldError className="text-danger text-xs" />
+      <div className="min-h-5">
+        <FieldError className="text-danger text-xs" />
+      </div>
     </TextField>
   );
 }

@@ -12,9 +12,9 @@ export default function ProfileHeader({
     const username = user?.username || 'Unknown'
 
     return (
-        <Card className="h-auto min-h-fit w-full overflow-visible border-2 border-accent bg-secondary px-5 py-5 text-foreground shadow-card sm:px-8 md:px-10">
+        <Card className="h-auto min-h-fit w-full min-w-0 overflow-visible border-2 border-accent bg-secondary px-5 py-5 text-foreground shadow-card sm:px-8 md:px-10">
             {/* Mobile layout */}
-            <div className="md:hidden">
+            <div className="profile-header-compact">
                 <div className="mb-5 flex items-center gap-4">
                     <BlobAvatarDisplay
                         userId={user?.id}
@@ -57,7 +57,7 @@ export default function ProfileHeader({
                 </div>
             </div>
             {/* Desktop layout */}
-            <div className="hidden items-center gap-8 md:flex">
+            <div className="profile-header-wide items-center gap-8">
                 <BlobAvatarDisplay
                     userId={user?.id}
                     avatar={user?.avatar}

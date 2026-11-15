@@ -1,215 +1,210 @@
-import {
-    APP_VERSION,
-    formatReleaseDate,
-    formatReleaseVersion,
-    RELEASES,
-} from '../data/releases'
-import ReleaseNotesList from '../components/Releases/ReleaseNotesList'
+import ReleaseAccordion from '../components/Releases/ReleaseAccordion'
+import { ReleaseAreaLabel } from '../components/Releases/ReleaseNotesList'
 import ReleaseViewMarker from '../components/Releases/ReleaseViewMarker'
-import { StaticPageShell } from '../components/StaticPage'
 import { DEVELOPMENT_HISTORY } from '../data/developmentHistory'
+import { formatReleaseDate, RELEASES } from '../data/releases'
 
 export const metadata = {
-    title: 'Changelog',
+    title: 'Updates',
     description:
-        'See the latest user-facing changes and release history for TrackFusionWeb.',
+        'See verified TrackFusionWeb releases and the development history behind them.',
+}
+
+function getGroupId(period) {
+    return `history-${period.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`
 }
 
 export default function ChangelogPage() {
     return (
-        <StaticPageShell title="TrackFusionWeb Changelog">
+        <main className="updates-page">
             <ReleaseViewMarker />
 
-            <section aria-labelledby="whats-new-heading">
-                <h2
-                    id="whats-new-heading"
-                    className="mb-3 text-2xl font-semibold text-primary sm:text-3xl"
-                >
-                    What&apos;s New
-                </h2>
+            <header className="updates-header">
+                <p className="updates-eyebrow">TrackFusionWeb</p>
+                <h1>Updates</h1>
 
-                <p className="mb-8 max-w-2xl text-sm leading-6 text-muted-foreground sm:text-base">
-                    A simple record of what you can do in each TrackFusionWeb
-                    release. The newest release appears first.
+                <nav
+                    aria-label="Updates sections"
+                    className="updates-section-nav"
+                >
+                    <a href="#whats-new">What&apos;s new</a>
+                    <a href="#behind-the-scenes">Behind the scenes</a>
+                </nav>
+            </header>
+
+            <section
+                id="whats-new"
+                aria-labelledby="whats-new-heading"
+                className="updates-section"
+            >
+                <h2 id="whats-new-heading">What&apos;s new</h2>
+                <p className="updates-lead">
+                    A simple record of what changed in each version. The next
+                    version stays marked Unreleased until it is live.
                 </p>
 
-                <div className="space-y-6">
-                    {RELEASES.map((release) => {
-                        const isCurrent = release.version === APP_VERSION
-
-                        return (
-                            <article
-                                key={release.version}
-                                className={`rounded-2xl border p-5 shadow-inner sm:p-6 ${
-                                    isCurrent
-                                        ? 'border-success/70 bg-success/5'
-                                        : 'border-accent/50 bg-muted'
-                                }`}
-                            >
-                                <div className="mb-5 flex flex-wrap items-start justify-between gap-3">
-                                    <div>
-                                        <div className="mb-2 flex flex-wrap items-center gap-2">
-                                            <span className="font-mono text-sm font-semibold text-success">
-                                                {formatReleaseVersion(
-                                                    release.version
-                                                )}
-                                            </span>
-                                            {isCurrent && (
-                                                <span className="rounded-full border border-success/50 bg-success/10 px-2 py-0.5 text-[11px] font-semibold tracking-wide text-success uppercase">
-                                                    Current release
-                                                </span>
-                                            )}
-                                        </div>
-
-                                        <h3 className="text-xl font-semibold text-primary sm:text-2xl">
-                                            {release.title}
-                                        </h3>
-                                    </div>
-
-                                    <time
-                                        dateTime={release.date}
-                                        className="text-sm text-muted-foreground"
-                                    >
-                                        {formatReleaseDate(release.date)}
-                                    </time>
-                                </div>
-
-                                <ReleaseNotesList notes={release.notes} />
-                            </article>
-                        )
-                    })}
+                <div className="updates-ruler updates-release-ruler">
+                    <ReleaseAccordion releases={RELEASES} name="release-page" />
                 </div>
 
-                <p className="mt-8 text-sm leading-6 text-muted-foreground">
-                    v1.0.0 is the first verified TrackFusionWeb release
-                    baseline. Earlier versions are not listed because reliable
-                    public release records are not available.
+                <p className="updates-baseline-note">
+                    v1.0.0 is the first verified versioned release baseline. The
+                    website was available before that date, but earlier version
+                    records could not be verified.
                 </p>
             </section>
 
             <section
-                aria-labelledby="development-history-heading"
-                className="mt-14 border-t border-accent/50 pt-12 sm:mt-16 sm:pt-14"
+                id="behind-the-scenes"
+                aria-labelledby="behind-the-scenes-heading"
+                className="updates-section updates-history"
             >
-                <div className="mb-10 max-w-3xl">
-                    <p className="mb-2 text-xs font-semibold tracking-[0.18em] text-success uppercase">
-                        From the Git history
-                    </p>
+                <h2 id="behind-the-scenes-heading">Behind the scenes</h2>
+                <p className="updates-lead">
+                    Improvements made during development. Only entries marked{' '}
+                    <strong>Public release</strong> represent a verified
+                    versioned release.
+                </p>
 
-                    <h2
-                        id="development-history-heading"
-                        className="mb-4 text-2xl font-semibold text-primary sm:text-3xl"
-                    >
-                        Development History
-                    </h2>
+                <div className="updates-history-groups">
+                    {DEVELOPMENT_HISTORY.map((group) => {
+                        const groupId = getGroupId(group.period)
 
-                    <p className="text-sm leading-6 text-muted-foreground sm:text-base">
-                        A curated history of the App and API from the first
-                        commits through the final frontend polish. Development
-                        dates come from Git and do not imply a launch or
-                        deployment. Only milestones marked{' '}
-                        <span className="font-semibold text-success">
-                            Public release
-                        </span>{' '}
-                        are verified releases.
-                    </p>
-                </div>
-
-                <div className="space-y-12 sm:space-y-14">
-                    {DEVELOPMENT_HISTORY.map((group) => (
-                        <section
-                            key={group.period}
-                            aria-labelledby={`history-${group.period
-                                .toLowerCase()
-                                .replace(/[^a-z0-9]+/g, '-')}`}
-                            className="grid gap-5 md:grid-cols-[9rem_minmax(0,1fr)] md:gap-8"
-                        >
-                            <h3
-                                id={`history-${group.period
-                                    .toLowerCase()
-                                    .replace(/[^a-z0-9]+/g, '-')}`}
-                                className="text-lg font-semibold text-primary md:pt-1"
+                        return (
+                            <section
+                                key={group.period}
+                                aria-labelledby={groupId}
                             >
-                                {group.period}
-                            </h3>
+                                <h3 id={groupId} className="updates-month">
+                                    {group.period}
+                                </h3>
 
-                            <ol className="relative space-y-6 border-l border-accent/60 pl-5 sm:pl-8">
-                                {group.milestones.map((milestone) => {
-                                    const isRelease =
-                                        milestone.kind === 'release'
+                                <ol className="updates-ruler updates-history-list">
+                                    {group.milestones.map((milestone) => {
+                                        const isRelease =
+                                            milestone.kind === 'release'
 
-                                    return (
-                                        <li
-                                            key={`${milestone.date}-${milestone.title}`}
-                                            className="relative"
-                                        >
-                                            <span
-                                                aria-hidden="true"
-                                                className={`absolute top-2 -left-[1.55rem] h-3 w-3 rounded-full border-2 sm:-left-[2.3rem] ${
-                                                    isRelease
-                                                        ? 'border-success bg-success'
-                                                        : 'border-accent bg-background'
-                                                }`}
-                                            />
+                                        return (
+                                            <li
+                                                key={`${milestone.date}-${milestone.title}`}
+                                                className="updates-history-item"
+                                            >
+                                                <span
+                                                    aria-hidden="true"
+                                                    className={`updates-history-cue ${isRelease ? 'updates-history-cue--release' : ''}`}
+                                                />
 
-                                            <article className="rounded-2xl border border-accent/40 bg-muted/60 p-5 shadow-inner sm:p-6">
-                                                <div className="mb-3 flex flex-wrap items-center gap-2.5">
-                                                    <time
-                                                        dateTime={
-                                                            milestone.date
-                                                        }
-                                                        className="text-xs font-medium text-muted-foreground sm:text-sm"
-                                                    >
-                                                        {milestone.dateLabel}
-                                                    </time>
+                                                <article>
+                                                    <div className="updates-history-meta">
+                                                        <time
+                                                            dateTime={
+                                                                milestone.date
+                                                            }
+                                                        >
+                                                            {formatReleaseDate(
+                                                                milestone.date
+                                                            )}
+                                                        </time>
 
-                                                    <span
-                                                        className={`rounded-full border px-2 py-0.5 text-[10px] font-semibold tracking-wide uppercase sm:text-[11px] ${
-                                                            isRelease
-                                                                ? 'border-success/50 bg-success/10 text-success'
-                                                                : 'border-accent/60 bg-background/60 text-primary'
-                                                        }`}
-                                                    >
-                                                        {isRelease
-                                                            ? 'Public release'
-                                                            : 'Development'}
-                                                    </span>
-                                                </div>
+                                                        <span
+                                                            className={`updates-history-kind ${isRelease ? 'updates-history-kind--release' : ''}`}
+                                                        >
+                                                            {isRelease
+                                                                ? 'Public release'
+                                                                : 'Behind the scenes'}
+                                                        </span>
 
-                                                <h4 className="mb-2 text-lg font-semibold text-primary sm:text-xl">
-                                                    {milestone.title}
-                                                </h4>
-
-                                                <p className="text-sm leading-6 text-muted-foreground sm:text-base">
-                                                    {milestone.description}
-                                                </p>
-
-                                                <div className="mt-4 flex flex-wrap gap-x-4 gap-y-2 text-sm">
-                                                    {milestone.sources.map(
-                                                        (source) => (
+                                                        {milestone.includedIn && (
                                                             <a
-                                                                key={
-                                                                    source.href
-                                                                }
-                                                                href={
-                                                                    source.href
-                                                                }
-                                                                className="font-medium text-success underline decoration-success/40 underline-offset-4 transition-colors hover:text-primary focus-visible:rounded-sm focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-success motion-reduce:transition-none"
+                                                                href={`#release-${milestone.includedIn.replaceAll('.', '-')}`}
+                                                                className="updates-version-link"
                                                             >
-                                                                {source.label}
+                                                                In v
+                                                                {
+                                                                    milestone.includedIn
+                                                                }{' '}
+                                                                <span aria-hidden="true">
+                                                                    →
+                                                                </span>
                                                             </a>
-                                                        )
-                                                    )}
-                                                </div>
-                                            </article>
-                                        </li>
-                                    )
-                                })}
-                            </ol>
-                        </section>
-                    ))}
+                                                        )}
+                                                    </div>
+
+                                                    <h4>{milestone.title}</h4>
+                                                    <p className="updates-history-description">
+                                                        {milestone.description}
+                                                    </p>
+
+                                                    <div
+                                                        className="updates-history-areas"
+                                                        aria-label="Affected areas"
+                                                    >
+                                                        {milestone.areas.map(
+                                                            (area) => (
+                                                                <ReleaseAreaLabel
+                                                                    key={area}
+                                                                    area={area}
+                                                                />
+                                                            )
+                                                        )}
+                                                    </div>
+
+                                                    <details className="updates-technical-details">
+                                                        <summary>
+                                                            <span>
+                                                                Technical
+                                                                details and
+                                                                sources
+                                                            </span>
+                                                            <span
+                                                                className="release-disclosure-chevron"
+                                                                aria-hidden="true"
+                                                            />
+                                                        </summary>
+
+                                                        <div className="updates-technical-body">
+                                                            <p>
+                                                                {
+                                                                    milestone.technical
+                                                                }
+                                                            </p>
+
+                                                            <div className="updates-source-links">
+                                                                {milestone.sources.map(
+                                                                    (
+                                                                        source
+                                                                    ) => (
+                                                                        <a
+                                                                            key={
+                                                                                source.href
+                                                                            }
+                                                                            href={
+                                                                                source.href
+                                                                            }
+                                                                        >
+                                                                            {
+                                                                                source.label
+                                                                            }
+                                                                            <span aria-hidden="true">
+                                                                                {' '}
+                                                                                →
+                                                                            </span>
+                                                                        </a>
+                                                                    )
+                                                                )}
+                                                            </div>
+                                                        </div>
+                                                    </details>
+                                                </article>
+                                            </li>
+                                        )
+                                    })}
+                                </ol>
+                            </section>
+                        )
+                    })}
                 </div>
             </section>
-        </StaticPageShell>
+        </main>
     )
 }

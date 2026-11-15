@@ -43,6 +43,11 @@ describe('track list utilities', () => {
         expect(shouldUseTrackAvatarFallback(trackWithArtwork)).toBe(false)
         expect(shouldUseTrackAvatarFallback(trackWithArtwork, true)).toBe(true)
         expect(shouldUseTrackAvatarFallback({ image_url: '  ' })).toBe(true)
+        expect(
+            shouldUseTrackAvatarFallback({
+                image_url: 'covers/36/unresolved-cover.webp',
+            })
+        ).toBe(true)
         expect(shouldUseTrackAvatarFallback({})).toBe(true)
     })
 

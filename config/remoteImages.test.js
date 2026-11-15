@@ -7,13 +7,13 @@ describe("resolveRemoteImageConfig", () => {
     expect(
       resolveRemoteImageConfig({
         NODE_ENV: "development",
-        NEXT_IMAGE_REMOTE_ORIGINS: "http://127.0.0.1:9000",
+        NEXT_IMAGE_REMOTE_ORIGINS: "http://localhost:9000",
       }),
     ).toEqual({
       remotePatterns: [
         {
           protocol: "http",
-          hostname: "127.0.0.1",
+          hostname: "localhost",
           port: "9000",
           pathname: "/**",
         },
@@ -28,6 +28,32 @@ describe("resolveRemoteImageConfig", () => {
         NODE_ENV: "production",
         NEXT_IMAGE_REMOTE_ORIGINS:
           "http://127.0.0.1:9000,https://s3.us-east-1.amazonaws.com",
+      }).dangerouslyAllowLocalIP,
+    ).toBe(false);
+  });
+
+  it("allows an explicitly configured private LAN storage origin in development", () => {
+    const config = resolveRemoteImageConfig({
+      NODE_ENV: "development",
+      NEXT_IMAGE_REMOTE_ORIGINS: "http://192.168.1.109:9000",
+    });
+
+    expect(config.remotePatterns).toEqual([
+      {
+        protocol: "http",
+        hostname: "192.168.1.109",
+        port: "9000",
+        pathname: "/**",
+      },
+    ]);
+    expect(config.dangerouslyAllowLocalIP).toBe(true);
+  });
+
+  it("does not enable private-IP access for a public development origin", () => {
+    expect(
+      resolveRemoteImageConfig({
+        NODE_ENV: "development",
+        NEXT_IMAGE_REMOTE_ORIGINS: "https://media.example.com",
       }).dangerouslyAllowLocalIP,
     ).toBe(false);
   });

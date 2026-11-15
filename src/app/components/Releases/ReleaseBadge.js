@@ -2,17 +2,29 @@
 
 import { useEffect, useId, useRef, useState } from 'react'
 import Link from 'next/link'
-import { X } from 'lucide-react'
+import { Tag, X } from 'lucide-react'
 import { createPortal } from 'react-dom'
 
 import {
     APP_VERSION,
-    formatReleaseDate,
     formatReleaseVersion,
-    LATEST_RELEASE,
+    RELEASES,
 } from '../../data/releases'
 import useReleaseStatus from '../../hooks/useReleaseStatus'
-import ReleaseNotesList from './ReleaseNotesList'
+import ReleaseAccordion from './ReleaseAccordion'
+
+function getCardPosition(trigger) {
+    const triggerBounds = trigger?.getBoundingClientRect()
+    const cardWidth = Math.min(380, window.innerWidth - 24)
+
+    return {
+        top: (triggerBounds?.bottom || 0) + 10,
+        left: Math.min(
+            Math.max(12, triggerBounds?.left || 12),
+            window.innerWidth - cardWidth - 12
+        ),
+    }
+}
 
 export default function ReleaseBadge() {
     const [isOpen, setIsOpen] = useState(false)
@@ -38,11 +50,7 @@ export default function ReleaseBadge() {
         }
 
         markLatestReleaseViewed()
-        const triggerBounds = triggerRef.current?.getBoundingClientRect()
-        setCardPosition({
-            top: (triggerBounds?.bottom || 0) + 10,
-            left: triggerBounds?.left || 0,
-        })
+        setCardPosition(getCardPosition(triggerRef.current))
         setIsOpen(true)
     }
 
@@ -68,11 +76,7 @@ export default function ReleaseBadge() {
         document.addEventListener('keydown', handleKeyDown)
 
         function updateCardPosition() {
-            const triggerBounds = triggerRef.current?.getBoundingClientRect()
-            setCardPosition({
-                top: (triggerBounds?.bottom || 0) + 10,
-                left: triggerBounds?.left || 0,
-            })
+            setCardPosition(getCardPosition(triggerRef.current))
         }
 
         window.addEventListener('resize', updateCardPosition)
@@ -85,9 +89,12 @@ export default function ReleaseBadge() {
     }, [isOpen])
 
     const versionLabel = formatReleaseVersion(APP_VERSION)
-    const accessibleLabel = hasUnreadRelease
-        ? `Version ${APP_VERSION}, new release notes`
-        : `Version ${APP_VERSION}, open release notes`
+    const isUnreleased = RELEASES[0].status === 'unreleased'
+    const accessibleLabel = isUnreleased
+        ? `Upcoming version ${APP_VERSION}, open release notes`
+        : hasUnreadRelease
+          ? `Version ${APP_VERSION}, new release notes`
+          : `Version ${APP_VERSION}, open release notes`
 
     return (
         <div ref={containerRef} className="release-badge-container">
@@ -100,10 +107,11 @@ export default function ReleaseBadge() {
                 onClick={toggleCard}
                 className={`release-badge ${hasUnreadRelease ? 'is-new' : ''}`}
             >
+                <Tag aria-hidden="true" className="size-3 shrink-0" />
+                <span>{versionLabel}</span>
                 {hasUnreadRelease && (
                     <span className="release-badge-new">NEW</span>
                 )}
-                <span>{versionLabel}</span>
             </button>
 
             {isOpen &&
@@ -121,14 +129,11 @@ export default function ReleaseBadge() {
                     >
                         <div className="release-card-header">
                             <div>
-                                <p className="text-xs font-semibold tracking-[0.18em] text-success uppercase">
+                                <p className="release-card-eyebrow">
                                     What&apos;s new
                                 </p>
-                                <h2
-                                    id={titleId}
-                                    className="mt-1 text-lg font-semibold text-primary"
-                                >
-                                    {LATEST_RELEASE.title}
+                                <h2 id={titleId} className="release-card-title">
+                                    Updates to TrackFusionWeb
                                 </h2>
                             </div>
 
@@ -143,18 +148,19 @@ export default function ReleaseBadge() {
                             </button>
                         </div>
 
-                        <p className="mb-4 text-xs text-muted-foreground">
-                            {formatReleaseVersion(LATEST_RELEASE.version)} ·{' '}
-                            {formatReleaseDate(LATEST_RELEASE.date)}
-                        </p>
-
-                        <ReleaseNotesList
-                            notes={LATEST_RELEASE.notes}
-                            compact
+                        <ReleaseAccordion
+                            releases={RELEASES.slice(0, 4)}
+                            name="release-popover"
+                            variant="popover"
+                            idPrefix="popover-release"
                         />
 
                         <div className="release-card-footer">
-                            <span>You&apos;re on {versionLabel}</span>
+                            <span>
+                                {isUnreleased
+                                    ? `${versionLabel} is coming next`
+                                    : `You're on ${versionLabel}`}
+                            </span>
                             <Link
                                 href="/changelog"
                                 onClick={() =>
@@ -162,7 +168,8 @@ export default function ReleaseBadge() {
                                 }
                                 className="font-semibold text-primary hover:text-primary-hover"
                             >
-                                Full changelog
+                                All updates
+                                <span aria-hidden="true"> →</span>
                             </Link>
                         </div>
                     </section>,

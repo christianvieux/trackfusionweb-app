@@ -99,6 +99,8 @@ export default function AvatarPicker({
   }
 
   async function handleSave() {
+    if (isSaving) return;
+
     if (!isValidAvatarConfig(state.selected)) {
       setIsError(true);
       setMessage("Choose a valid avatar before saving.");

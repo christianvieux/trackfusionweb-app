@@ -33,8 +33,16 @@ export function normalizeSiteUrl(value) {
   }
 }
 
-export function getSiteUrl(path = "") {
-  const baseUrl = normalizeSiteUrl(process.env.NEXT_PUBLIC_SITE_URL);
+function getBrowserOrigin() {
+  return typeof window === "undefined" ? "" : window.location.origin;
+}
+
+export function getSiteUrl(path = "", browserOrigin = getBrowserOrigin()) {
+  const baseUrl = normalizeSiteUrl(
+    process.env.NODE_ENV !== "production" && browserOrigin
+      ? browserOrigin
+      : process.env.NEXT_PUBLIC_SITE_URL,
+  );
   const normalizedPath = path ? `/${String(path).replace(/^\/+/, "")}` : "";
 
   return `${baseUrl}${normalizedPath}`;

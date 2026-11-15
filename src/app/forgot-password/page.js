@@ -19,6 +19,7 @@ export default function ForgotPasswordPage() {
 
   async function handleSubmit(event) {
     event.preventDefault();
+    if (isLoading) return;
 
     setMessage("");
     setWasSuccessful(false);
@@ -47,7 +48,7 @@ export default function ForgotPasswordPage() {
   return (
     <main
       id="forgot-password"
-      className="flex size-full items-center justify-center p-4"
+      className="auth-page flex w-full flex-1 items-center justify-center py-4 sm:px-4"
     >
       <AuthCard
         title={wasSuccessful ? "Check Your Email" : "Forgot Password"}
@@ -87,6 +88,8 @@ export default function ForgotPasswordPage() {
                 type="submit"
                 className="w-full bg-foreground text-background hover:bg-foreground/80"
                 isLoading={isLoading}
+                isDisabled={isLoading}
+                aria-busy={isLoading}
               >
                 Send Reset Link
               </Button>

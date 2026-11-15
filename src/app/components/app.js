@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import useAppViewport from '../hooks/useAppViewport'
 import dynamic from 'next/dynamic'
 import Link from 'next/link'
 import { Heart, Home, ListTodo, Music } from 'lucide-react'
@@ -81,6 +82,7 @@ function MobileTabBar() {
 /* -------------------- */
 
 function AppShell({ children }) {
+    const pathname = usePathname()
     const { currentTrack } = useTrackManager()
     const { canShowPlayback } = usePlayback()
     const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false)
@@ -88,6 +90,12 @@ function AppShell({ children }) {
         useState(false)
     const [playerLayout, setPlayerLayout] = usePlayerLayout()
     const showPlayer = canShowPlayback && Boolean(currentTrack)
+    // Collection pages retain the bounded track-list viewport. Other pages
+    // scroll with their footer, including while authentication is loading.
+    const useNaturalContentFlow = ![
+        '/feed', '/myTracks', '/myFavoriteTracks',
+    ].includes(pathname)
+    useAppViewport()
 
     useEffect(() => {
         try {
@@ -122,7 +130,8 @@ function AppShell({ children }) {
             data-has-player={showPlayer ? 'true' : 'false'}
             data-player-layout={playerLayout}
             data-sidebar-collapsed={isSidebarCollapsed ? 'true' : 'false'}
-            className="app-shell relative isolate h-dvh min-h-0 overflow-hidden text-foreground"
+            data-content-flow={useNaturalContentFlow ? 'natural' : 'bounded'}
+            className="app-shell relative isolate text-foreground"
         >
             <VideoBackground />
 
@@ -139,20 +148,23 @@ function AppShell({ children }) {
 
             <NavBar className="app-topbar" />
 
-            <main id="Full_Content" className="app-main">
+            <main
+                id="Full_Content"
+                className="app-main"
+            >
                 <section
                     id="content"
-                    className="flex min-h-0 min-w-0 flex-1 flex-col items-center overflow-auto p-3 *:max-w-full sm:p-4"
+                    className="app-content flex min-w-0 flex-col items-center p-3 sm:p-4"
                 >
                     {children}
                 </section>
 
-                <footer
+                <div
                     id="Bottom_Content"
                     className="flex shrink-0 flex-col items-center"
                 >
                     <Footer />
-                </footer>
+                </div>
             </main>
 
             {showPlayer && (

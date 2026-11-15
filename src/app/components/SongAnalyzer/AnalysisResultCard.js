@@ -22,7 +22,7 @@ export default function AnalysisResultCard({ results }) {
     if (!results) return null
 
     return (
-        <section className="w-full max-w-xs space-y-4 rounded-lg border-2 border-accent bg-secondary p-6 shadow-card">
+        <section className="w-full min-w-0 space-y-4 rounded-lg border-2 border-accent bg-secondary p-4 shadow-card sm:p-6 lg:max-w-xs">
             <h2 className="text-lg font-semibold text-primary">
                 Analysis results
             </h2>

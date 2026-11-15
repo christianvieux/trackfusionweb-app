@@ -57,6 +57,11 @@ function getResponseErrorMessage(error) {
   return "";
 }
 
+function getResponseError(error) {
+  const responseError = error?.response?.data?.error;
+  return responseError && typeof responseError === "object" ? responseError : {};
+}
+
 export function getUserFacingErrorMessage(message, fallbackMessage) {
   const safeFallback = fallbackMessage?.trim() || DEFAULT_ERROR_MESSAGE;
   const normalizedMessage = typeof message === "string" ? message.trim() : "";
@@ -107,7 +112,16 @@ export function getApiErrorMessage(error, fallbackMessage) {
 }
 
 export function toApiError(error, fallbackMessage) {
-  return new Error(getApiErrorMessage(error, fallbackMessage), {
+  const responseError = getResponseError(error);
+  const apiError = new Error(getApiErrorMessage(error, fallbackMessage), {
     cause: error,
   });
+  apiError.code = responseError.code;
+  apiError.field = responseError.field;
+  apiError.details = responseError.details;
+  apiError.referenceId =
+    responseError.referenceId || error?.response?.data?.referenceId;
+  apiError.status = error?.response?.status;
+  apiError.reportable = apiError.status >= 500;
+  return apiError;
 }

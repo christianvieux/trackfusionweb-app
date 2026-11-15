@@ -68,7 +68,13 @@ const ResetPasswordForm = ({
       onChange={(e) => setConfirmPassword(e.target.value)}
       isDisabled={loading}
     />
-    <Button color="primary" type="submit" isLoading={loading}>
+    <Button
+      color="primary"
+      type="submit"
+      isLoading={loading}
+      isDisabled={loading}
+      aria-busy={loading}
+    >
       Reset Password
     </Button>
   </form>
@@ -105,6 +111,8 @@ export default function ResetPassword({ params }) {
   const toggleVisibility = () => setField("hidePassword", !hidePassword);
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (loading) return;
+
     if (newPassword !== confirmPassword) {
       setField("message", "Passwords do not match.");
       setField("successful", false);

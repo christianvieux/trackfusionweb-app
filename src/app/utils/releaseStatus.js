@@ -18,6 +18,7 @@ export function isRecentlyPublished(
 
 export function initializeReleaseStatus(storage, release, now = new Date()) {
     if (!storage || !release?.version) return false
+    if (release.status === 'unreleased' || !release.date) return false
 
     try {
         const viewedVersion = storage.getItem(RELEASE_VIEW_STORAGE_KEY)

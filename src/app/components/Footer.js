@@ -1,5 +1,9 @@
-import React from 'react'
+'use client'
+
+import React, { useState } from 'react'
 import Link from 'next/link'
+
+import FeedbackDialog from './FeedbackDialog'
 
 const footerLinks = [
     { label: 'Home', href: '/home' },
@@ -13,6 +17,7 @@ const footerLinks = [
 
 export default function Footer() {
     const currentYear = new Date().getFullYear()
+    const [isFeedbackOpen, setIsFeedbackOpen] = useState(false)
 
     return (
         <footer className="flex flex-col items-center justify-center gap-2 py-1 text-xs">
@@ -33,7 +38,20 @@ export default function Footer() {
                     ))}
                 </ul>
 
+                <button
+                    type="button"
+                    onClick={() => setIsFeedbackOpen(true)}
+                    className="text-green-light underline-offset-2 hover:text-primary hover:underline"
+                >
+                    Report a problem / Send feedback
+                </button>
+
             </div>
+
+            <FeedbackDialog
+                isOpen={isFeedbackOpen}
+                onOpenChange={setIsFeedbackOpen}
+            />
         </footer>
     )
 }

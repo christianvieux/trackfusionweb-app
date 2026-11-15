@@ -31,6 +31,24 @@ describe("site URL utilities", () => {
     );
   });
 
+  it("uses the current browser origin for device-independent development links", () => {
+    vi.stubEnv("NODE_ENV", "development");
+    vi.stubEnv("NEXT_PUBLIC_SITE_URL", "http://localhost:3000");
+
+    expect(getSiteUrl("/track/42", "http://192.168.1.50:3000")).toBe(
+      "http://192.168.1.50:3000/track/42",
+    );
+  });
+
+  it("keeps the configured canonical origin in production", () => {
+    vi.stubEnv("NODE_ENV", "production");
+    vi.stubEnv("NEXT_PUBLIC_SITE_URL", "https://www.trackfusionweb.com");
+
+    expect(getSiteUrl("/track/42", "http://192.168.1.50:3000")).toBe(
+      "https://www.trackfusionweb.com/track/42",
+    );
+  });
+
   it("creates absolute URLs from route paths", () => {
     expect(getSiteUrl("/track/42")).toMatch(/\/track\/42$/);
     expect(getSiteUrl("profile/7")).toMatch(/\/profile\/7$/);

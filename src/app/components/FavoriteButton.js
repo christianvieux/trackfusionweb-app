@@ -65,7 +65,7 @@ function FavoriteButton({
   }
 
   async function handleAddFavoriteTrack() {
-    if (!isAuthenticated() || !trackId || !user?.id) return;
+    if (isLoading || !isAuthenticated() || !trackId || !user?.id) return;
 
     try {
       setIsLoading(true);
@@ -90,7 +90,7 @@ function FavoriteButton({
   }
 
   async function handleRemoveFavoriteTrack() {
-    if (!isAuthenticated() || !trackId || !user?.id) return;
+    if (isLoading || !isAuthenticated() || !trackId || !user?.id) return;
 
     try {
       setIsLoading(true);
@@ -157,7 +157,7 @@ function FavoriteButton({
       onMouseLeave={() => setIsHovered(false)}
       onClick={handleFavoriteClick}
       isLoading={isLoading}
-      isDisabled={Boolean(user?.id) && !hasLoaded}
+      isDisabled={isLoading || (Boolean(user?.id) && !hasLoaded)}
       {...props}
     >
       <div className="flex h-full w-full items-center gap-2">

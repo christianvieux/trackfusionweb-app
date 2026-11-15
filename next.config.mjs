@@ -1,4 +1,5 @@
 import { resolveRemoteImageConfig } from "./config/remoteImages.mjs";
+import { resolveAllowedDevOrigins } from "./config/browserOrigins.mjs";
 
 const securityHeaders = [
   { key: "X-Content-Type-Options", value: "nosniff" },
@@ -29,6 +30,7 @@ const nextConfig = {
       },
     ];
   },
+  allowedDevOrigins: resolveAllowedDevOrigins(),
 };
 
 export default nextConfig;

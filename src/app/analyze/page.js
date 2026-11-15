@@ -53,6 +53,8 @@ function SongAnalyzerPage() {
   }
 
   async function analyzeSong() {
+    if (isAnalyzing) return;
+
     if (!file) {
       setError("Please select an audio file first.");
       return;
@@ -83,9 +85,9 @@ function SongAnalyzerPage() {
   }
 
   return (
-    <main className="text-foreground mx-auto max-w-5xl p-4">
-      <div className="flex flex-col gap-4 lg:flex-row lg:items-start">
-        <section className="border-accent bg-secondary shadow-card w-full max-w-xl space-y-6 rounded-lg border-2 p-6">
+    <main className="mx-auto w-full max-w-5xl min-w-0 p-3 text-foreground sm:p-4">
+      <div className="flex min-w-0 flex-col gap-4 lg:flex-row lg:items-start">
+        <section className="w-full max-w-xl min-w-0 space-y-5 rounded-lg border-2 border-accent bg-secondary p-4 shadow-card sm:space-y-6 sm:p-6">
           <BpmRangeSelector
             bpmRange={bpmRange}
             setBpmRange={setBpmRange}

@@ -24,17 +24,13 @@ export default function EmblaCarousel({ slides, options, custom_settings, classN
     usePrevNextButtons(emblaApi)
 
   return (
-    /*
-     * Outer shell fills whatever height the parent gives it (h-full).
-     * flex-col lets the slide area grow and the controls stay pinned at the bottom.
-     */
-    <div className={`flex h-full flex-col ${className}`}>
+    <div className={`flex flex-col ${className}`}>
 
-      {/* Slide viewport — grows to fill all available space above controls */}
-      <div id="embla_slide_viewport" className="min-h-0 flex-1 overflow-hidden" ref={emblaRef}>
-        <div className="flex h-full">
+      {/* Slides share an intrinsic height so short screens can scroll the page. */}
+      <div id="embla_slide_viewport" className="overflow-hidden" ref={emblaRef}>
+        <div className="flex items-stretch">
           {slides.map((slide, index) => (
-            <div key={index} className="h-full min-w-0 flex-[0_0_100%]">
+            <div key={index} className="min-w-0 flex-[0_0_100%]">
               {slide}
             </div>
           ))}

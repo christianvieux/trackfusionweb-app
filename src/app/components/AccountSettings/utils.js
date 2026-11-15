@@ -1,12 +1,6 @@
-export function getPasswordRequirements(newPassword, currentPassword) {
+export function getPasswordRequirements(newPassword) {
   return {
     minLength: newPassword.length >= 8,
-    hasLowercase: /[a-z]/.test(newPassword),
-    hasUppercase: /[A-Z]/.test(newPassword),
-    notSameAsCurrent:
-      Boolean(newPassword) &&
-      Boolean(currentPassword) &&
-      newPassword !== currentPassword,
   };
 }
 
@@ -23,6 +17,8 @@ export function validatePasswordForm({
 
   if (!newPassword) {
     errors.newPassword = "New password is required";
+  } else if (newPassword.length < 8) {
+    errors.newPassword = "New password must be at least 8 characters";
   }
 
   if (!confirmPassword) {

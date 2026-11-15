@@ -70,9 +70,9 @@ export default function ProfilePage() {
   return (
     <div
       id="profile_page"
-      className="flex max-h-full min-h-0 flex-1 justify-center overflow-y-auto p-6"
+      className="flex w-full min-w-0 justify-center py-4 sm:p-6"
     >
-      <div className="flex w-full max-w-6xl flex-col items-center space-y-6">
+      <div className="flex w-full max-w-6xl min-w-0 flex-col items-center space-y-6">
         <ShareModal
           visible={isShareOpen}
           setVisible={setIsShareOpen}

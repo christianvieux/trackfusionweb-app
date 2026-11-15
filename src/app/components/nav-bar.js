@@ -69,7 +69,7 @@ export default function NavBar({ className = '', ...props }) {
                     <Link
                         href="/home"
                         aria-label="TrackFusionWeb home"
-                        className="min-w-0 shrink"
+                        className="topbar-home-link min-w-0 shrink"
                     >
                         <TrackFusionWebIcon className="topbar-logo h-5 max-w-[min(47vw,190px)] text-foreground sm:h-6" />
                     </Link>

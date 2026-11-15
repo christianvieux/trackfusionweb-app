@@ -85,7 +85,8 @@ The example already matches the API's default Docker setup:
 ```dotenv
 NEXT_PUBLIC_API_URL=http://localhost:8081
 NEXT_PUBLIC_SITE_URL=http://localhost:3000
-NEXT_IMAGE_REMOTE_ORIGINS=http://127.0.0.1:9000
+ALLOWED_BROWSER_ORIGINS=http://localhost:3000
+NEXT_IMAGE_REMOTE_ORIGINS=http://localhost:9000
 ```
 
 Keep these defaults for the simplest setup. The `.env` file is for your
@@ -108,16 +109,16 @@ The addresses in this table assume `.env` still has its example values.
 | Default local address | What it is for | Setting that changes it |
 | --- | --- | --- |
 | `http://localhost:3000` | Opens the App in a browser | The `npm run dev` port and `NEXT_PUBLIC_SITE_URL` |
-| `http://localhost:8081` | API address called by the App | `NEXT_PUBLIC_API_URL` |
-| `http://127.0.0.1:9000` | Allows images from local media storage | `NEXT_IMAGE_REMOTE_ORIGINS` |
+| `http://localhost:8081` | API address called directly by the browser | `NEXT_PUBLIC_API_URL` |
+| `http://localhost:9000` | Allows images from local media storage | `NEXT_IMAGE_REMOTE_ORIGINS` |
 | `http://127.0.0.1:8025` | Shows emails captured by the API setup | API `LOCAL_MAILPIT_UI_PORT` |
 
 Keep these settings aligned when either project uses a custom port or URL:
 
 | Connection | App setting | API setting |
 | --- | --- | --- |
-| App calls the API | `NEXT_PUBLIC_API_URL` | `LOCAL_API_PORT` |
-| API accepts the App | `NEXT_PUBLIC_SITE_URL` and the App's actual browser address | `FRONTEND_URL`, `CORS_ALLOWED_ORIGINS`, and `DEV_URLS` |
+| Browser calls the API | `NEXT_PUBLIC_API_URL` | `LOCAL_API_PORT` |
+| API accepts the App | `ALLOWED_BROWSER_ORIGINS` | `ALLOWED_BROWSER_ORIGINS` |
 | App displays local media | `NEXT_IMAGE_REMOTE_ORIGINS` | `LOCAL_STORAGE_PORT` |
 
 For example, if the API uses `LOCAL_API_PORT=8181`, set
@@ -130,8 +131,35 @@ The App port itself is not read from `.env`. To use port `3001`, run:
 npm run dev -- --port 3001
 ```
 
-Then set `NEXT_PUBLIC_SITE_URL=http://localhost:3001` and allow that same origin
-in the API. Restart the App after changing `.env`.
+Then set `NEXT_PUBLIC_SITE_URL=http://localhost:3001`, include that origin in
+`ALLOWED_BROWSER_ORIGINS` in both projects, and set `LOCAL_APP_PORT=3001` in
+the API project. Restart both projects.
+
+### Test from other devices on the LAN
+
+First follow the API README's LAN setup so signed media URLs use the development
+computer's reachable host. Then start the App with the explicit network opt-in:
+
+```bash
+npm run dev:lan
+```
+
+Find the development computer's LAN address and open
+`http://<development-computer-ip>:3000` on any device connected to the same
+trusted network. The browser calls the API directly. When
+`NEXT_PUBLIC_API_URL` uses a loopback hostname, the App
+substitutes the hostname used to open the development site while preserving the
+configured API protocol and port. Thus both `localhost:3000` and a LAN address
+such as `192.168.1.50:3000` reach port `8081` on the same computer without a
+device-specific frontend setting.
+
+Keep the App's `ALLOWED_BROWSER_ORIGINS` aligned with the consolidated API
+allowlist. Next.js also discovers the development computer's current interface
+addresses, so a DHCP address change does not require a frontend-only setting.
+
+`dev:lan` listens on all interfaces. Use it only on a trusted private network,
+keep the operating-system firewall limited to the local subnet, and return to
+`npm run dev` when LAN testing is finished.
 
 ## Common commands
 
@@ -140,6 +168,7 @@ Run these commands from the App folder.
 | Command | What it does |
 | --- | --- |
 | `npm run dev` | Starts the development website on the default port `3000` |
+| `npm run dev:lan` | Explicitly exposes the development website to the local network |
 | `npm run dev -- --port 3001` | Starts the development website on a custom port |
 | `npm run lint` | Checks the code for common problems |
 | `npm test` | Runs the automated tests once |
@@ -164,22 +193,18 @@ App and API settings.
 
 ### API requests fail
 
-Open `/health` on the address in `NEXT_PUBLIC_API_URL`. With the default setup,
-that is
-[http://localhost:8081/health](http://localhost:8081/health).
+Open [http://localhost:8081/health](http://localhost:8081/health). The request
+should return `{"status":"healthy"}` directly from the API.
 
-If it does not return `{"status":"healthy"}`, start or troubleshoot the API.
-If it is healthy, confirm that the App URL is allowed by the API's
-`FRONTEND_URL`, `CORS_ALLOWED_ORIGINS`, or `DEV_URLS` setting.
-
-Keep the default `localhost` host name for both the App and API unless you
-intend to update their browser and cookie settings together.
+If it fails, confirm that the API is running and that `NEXT_PUBLIC_API_URL`
+matches its port. In LAN mode, confirm the API is bound to the LAN and the App's
+exact origin appears in the API's `ALLOWED_BROWSER_ORIGINS`.
 
 ### Images do not load
 
 `NEXT_IMAGE_REMOTE_ORIGINS` must exactly match the beginning of the image URL,
 including `http` or `https`, the host name, and any custom port. For the default
-API storage, use `http://127.0.0.1:9000`, then restart the App.
+API storage, use `http://localhost:9000`, then restart the App.
 
 ### Environment changes do not appear
 
@@ -214,8 +239,9 @@ access, email, and saved data.
 
 | Variable | When to change it | Purpose |
 | --- | --- | --- |
-| `NEXT_PUBLIC_API_URL` | When the API address changes | Exact API origin; do not add `/api` or another path |
+| `NEXT_PUBLIC_API_URL` | When the API address or port changes | Browser-facing API origin used in development and production |
 | `NEXT_PUBLIC_SITE_URL` | When the App address changes | Exact public App origin used for links and page information |
+| `ALLOWED_BROWSER_ORIGINS` | For custom development hosts or ports | Server-only comma-separated exact browser origins used by Next.js development-origin checks |
 | `NEXT_IMAGE_REMOTE_ORIGINS` | When media storage changes | Comma-separated origins that Next.js may load images from |
 | `NEXT_PUBLIC_ALLOWED_IMAGE_TYPES` | Usually keep the default | Image types accepted by the upload interface |
 | `NEXT_PUBLIC_ALLOWED_AUDIO_TYPES` | Usually keep the default | Audio types accepted by the upload interface |
@@ -252,9 +278,10 @@ release—not for every commit or pull request.
 1. Choose the next release version and update `package.json` plus
    `package-lock.json` (for example, `npm version 1.1.0 --no-git-tag-version`).
 2. In `src/app/data/releases.js`, change the outgoing current entry to its
-   literal version, then add the new release first with `APP_VERSION`, its
-   release date, a short user-facing title, and a few Added, Improved, or Fixed
-   notes.
+   literal version, then add the new release first with `APP_VERSION`,
+   `status: 'unreleased'`, `date: null`, a short user-facing title, and a few
+   Added, Improved, or Fixed notes. Add the verified UTC release date and remove
+   the unreleased status only after production deployment is confirmed.
 3. Add links only when they point to a working App route and help the reader
    take a next step. Set `highlight` only for a meaningful user-facing release.
 4. Run `npm run lint`, `npm test`, and `npm run build -- --webpack` before the

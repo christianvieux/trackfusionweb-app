@@ -11,7 +11,7 @@ export default function ProfileContentTabs({
     setFavorites,
 }) {
     return (
-        <Card className="min-h-150 max-h-full w-full border-2 border-accent p-4 text-foreground shadow-card">
+        <Card className="min-h-150 max-h-full w-full min-w-0 border-2 border-accent p-3 text-foreground shadow-card sm:p-4">
             <Tabs
                 className="flex h-full min-h-0 w-full flex-col"
                 selectedTab={selectedTab}
@@ -39,7 +39,7 @@ export default function ProfileContentTabs({
                         trackList={tracks}
                         setTrackList={setTracks}
                         emptyMessage="No tracks uploaded yet"
-                        className="rounded-lg bg-background p-3"
+                        className="rounded-lg bg-background p-2 sm:p-3"
                     />
                 </Tabs.Panel>
 
@@ -48,7 +48,7 @@ export default function ProfileContentTabs({
                         trackList={favorites}
                         setTrackList={setFavorites}
                         emptyMessage="No favorite tracks yet"
-                        className="rounded-lg bg-background p-3"
+                        className="rounded-lg bg-background p-2 sm:p-3"
                     />
                 </Tabs.Panel>
             </Tabs>
